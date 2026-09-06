@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asociación Cristiana Un Encuentro con Jesús | Portal Oficial</title>
+  <meta name="description" content="Portal oficial de la Asociación Cristiana Un Encuentro con Jesús. Devocionales, prédicas, transmisión en vivo, catálogo de revistas y directorio de sedes.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Barra Superior Solemne con Redes y Versículo Editable -->
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <div class="topbar-verse" id="editableVersiculo" data-editable="topbar_verse">
+        &ldquo;Porque donde están dos o tres congregados en mi nombre, allí estoy yo en medio de ellos.&rdquo; &mdash; Mateo 18:20
+      </div>
+
+      <div class="topbar-right">
+        <!-- Enlaces a Redes Sociales Dinámicas -->
+        <div class="social-header-links" id="socialHeaderLinks">
+          <a href="#" id="linkFbTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="Facebook" style="display:none;">FB</a>
+          <a href="#" id="linkTkTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="TikTok" style="display:none;">TK</a>
+          <a href="#" id="linkIgTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="Instagram" style="display:none;">IG</a>
+          <a href="#" id="linkYtTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="Canal de YouTube" style="display:none;">YT</a>
+        </div>
+        <div class="topbar-actions">
+          <a href="admin.html" id="topbarAdminLink">Acceso Administrativo &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cabecera Principal Sticky -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-link" aria-label="Inicio">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title" data-editable="brand_title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle" data-editable="brand_subtitle">Asociación Cristiana</span>
+        </div>
+      </a>
+
+      <nav class="nav-desktop" aria-label="Navegación principal">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link active">Inicio</a></li>
+          <li><a href="#noticias" class="nav-link">Noticias</a></li>
+          <li><a href="revistas.html" class="nav-link">Revistas</a></li>
+          <li><a href="sedes.html" class="nav-link">Sedes</a></li>
+          <li><a href="#liderazgo" class="nav-link">Liderazgo</a></li>
+          <li><a href="#envivo" class="nav-link">En Vivo</a></li>
+          <li>
+            <a href="admin.html" class="btn-admin-nav" id="navAdminBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span id="navAdminBtnText">Admin</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <button class="btn-hamburger" id="menuToggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar-menu" id="sidebarMenu">
+    <div class="sidebar-header">
+      <div class="brand-link">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Portal Oficial</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose">&times;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html" class="active">Inicio</a></li>
+        <li><a href="#noticias">Noticias y Devocionales</a></li>
+        <li><a href="revistas.html">Revistas y Ediciones</a></li>
+        <li><a href="sedes.html">Nuestras Sedes</a></li>
+        <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
+        <li><a href="#envivo">Transmisión En Vivo</a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="admin.html" class="btn-sidebar-admin" id="sidebarAdminBtn">
+        Panel de Administración
+      </a>
+    </div>
+  </aside>
+
+  <!-- Portada Editorial (Hero) con Imagen de Fondo Dinámica y Textos Editables -->
+  <section class="hero-editorial" id="heroEditorialSection">
+    <div class="hero-overlay"></div>
+    <div class="container hero-container-box">
+      <div class="hero-content">
+        <div class="hero-badge" data-editable="hero_badge">
+          ★ Portal Oficial de Fe y Edificación
+        </div>
+        <h1 class="hero-title" id="editableHeroTitle" data-editable="hero_titulo">
+          Proclamando el Evangelio de Poder y Salvación <span>A Todas las Naciones</span>
+        </h1>
+        <p class="hero-description" id="editableHeroDesc" data-editable="hero_desc">
+          Bienvenido al portal institucional de la Asociación Cristiana Un Encuentro con Jesús. Descubre devocionales bíblicos, enseñanzas apostólicas, nuestras ediciones de revistas impresas y la señal continua de radio y televisión en vivo.
+        </p>
+        <div class="hero-actions">
+          <a href="#noticias" class="btn-primary" data-editable="btn_hero_noticias">Leer Devocionales</a>
+          <a href="#envivo" class="btn-outline" data-editable="btn_hero_envivo">Ver Transmisión en Vivo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección Multimedia -->
+  <section class="section-multimedia" id="envivo">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag" data-editable="sec_multimedia_tag">Señal Continua</span>
+        <h2 class="section-title" data-editable="sec_multimedia_title">Transmisiones Multimedia en Vivo</h2>
+        <p class="section-subtitle" data-editable="sec_multimedia_sub">Conéctate a la señal de video de nuestros cultos dominicales y sintoniza nuestra radio con alabanzas y sermones las 24 horas del día.</p>
+      </div>
+
+      <div class="multimedia-grid">
+        <div class="video-card">
+          <div class="video-header">
+            <h3 data-editable="card_video_title">Culto en Directo</h3>
+            <span class="badge-live"><span class="live-dot"></span> En Vivo</span>
+          </div>
+          <div class="video-player-wrapper">
+            <iframe id="liveVideoIframe" src="" title="Transmisión en Vivo" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="radio-card" id="radioCard">
+          <div>
+            <div class="radio-top">
+              <div class="radio-icon-box">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+              </div>
+              <div class="radio-info">
+                <span class="badge-live"><span class="live-dot"></span> Radio 24/7</span>
+                <h3 data-editable="radio_title">Radio Encuentro de Vida</h3>
+                <p data-editable="radio_desc">Música de adoración y palabra de bendición continua.</p>
+              </div>
+            </div>
+            <div class="radio-visualizer" id="radioVisualizer">
+              <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
+              <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
+            </div>
+          </div>
+          <div class="radio-player-container">
+            <audio id="audioRadio" controls preload="none">
+              <source id="liveRadioSource" src="" type="audio/mpeg">
+            </audio>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección Carrusel de Liderazgo -->
+  <section class="section-leadership" id="liderazgo">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag" data-editable="sec_liderazgo_tag">Ministerio Apostólico y Pastoral</span>
+        <h2 class="section-title" data-editable="sec_liderazgo_title">Cuerpo Pastoral &amp; Liderazgo</h2>
+        <p class="section-subtitle" data-editable="sec_liderazgo_sub">Hombres y mujeres consagrados al servicio de la grey de Dios, guiando a la iglesia con doctrina bíblica y amor cristiano.</p>
+      </div>
+
+      <div class="leadership-carousel-wrapper">
+        <div class="active-member-info" id="activeMemberContainer">
+          <h3 class="active-member-name" id="activeMemberName">Cargando liderazgo...</h3>
+          <span class="active-member-role" id="activeMemberRole">Ministerio Pastoral</span>
+        </div>
+
+        <div class="carousel-container" id="carouselContainer">
+          <button class="carousel-btn carousel-btn-prev" id="carouselPrev" aria-label="Anterior">&#10094;</button>
+          <div class="carousel-track" id="carouselTrack">
+            <div class="loading-spinner"><div class="spinner"></div><span>Cargando líderes...</span></div>
+          </div>
+          <button class="carousel-btn carousel-btn-next" id="carouselNext" aria-label="Siguiente">&#10095;</button>
+        </div>
+        <div class="carousel-dots" id="carouselDots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección Noticias -->
+  <section class="section-articles" id="noticias">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag" data-editable="sec_noticias_tag">Edición y Doctrina</span>
+        <h2 class="section-title" data-editable="sec_noticias_title">Noticias, Mensajes y Devocionales</h2>
+        <p class="section-subtitle" data-editable="sec_noticias_sub">Artículos editoriales de impacto espiritual para fortalecer tu fe, edificar tu hogar y profundizar en las Sagradas Escrituras.</p>
+      </div>
+      <div class="articles-grid" id="articlesGrid"></div>
+    </div>
+  </section>
+
+  <!-- Modal Lectura de Artículo -->
+  <div class="modal-overlay" id="articleModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+      <img id="modalArticleImg" src="" alt="Portada" class="modal-hero-img">
+      <div class="modal-content-wrap">
+        <span class="modal-category" id="modalArticleCategory">Categoría</span>
+        <h2 class="modal-title" id="modalArticleTitle">Título</h2>
+        <span class="modal-date" id="modalArticleDate">Fecha</span>
+        <div class="modal-article-text" id="modalArticleContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie de Página Institucional -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-link" style="margin-bottom: 1rem;">
+            <div class="logo-badge">EJ</div>
+            <div class="brand-text">
+              <span class="brand-title">Un Encuentro con Jesús</span>
+              <span class="brand-subtitle">Asociación Cristiana</span>
+            </div>
+          </div>
+          <p data-editable="footer_brand_desc">
+            Una congregación fundamentada en la verdad bíblica, dedicada a la proclamación del Evangelio de nuestro Señor Jesucristo y al servicio a la comunidad.
+          </p>
+          <!-- Redes Sociales en el pie de página -->
+          <div class="footer-social-box" id="footerSocialBox">
+            <a href="#" id="linkFbFooter" target="_blank" rel="noopener noreferrer" class="footer-soc-link" style="display:none;">Facebook</a>
+            <a href="#" id="linkTkFooter" target="_blank" rel="noopener noreferrer" class="footer-soc-link" style="display:none;">TikTok</a>
+            <a href="#" id="linkIgFooter" target="_blank" rel="noopener noreferrer" class="footer-soc-link" style="display:none;">Instagram</a>
+            <a href="#" id="linkYtFooter" target="_blank" rel="noopener noreferrer" class="footer-soc-link" style="display:none;">YouTube</a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4 data-editable="footer_col1_title">Navegación</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="#noticias">Noticias &amp; Devocionales</a></li>
+            <li><a href="revistas.html">Revistas Oficiales</a></li>
+            <li><a href="sedes.html">Directorio de Sedes</a></li>
+            <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 data-editable="footer_col2_title">Recursos</h4>
+          <ul class="footer-links">
+            <li><a href="revistas.html">Descargar Ediciones</a></li>
+            <li><a href="#envivo">Canal de Transmisión</a></li>
+            <li><a href="sedes.html">Horarios de Culto</a></li>
+            <li><a href="admin.html">Acceso Administrativo</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 data-editable="footer_col3_title">Declaración de Fe</h4>
+          <p style="font-size: 0.9rem; line-height: 1.6; color: #94A3B8;">
+            <span data-editable="footer_fe_texto">&ldquo;Toda la Escritura es inspirada por Dios, y útil para enseñar, para redargüir, para corregir, para instruir en justicia.&rdquo;</span><br>
+            <strong style="color: var(--accent);" data-editable="footer_fe_cita">2 Timoteo 3:16</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p data-editable="footer_copy_p1">&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
+        <p data-editable="footer_copy_p2">Edición digital y difusión del Evangelio.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- BARRA FLOTANTE DE EDICIÓN VISUAL TOTAL -->
+  <div id="adminVisualBar" class="admin-visual-bar" style="display: none;">
+    <div class="visual-bar-info">
+      <span class="live-dot"></span>
+      <strong>Modo Editor Activo</strong>
+    </div>
+    <div class="visual-bar-actions">
+      <button id="btnToggleEdit" type="button" class="btn-vis-action">✏️ Habilitar Edición de Textos</button>
+      <button id="btnChangeHeroBg" type="button" class="btn-vis-action">🖼️ Cambiar Fondo Portada</button>
+      <button id="btnOpenSocialModal" type="button" class="btn-vis-action">🌐 Redes Sociales</button>
+      <button id="btnOpenStreamModal" type="button" class="btn-vis-action">📡 Transmisiones</button>
+      <button id="btnSaveVisualTexts" type="button" class="btn-vis-save" disabled>💾 Guardar Textos</button>
+      <a href="admin.html" class="btn-vis-action btn-vis-panel">⚙️ Panel Admin</a>
+    </div>
+    <!-- Input oculto para subir la imagen de fondo -->
+    <input type="file" id="inputHeroBgFile" accept="image/*" style="display: none;">
+  </div>
+
+  <!-- MODAL REDES SOCIALES -->
+  <div id="modalSocials" class="vis-modal" style="display: none;">
+    <div class="vis-modal-content">
+      <div class="vis-modal-header">
+        <h3>Enlaces de Redes Sociales</h3>
+        <button id="btnCloseSocialModal" type="button" class="vis-modal-close">&times;</button>
+      </div>
+      <div class="vis-modal-body">
+        <label for="inputFbUrl">Página de Facebook:</label>
+        <input type="url" id="inputFbUrl" placeholder="https://facebook.com/tuiglesia">
+
+        <label for="inputTkUrl" style="margin-top: 1rem; display: block;">Perfil de TikTok:</label>
+        <input type="url" id="inputTkUrl" placeholder="https://tiktok.com/@tuiglesia">
+
+        <label for="inputIgUrl" style="margin-top: 1rem; display: block;">Perfil de Instagram:</label>
+        <input type="url" id="inputIgUrl" placeholder="https://instagram.com/tuiglesia">
+
+        <label for="inputYtCanal" style="margin-top: 1rem; display: block;">Canal Oficial de YouTube:</label>
+        <input type="url" id="inputYtCanal" placeholder="https://youtube.com/@tuiglesia">
+      </div>
+      <div class="vis-modal-footer">
+        <button id="btnSaveSocials" type="button" class="btn-vis-save">Guardar Enlaces de Redes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TRANSMISIONES EN VIVO (YOUTUBE & RADIO) -->
+  <div id="modalStreams" class="vis-modal" style="display: none;">
+    <div class="vis-modal-content">
+      <div class="vis-modal-header">
+        <h3>Configuración de Transmisiones en Vivo</h3>
+        <button id="btnCloseModal" type="button" class="vis-modal-close">&times;</button>
+      </div>
+      <div class="vis-modal-body">
+        <label for="inputYoutubeUrl">Enlace de Transmisión de YouTube (En Vivo o Video):</label>
+        <input type="text" id="inputYoutubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+        <label for="inputRadioUrl" style="margin-top: 1rem; display: block;">Enlace Streaming de Radio (MP3 / Icecast):</label>
+        <input type="text" id="inputRadioUrl" placeholder="https://stream.zeno.fm/...">
+      </div>
+      <div class="vis-modal-footer">
+        <button id="btnSaveStreams" type="button" class="btn-vis-save">Guardar Señales</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

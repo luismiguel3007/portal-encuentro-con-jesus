@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revistas y Ediciones Digitales | Un Encuentro con Jesús</title>
+  <meta name="description" content="Descarga y lee en línea las ediciones de nuestra revista oficial. Mensajes, doctrinas y testimonios de fe.">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Estilos Principales -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Supabase JS Client v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- PDF.js para renderizado interactivo de páginas de revistas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+  <!-- Barra Superior Solemne -->
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar-verse">
+        &ldquo;Lámpara es a mis pies tu palabra, y lumbrera a mi camino.&rdquo; &mdash; Salmos 119:105
+      </div>
+      <div class="topbar-actions">
+        <a href="admin.html" id="topbarAdminLink">Acceso Administrativo &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cabecera Principal Sticky -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-link" aria-label="Inicio - Asociación Cristiana Un Encuentro con Jesús">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Asociación Cristiana</span>
+        </div>
+      </a>
+
+      <!-- Navegación de Escritorio -->
+      <nav class="nav-desktop" aria-label="Navegación principal">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Inicio</a></li>
+          <li><a href="index.html#noticias" class="nav-link">Noticias</a></li>
+          <li><a href="revistas.html" class="nav-link active">Revistas</a></li>
+          <li><a href="sedes.html" class="nav-link">Sedes</a></li>
+          <li><a href="index.html#liderazgo" class="nav-link">Liderazgo</a></li>
+          <li><a href="index.html#envivo" class="nav-link">En Vivo</a></li>
+          <li>
+            <a href="admin.html" class="btn-admin-nav" id="navAdminBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span id="navAdminBtnText">Admin</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Botón Hamburguesa Móvil -->
+      <button class="btn-hamburger" id="menuToggle" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="sidebarMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Menú Lateral Deslizable (Off-Canvas) y Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar-menu" id="sidebarMenu" aria-label="Menú móvil">
+    <div class="sidebar-header">
+      <div class="brand-link">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Portal Oficial</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Cerrar menú">&times;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="index.html#noticias">Noticias y Devocionales</a></li>
+        <li><a href="revistas.html" class="active">Revistas y Ediciones</a></li>
+        <li><a href="sedes.html">Nuestras Sedes</a></li>
+        <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
+        <li><a href="index.html#envivo">Transmisión En Vivo</a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="admin.html" class="btn-sidebar-admin" id="sidebarAdminBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Panel de Administración
+      </a>
+    </div>
+  </aside>
+
+  <!-- Banner de Sección -->
+  <section class="hero-editorial" style="padding: 3.5rem 0 2.5rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          Publicaciones Periódicas
+        </div>
+        <h1 class="hero-title">
+          Revistas &amp; Ediciones Digitales
+        </h1>
+        <p class="hero-description">
+          Accede al repositorio completo de nuestras publicaciones editoriales con artículos de sana doctrina, historias de misiones internacionales y mensajes de avivamiento espiritual.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contenedor Principal de Revistas -->
+  <main class="container" style="padding-top: 3rem; padding-bottom: 5rem;">
+    <div class="section-header">
+      <span class="section-tag">Archivo Editorial</span>
+      <h2 class="section-title">Ediciones Disponibles</h2>
+      <p class="section-subtitle">Selecciona cualquier edición para hojearla en línea en formato PDF de alta resolución o descargarla en tu dispositivo.</p>
+    </div>
+
+    <!-- Grid Dinámico de Revistas -->
+    <div class="revistas-grid" id="revistasGrid">
+      <div class="loading-spinner" style="grid-column: 1 / -1;">
+        <div class="spinner"></div>
+        <span>Cargando catálogo de revistas...</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL VISOR TIPO REVISTA IMPRESA (FLIPBOOK EDITORIAL 3D) -->
+  <div class="magazine-modal-overlay" id="magazineModal" style="display: none;">
+    <div class="magazine-viewer-container" id="magazineViewerBox">
+      
+      <!-- Barra superior sutil -->
+      <div class="magazine-top-bar">
+        <h3 id="magViewerTitle">Edición Digital</h3>
+        <button type="button" class="mag-btn-icon" id="closeMagazineBtn" title="Cerrar">&times;</button>
+      </div>
+
+      <!-- Escenario de Lectura con Doble Página y Efecto 3D -->
+      <div class="book-stage" id="bookStage">
+        <!-- Flecha Izquierda flotante -->
+        <button type="button" class="book-nav-arrow arrow-prev" id="magBtnPrev" aria-label="Página anterior">
+          &#10094;
+        </button>
+
+        <!-- Contenedor del Libro Abierto -->
+        <div class="book-spread" id="bookSpread">
+          <!-- Hoja Izquierda -->
+          <div class="book-page page-left">
+            <canvas id="canvasLeft"></canvas>
+          </div>
+
+          <!-- Lomo central con sombra de pliegue editorial -->
+          <div class="book-spine"></div>
+
+          <!-- Hoja Derecha -->
+          <div class="book-page page-right">
+            <canvas id="canvasRight"></canvas>
+          </div>
+
+          <!-- Hoja móvil animada para el efecto 3D de pasar página -->
+          <div class="page-flip-layer" id="pageFlipLayer"></div>
+        </div>
+
+        <!-- Flecha Derecha flotante -->
+        <button type="button" class="book-nav-arrow arrow-next" id="magBtnNext" aria-label="Página siguiente">
+          &#10095;
+        </button>
+      </div>
+
+      <!-- Barra de herramientas inferior idéntica al visor editorial -->
+      <div class="magazine-bottom-bar">
+        <!-- Indicador de página (ej. 14-15 / 68) -->
+        <div class="mag-counter-badge" id="magPageCounter">1 / 1</div>
+
+        <div class="mag-bar-tools">
+          <button type="button" class="mag-btn-action" id="btnToggleFullscreen" title="Pantalla Completa">
+            <svg id="fsIconExpand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+            <span id="fsText">Pantalla Completa</span>
+          </button>
+          
+          <a id="magDownloadDirect" href="#" target="_blank" download class="mag-btn-action" title="Descargar PDF">
+            📥 Descargar
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pie de Página Institucional -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-link" style="margin-bottom: 1rem;">
+            <div class="logo-badge">EJ</div>
+            <div class="brand-text">
+              <span class="brand-title">Un Encuentro con Jesús</span>
+              <span class="brand-subtitle">Asociación Cristiana</span>
+            </div>
+          </div>
+          <p>
+            Publicación y divulgación de la verdad bíblica para la edificación de la iglesia de Cristo en todo el mundo.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navegación</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="index.html#noticias">Noticias &amp; Devocionales</a></li>
+            <li><a href="revistas.html">Revistas Oficiales</a></li>
+            <li><a href="sedes.html">Directorio de Sedes</a></li>
+            <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Recursos</h4>
+          <ul class="footer-links">
+            <li><a href="revistas.html">Descargar Ediciones</a></li>
+            <li><a href="index.html#envivo">Canal de Transmisión</a></li>
+            <li><a href="sedes.html">Horarios de Culto</a></li>
+            <li><a href="admin.html">Acceso Administrativo</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Declaración de Fe</h4>
+          <p style="font-size: 0.9rem; line-height: 1.6; color: #94A3B8;">
+            &ldquo;El cielo y la tierra pasarán, pero mis palabras no pasarán.&rdquo;<br>
+            <strong style="color: var(--accent);">Mateo 24:35</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
+        <p>Catálogo digital de revistas cristianas.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts del Proyecto -->
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

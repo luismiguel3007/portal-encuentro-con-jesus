@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directorio de Sedes y Templos | Un Encuentro con Jesús</title>
+  <meta name="description" content="Encuentra la iglesia o filial más cercana de la Asociación Cristiana Un Encuentro con Jesús. Direcciones, horarios de cultos y contacto.">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Estilos Principales -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Supabase JS Client v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Barra Superior Solemne -->
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar-verse">
+        &ldquo;Yo me alegré con los que me decían: A la casa de Jehová iremos.&rdquo; &mdash; Salmos 122:1
+      </div>
+      <div class="topbar-actions">
+        <a href="login.html">Acceso Administrativo &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cabecera Principal Sticky -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-link" aria-label="Inicio - Asociación Cristiana Un Encuentro con Jesús">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Asociación Cristiana</span>
+        </div>
+      </a>
+
+      <!-- Navegación de Escritorio -->
+      <nav class="nav-desktop" aria-label="Navegación principal">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Inicio</a></li>
+          <li><a href="index.html#noticias" class="nav-link">Noticias</a></li>
+          <li><a href="revistas.html" class="nav-link">Revistas</a></li>
+          <li><a href="sedes.html" class="nav-link active">Sedes</a></li>
+          <li><a href="index.html#liderazgo" class="nav-link">Liderazgo</a></li>
+          <li><a href="index.html#envivo" class="nav-link">En Vivo</a></li>
+          <li>
+            <a href="login.html" class="btn-admin-nav">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Admin
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Botón Hamburguesa Móvil -->
+      <button class="btn-hamburger" id="menuToggle" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="sidebarMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Menú Lateral Deslizable (Off-Canvas) y Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar-menu" id="sidebarMenu" aria-label="Menú móvil">
+    <div class="sidebar-header">
+      <div class="brand-link">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Portal Oficial</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Cerrar menú">&times;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="index.html#noticias">Noticias y Devocionales</a></li>
+        <li><a href="revistas.html">Revistas y Ediciones</a></li>
+        <li><a href="sedes.html" class="active">Nuestras Sedes</a></li>
+        <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
+        <li><a href="index.html#envivo">Transmisión En Vivo</a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="login.html" class="btn-sidebar-admin">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Panel de Administración
+      </a>
+    </div>
+  </aside>
+
+  <!-- Banner de Sección -->
+  <section class="hero-editorial" style="padding: 3.5rem 0 2.5rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          Casas de Oración y Adoración
+        </div>
+        <h1 class="hero-title">
+          Nuestras Sedes &amp; Filiales
+        </h1>
+        <p class="hero-description">
+          Te invitamos a participar de nuestros servicios presenciales de alabanza, doctrina apostólica y oración. Encuentra la congregación más cercana y sé bienvenido en la familia de la fe.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contenedor Principal de Sedes -->
+  <main class="container" style="padding-top: 3rem; padding-bottom: 5rem;">
+    <div class="section-header">
+      <span class="section-tag">Directorio Nacional e Internacional</span>
+      <h2 class="section-title">Congregaciones Registradas</h2>
+      <p class="section-subtitle">Consulta las direcciones exactas, los días y horarios de reunión de cada una de nuestras sedes.</p>
+    </div>
+
+    <!-- Grid Dinámico de Sedes -->
+    <div class="sedes-grid" id="sedesGrid">
+      <div class="loading-spinner" style="grid-column: 1 / -1;">
+        <div class="spinner"></div>
+        <span>Cargando directorio de sedes...</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Pie de Página Institucional -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-link" style="margin-bottom: 1rem;">
+            <div class="logo-badge">EJ</div>
+            <div class="brand-text">
+              <span class="brand-title">Un Encuentro con Jesús</span>
+              <span class="brand-subtitle">Asociación Cristiana</span>
+            </div>
+          </div>
+          <p>
+            Templos abiertos para adorar a Dios en espíritu y en verdad, llevando esperanza a los necesitados en cada comunidad.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navegación</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="index.html#noticias">Noticias &amp; Devocionales</a></li>
+            <li><a href="revistas.html">Revistas Oficiales</a></li>
+            <li><a href="sedes.html">Directorio de Sedes</a></li>
+            <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Recursos</h4>
+          <ul class="footer-links">
+            <li><a href="revistas.html">Descargar Ediciones</a></li>
+            <li><a href="index.html#envivo">Canal de Transmisión</a></li>
+            <li><a href="sedes.html">Horarios de Culto</a></li>
+            <li><a href="login.html">Acceso Administrativo</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Declaración de Fe</h4>
+          <p style="font-size: 0.9rem; line-height: 1.6; color: #94A3B8;">
+            &ldquo;Mi casa será llamada casa de oración para todos los pueblos.&rdquo;<br>
+            <strong style="color: var(--accent);">Isaías 56:7</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
+        <p>Directorio de congregaciones cristianas.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts del Proyecto -->
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

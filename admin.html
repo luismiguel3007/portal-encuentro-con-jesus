@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Un Encuentro con Jesús</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="admin-header-container">
+      <div class="logo">
+        <span class="logo-badge">EJ</span>
+        <div>
+          <h2>Panel de Administración</h2>
+          <small>Asociación Cristiana Un Encuentro con Jesús</small>
+        </div>
+      </div>
+      <div class="admin-user-info">
+        <span id="sessionStatus" class="status-badge">Verificando sesión...</span>
+        <a href="index.html" class="btn-portal-admin">🌐 Ver Portal (Modo Editor)</a>
+        <button id="btnLogout" type="button" class="btn-logout">↳ Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container admin-container">
+    <div class="admin-title">
+      <h1>Centro de Publicaciones & Contenidos</h1>
+      <p>Añade y administra en tiempo real las publicaciones, revistas, filiales y pastores.</p>
+    </div>
+
+    <div class="admin-tabs">
+      <button type="button" class="tab-btn active" data-tab="tab-articulos">📰 1. Noticias / Devocionales</button>
+      <button type="button" class="tab-btn" data-tab="tab-revistas">📖 2. Revistas Digitales</button>
+      <button type="button" class="tab-btn" data-tab="tab-sedes">📍 3. Sedes / Filiales</button>
+      <button type="button" class="tab-btn" data-tab="tab-lideres">👥 4. Pastores / Líderes</button>
+    </div>
+
+    <section id="tab-articulos" class="tab-panel active">
+      <div class="card-form">
+        <h2>Publicar Nuevo Artículo o Devocional</h2>
+        <p class="card-desc">Completa la información doctrinal. Aparecerá de inmediato en la portada.</p>
+        <form id="formArticulo">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="artTitulo">Título del Artículo *</label>
+              <input type="text" id="artTitulo" placeholder="Ej: La Gracia Sublime y el Poder de la Cruz" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="artCategoria">Categoría Editorial *</label>
+              <select id="artCategoria" required>
+                <option value="">-- Seleccionar categoría --</option>
+                <option value="Devocional">Devocional</option>
+                <option value="Actualidad">Actualidad</option>
+                <option value="Editorial">Editorial</option>
+                <option value="Testimonio">Testimonio</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artResumen">Resumen Breve (Extracto) *</label>
+            <input type="text" id="artResumen" placeholder="Síntesis de 1 o 2 oraciones para la portada" required>
+          </div>
+          <div class="form-group">
+            <label for="artContenido">Contenido Doctrinal Completo *</label>
+            <textarea id="artContenido" rows="4" placeholder="Escribe el mensaje pastoral o cuerpo completo..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="artFoto">Fotografía de Portada (JPG / PNG / WEBP) *</label>
+            <input type="file" id="artFoto" accept="image/*" required>
+          </div>
+          <button type="submit" id="btnGuardarArt" class="btn-primary">Publicar Artículo</button>
+          <div id="msgArticulo" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Noticias y Artículos Publicados</h3>
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarArticulos()">↻ Actualizar</button>
+        </div>
+        <div id="listaArticulosAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando publicaciones...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-revistas" class="tab-panel">
+      <div class="card-form">
+        <h2>Registrar Nueva Revista Digital</h2>
+        <p class="card-desc">Sube la portada y el documento en formato PDF.</p>
+        <form id="formRevista">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="revEdicion">Nombre o Número de Edición *</label>
+              <input type="text" id="revEdicion" placeholder="Ej: Edición N° 154 - La Fe Inconmovible" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="revFecha">Fecha de Publicación *</label>
+              <input type="date" id="revFecha" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="revPortada">Foto de Portada (JPG / PNG) *</label>
+              <input type="file" id="revPortada" accept="image/*" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="revPdf">Documento PDF de la Revista *</label>
+              <input type="file" id="revPdf" accept="application/pdf" required>
+            </div>
+          </div>
+          <button type="submit" id="btnGuardarRev" class="btn-primary">Guardar Revista</button>
+          <div id="msgRevista" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Revistas Registradas</h3>
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarRevistas()">↻ Actualizar</button>
+        </div>
+        <div id="listaRevistasAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando revistas...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-sedes" class="tab-panel">
+      <div class="card-form">
+        <h2>Agregar Nueva Sede o Filial</h2>
+        <p class="card-desc">Registra una nueva iglesia filial para el directorio web.</p>
+        <form id="formSede">
+          <div class="form-group">
+            <label for="sedeNombre">Nombre de la Sede *</label>
+            <input type="text" id="sedeNombre" placeholder="Ej: Sede Central - Talara" required>
+          </div>
+          <div class="form-group">
+            <label for="sedeDireccion">Dirección Completa *</label>
+            <input type="text" id="sedeDireccion" placeholder="Ej: Av. Principal 123, Talara, Piura" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="sedeHorarios">Horarios de Culto *</label>
+              <input type="text" id="sedeHorarios" placeholder="Ej: Martes 7:30 PM - Domingos 10:00 AM" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="sedeTelefono">Teléfono o WhatsApp</label>
+              <input type="text" id="sedeTelefono" placeholder="+51 900 000 000">
+            </div>
+          </div>
+          <button type="submit" id="btnGuardarSede" class="btn-primary">Registrar Sede</button>
+          <div id="msgSede" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Sedes y Filiales Registradas</h3>
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarSedes()">↻ Actualizar</button>
+        </div>
+        <div id="listaSedesAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando sedes...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-lideres" class="tab-panel">
+      <div class="card-form">
+        <h2>Registrar Pastor o Líder</h2>
+        <p class="card-desc">Aparecerá en el carrusel interactivo de la portada principal.</p>
+        <form id="formLider">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="liderNombre">Nombre Completo con Título *</label>
+              <input type="text" id="liderNombre" placeholder="Ej: Pastor Juan Pérez" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="liderCargo">Cargo o Ministerio *</label>
+              <input type="text" id="liderCargo" placeholder="Ej: Pastor Principal" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="liderOrden">Orden de aparición (Número)</label>
+              <input type="number" id="liderOrden" value="1" min="1">
+              <small style="color:#64748b;">1 aparece primero al centro, 2 luego, etc.</small>
+            </div>
+            <div class="form-group flex-2">
+              <label for="liderFoto">Fotografía de perfil (Vertical) *</label>
+              <input type="file" id="liderFoto" accept="image/*" required>
+            </div>
+          </div>
+          <button type="submit" id="btnGuardarLider" class="btn-primary">Registrar Líder</button>
+          <div id="msgLider" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Cuerpo Pastoral Registrado (Carrusel)</h3>
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarLideres()">↻ Actualizar</button>
+        </div>
+        <div id="listaLideresAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando pastores y líderes...</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
