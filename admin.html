@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Un Encuentro con Jesús</title>
+  <title>Panel de Administración | Un Encuentro con Jesús</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/admin.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,30 +26,104 @@
       </div>
       <div class="admin-user-info">
         <span id="sessionStatus" class="status-badge">Verificando sesión...</span>
-        <a href="index.html" class="btn-portal-admin">🌐 Ver Portal (Modo Editor)</a>
+        <a href="index.html" class="btn-portal-admin">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          Ver Portal
+        </a>
         <button id="btnLogout" type="button" class="btn-logout">↳ Cerrar Sesión</button>
       </div>
     </div>
   </header>
 
-  <main class="container admin-container">
+  <main class="container admin-container" style="display: none;">
     <div class="admin-title">
-      <h1>Centro de Publicaciones & Contenidos</h1>
-      <p>Añade y administra en tiempo real las publicaciones, revistas, filiales y pastores.</p>
+      <h1>Centro de Control &amp; Publicaciones</h1>
+      <p>Supervisa las métricas y administra el contenido editorial, filiales, pastores, transmisiones y membresía.</p>
     </div>
 
+    <!-- TARJETAS MÉTRICAS (KPIS DINÁMICOS) -->
+    <div class="admin-stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📰</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiArticulos">--</span>
+          <span class="stat-label">Artículos &amp; Devocionales</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📖</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiRevistas">--</span>
+          <span class="stat-label">Ediciones de Revistas</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📍</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiSedes">--</span>
+          <span class="stat-label">Sedes &amp; Filiales</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiLideres">--</span>
+          <span class="stat-label">Cuerpo Pastoral</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🪪</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiMiembros">--</span>
+          <span class="stat-label">Miembros en Padrón</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📡</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiTransmisiones">--</span>
+          <span class="stat-label">Señales de Transmisión</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
     <div class="admin-tabs">
-      <button type="button" class="tab-btn active" data-tab="tab-articulos">📰 1. Noticias / Devocionales</button>
-      <button type="button" class="tab-btn" data-tab="tab-revistas">📖 2. Revistas Digitales</button>
-      <button type="button" class="tab-btn" data-tab="tab-sedes">📍 3. Sedes / Filiales</button>
-      <button type="button" class="tab-btn" data-tab="tab-lideres">👥 4. Pastores / Líderes</button>
+      <button type="button" class="tab-btn active" data-tab="tab-articulos">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>
+        1. Noticias / Devocionales
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-revistas">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        2. Revistas Digitales
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-sedes">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        3. Sedes / Filiales
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-lideres">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        4. Pastores / Líderes
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-miembros">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>
+        5. Membresía
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-transmisiones">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+        6. Transmisiones en Vivo
+      </button>
     </div>
 
+    <!-- SECCIÓN 1: NOTICIAS / DEVOCIONALES -->
     <section id="tab-articulos" class="tab-panel active">
       <div class="card-form">
-        <h2>Publicar Nuevo Artículo o Devocional</h2>
+        <h2 id="titleFormArt">Publicar Nuevo Artículo o Devocional</h2>
         <p class="card-desc">Completa la información doctrinal. Aparecerá de inmediato en la portada.</p>
         <form id="formArticulo">
+          <input type="hidden" id="artEditId" value="">
+          <input type="hidden" id="artExistingImg" value="">
+
           <div class="form-row">
             <div class="form-group flex-2">
               <label for="artTitulo">Título del Artículo *</label>
@@ -71,9 +150,13 @@
           </div>
           <div class="form-group">
             <label for="artFoto">Fotografía de Portada (JPG / PNG / WEBP) *</label>
-            <input type="file" id="artFoto" accept="image/*" required>
+            <input type="file" id="artFoto" accept="image/*">
+            <small id="artFotoHelp" style="display:none; color:#64748b; margin-top:4px;">(Opcional al editar: si no seleccionas una nueva imagen, se conservará la actual)</small>
           </div>
-          <button type="submit" id="btnGuardarArt" class="btn-primary">Publicar Artículo</button>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" id="btnGuardarArt" class="btn-primary">Publicar Artículo</button>
+            <button type="button" id="btnCancelarArt" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
           <div id="msgArticulo" class="alert-box"></div>
         </form>
 
@@ -89,11 +172,16 @@
       </div>
     </section>
 
+    <!-- SECCIÓN 2: REVISTAS DIGITALES -->
     <section id="tab-revistas" class="tab-panel">
       <div class="card-form">
-        <h2>Registrar Nueva Revista Digital</h2>
+        <h2 id="titleFormRev">Registrar Nueva Revista Digital</h2>
         <p class="card-desc">Sube la portada y el documento en formato PDF.</p>
         <form id="formRevista">
+          <input type="hidden" id="revEditId" value="">
+          <input type="hidden" id="revExistingPortada" value="">
+          <input type="hidden" id="revExistingPdf" value="">
+
           <div class="form-row">
             <div class="form-group flex-2">
               <label for="revEdicion">Nombre o Número de Edición *</label>
@@ -107,14 +195,19 @@
           <div class="form-row">
             <div class="form-group flex-1">
               <label for="revPortada">Foto de Portada (JPG / PNG) *</label>
-              <input type="file" id="revPortada" accept="image/*" required>
+              <input type="file" id="revPortada" accept="image/*">
+              <small id="revPortadaHelp" style="display:none; color:#64748b; margin-top:4px;">(Opcional al editar)</small>
             </div>
             <div class="form-group flex-1">
               <label for="revPdf">Documento PDF de la Revista *</label>
-              <input type="file" id="revPdf" accept="application/pdf" required>
+              <input type="file" id="revPdf" accept="application/pdf">
+              <small id="revPdfHelp" style="display:none; color:#64748b; margin-top:4px;">(Opcional al editar)</small>
             </div>
           </div>
-          <button type="submit" id="btnGuardarRev" class="btn-primary">Guardar Revista</button>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" id="btnGuardarRev" class="btn-primary">Guardar Revista</button>
+            <button type="button" id="btnCancelarRev" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
           <div id="msgRevista" class="alert-box"></div>
         </form>
 
@@ -130,11 +223,14 @@
       </div>
     </section>
 
+    <!-- SECCIÓN 3: SEDES / FILIALES -->
     <section id="tab-sedes" class="tab-panel">
       <div class="card-form">
-        <h2>Agregar Nueva Sede o Filial</h2>
-        <p class="card-desc">Registra una nueva iglesia filial para el directorio web.</p>
+        <h2 id="titleFormSede">Agregar Nueva Sede o Filial</h2>
+        <p class="card-desc">Registra o edita una iglesia filial para el directorio web.</p>
         <form id="formSede">
+          <input type="hidden" id="sedeEditId" value="">
+
           <div class="form-group">
             <label for="sedeNombre">Nombre de la Sede *</label>
             <input type="text" id="sedeNombre" placeholder="Ej: Sede Central - Talara" required>
@@ -153,7 +249,10 @@
               <input type="text" id="sedeTelefono" placeholder="+51 900 000 000">
             </div>
           </div>
-          <button type="submit" id="btnGuardarSede" class="btn-primary">Registrar Sede</button>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" id="btnGuardarSede" class="btn-primary">Registrar Sede</button>
+            <button type="button" id="btnCancelarSede" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
           <div id="msgSede" class="alert-box"></div>
         </form>
 
@@ -169,11 +268,15 @@
       </div>
     </section>
 
+    <!-- SECCIÓN 4: PASTORES / LÍDERES -->
     <section id="tab-lideres" class="tab-panel">
       <div class="card-form">
-        <h2>Registrar Pastor o Líder</h2>
+        <h2 id="titleFormLider">Registrar Pastor o Líder</h2>
         <p class="card-desc">Aparecerá en el carrusel interactivo de la portada principal.</p>
         <form id="formLider">
+          <input type="hidden" id="liderEditId" value="">
+          <input type="hidden" id="liderExistingFoto" value="">
+
           <div class="form-row">
             <div class="form-group flex-2">
               <label for="liderNombre">Nombre Completo con Título *</label>
@@ -192,10 +295,14 @@
             </div>
             <div class="form-group flex-2">
               <label for="liderFoto">Fotografía de perfil (Vertical) *</label>
-              <input type="file" id="liderFoto" accept="image/*" required>
+              <input type="file" id="liderFoto" accept="image/*">
+              <small id="liderFotoHelp" style="display:none; color:#64748b; margin-top:4px;">(Opcional al editar)</small>
             </div>
           </div>
-          <button type="submit" id="btnGuardarLider" class="btn-primary">Registrar Líder</button>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" id="btnGuardarLider" class="btn-primary">Registrar Líder</button>
+            <button type="button" id="btnCancelarLider" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
           <div id="msgLider" class="alert-box"></div>
         </form>
 
@@ -207,6 +314,278 @@
         </div>
         <div id="listaLideresAdmin" class="admin-items-list">
           <p class="text-muted">Cargando pastores y líderes...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 5: GESTIÓN DE MEMBRESÍA -->
+    <section id="tab-miembros" class="tab-panel">
+      <div class="card-form">
+        <h2 id="titleFormMiembro">Registro &amp; Ficha de Membresía</h2>
+        <p class="card-desc">Gestiona el padrón congregacional. Configura de forma granular la visibilidad de los datos para la consulta web[cite: 5, 7].</p>
+        
+        <form id="formMiembro">
+          <input type="hidden" id="miembroEditId" value="">
+
+          <!-- Interruptor Maestro de Privacidad -->
+          <div class="master-privacy-card">
+            <label><strong>Visibilidad General en la Web:</strong></label>
+            <div class="privacy-switch-wrap">
+              <label class="switch-container">
+                <input type="checkbox" id="mEsPublico" checked>
+                <span class="switch-slider"></span>
+              </label>
+              <span id="lblEsPublico" class="privacy-status-text" style="color: #10b981;">🌐 Miembro Público (Consultable en el portal web)</span>
+            </div>
+            <small style="color: #64748b;">Si desmarcas esta opción, el miembro será <strong>100% privado</strong> y quedará oculto en las consultas públicas.</small>
+          </div>
+
+          <!-- BLOQUE 1: IDENTIFICACIÓN -->
+          <div class="form-section-block">
+            <div class="form-section-title"><span>1</span> Datos de Identificación Personal</div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="mNombre">Nombre Completo *</label>
+                <div class="field-with-privacy">
+                  <input type="text" id="mNombre" placeholder="Ej: Juan Daniel Morales Santos" required>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_nombre" checked> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="mDni">Número de DNI *</label>
+                <div class="field-with-privacy">
+                  <input type="text" id="mDni" placeholder="8 dígitos" required>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_dni"> 👁️ Público</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="mCodigo">Código de Miembro Único (*M26)</label>
+                <div class="code-generator-box">
+                  <input type="text" id="mCodigo" placeholder="Ej: 1045M26" readonly required>
+                  <button type="button" id="btnGenerarCodigo" class="btn-secondary">⚙️ Generar</button>
+                  <label class="privacy-tag" style="margin-left: 5px;"><input type="checkbox" id="pub_codigo" checked> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="mSexo">Sexo</label>
+                <div class="field-with-privacy">
+                  <select id="mSexo">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                  </select>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_sexo"> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="mEstadoCivil">Estado Civil</label>
+                <div class="field-with-privacy">
+                  <select id="mEstadoCivil">
+                    <option value="Soltero(a)">Soltero(a)</option>
+                    <option value="Casado(a)">Casado(a)</option>
+                    <option value="Viudo(a)">Viudo(a)</option>
+                    <option value="Divorciado(a)">Divorciado(a)</option>
+                  </select>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_estado_civil"> 👁️ Público</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="mFechaNac">Fecha de Nacimiento</label>
+                <div class="field-with-privacy">
+                  <input type="date" id="mFechaNac">
+                  <label class="privacy-tag"><input type="checkbox" id="pub_fecha_nacimiento"> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="mEdad">Edad (Calculada)</label>
+                <div class="field-with-privacy">
+                  <input type="number" id="mEdad" placeholder="Auto" readonly>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_edad"> 👁️ Público</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BLOQUE 2: ESTADO Y MINISTERIO -->
+          <div class="form-section-block">
+            <div class="form-section-title"><span>2</span> Vida Eclesiástica &amp; Fe</div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="mEstado">Estado del Miembro *</label>
+                <div class="field-with-privacy">
+                  <select id="mEstado" required>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="Apartado">Apartado</option>
+                    <option value="Visitante frecuente">Visitante frecuente</option>
+                    <option value="Trasladado a otra sede">Trasladado a otra sede</option>
+                    <option value="Retirado">Retirado</option>
+                    <option value="Fallecido">Fallecido</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_estado" checked> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="mGrado">Grado Espiritual *</label>
+                <div class="field-with-privacy">
+                  <select id="mGrado" required>
+                    <option value="Creyente">Creyente</option>
+                    <option value="Líder">Líder</option>
+                    <option value="Obrero">Obrero</option>
+                    <option value="Anciano">Anciano</option>
+                    <option value="Pastor">Pastor</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  <label class="privacy-tag"><input type="checkbox" id="pub_grado_espiritual" checked> 👁️ Público</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="mFechaReg">Fecha de Ingreso / Registro</label>
+                <div class="field-with-privacy">
+                  <input type="date" id="mFechaReg">
+                  <label class="privacy-tag"><input type="checkbox" id="pub_fecha_registro" checked> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="mFechaConv">Fecha de Conversión</label>
+                <div class="field-with-privacy">
+                  <input type="date" id="mFechaConv">
+                  <label class="privacy-tag"><input type="checkbox" id="pub_fecha_conversion"> 👁️ Público</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BLOQUE 3: ORDENANZAS -->
+          <div class="form-section-block">
+            <div class="form-section-title"><span>3</span> Ordenanzas &amp; Sacramentos</div>
+
+            <div class="checklist-grid">
+              <div class="check-col">
+                <label class="check-label"><input type="checkbox" id="mBautismo"> Bautismo en Agua</label>
+                <label class="privacy-tag"><input type="checkbox" id="pub_bautismo"> 👁️ Público</label>
+              </div>
+              <div class="check-col">
+                <label class="check-label"><input type="checkbox" id="mMatrimonio"> Matrimonio</label>
+                <label class="privacy-tag"><input type="checkbox" id="pub_matrimonio"> 👁️ Público</label>
+              </div>
+              <div class="check-col">
+                <label class="check-label"><input type="checkbox" id="mSantaCena"> Santa Cena</label>
+                <label class="privacy-tag"><input type="checkbox" id="pub_santa_cena"> 👁️ Público</label>
+              </div>
+              <div class="check-col">
+                <label class="check-label"><input type="checkbox" id="mLavamientoPies"> Lavamiento de Pies</label>
+                <label class="privacy-tag"><input type="checkbox" id="pub_lavamiento_pies"> 👁️ Público</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- BLOQUE 4: UBICACIÓN -->
+          <div class="form-section-block">
+            <div class="form-section-title"><span>4</span> Ubicación &amp; Domicilio</div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="mZona">Zona / Filial de Pertenencia</label>
+                <div class="field-with-privacy">
+                  <input type="text" id="mZona" placeholder="Ej: Sede Central / Sector 2">
+                  <label class="privacy-tag"><input type="checkbox" id="pub_zona" checked> 👁️ Público</label>
+                </div>
+              </div>
+              <div class="form-group flex-2">
+                <label for="mDireccion">Dirección Domiciliaria</label>
+                <div class="field-with-privacy">
+                  <input type="text" id="mDireccion" placeholder="Calle, número, urbanización o referencia">
+                  <label class="privacy-tag"><input type="checkbox" id="pub_direccion"> 👁️ Público</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 1.5rem;">
+            <button type="submit" id="btnGuardarMiembro" class="btn-primary">Registrar Miembro</button>
+            <button type="button" id="btnCancelarMiembro" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
+          <div id="msgMiembro" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Padrón de Miembros Registrados</h3>
+          <input type="text" id="buscarMiembroInput" placeholder="🔍 Buscar por nombre, DNI o código..." class="search-input-sm">
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarMiembros()">↻ Actualizar</button>
+        </div>
+        <div id="listaMiembrosAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando padrón...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 6: GESTIÓN DE TRANSMISIONES EN VIVO (FACEBOOK LIVE / YOUTUBE / OBS) -->
+    <section id="tab-transmisiones" class="tab-panel">
+      <div class="card-form">
+        <h2 id="titleFormTransmision">Configurar Transmisión en Directo (Facebook / OBS)</h2>
+        <p class="card-desc">Registra diferentes señales (Sede Central, Zona 2, etc.), administra tu clave para OBS Studio y elige cuál se reproducirá en el portal oficial.</p>
+
+        <form id="formTransmision">
+          <input type="hidden" id="transmisionEditId" value="">
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="transTitulo">Título o Descripción de la Señal *</label>
+              <input type="text" id="transTitulo" placeholder="Ej: En Vivo Sede Central - Culto Dominical" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="transActiva">¿Transmitir ahora en el portal?</label>
+              <select id="transActiva">
+                <option value="true">🟢 Sí, reproducir esta señal ahora</option>
+                <option value="false">⚪ No, mantener guardada en lista</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="transUrl">Enlace de Facebook Live o YouTube *</label>
+            <input type="url" id="transUrl" placeholder="https://www.facebook.com/.../videos/... o https://youtube.com/live/..." required>
+            <small style="color: #64748b; margin-top: 4px;">Pega el enlace directo de Facebook o YouTube. El reproductor web lo adaptará automáticamente en pantalla completa.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="transClaveObs">Clave de Retransmisión para OBS (Stream Key)</label>
+            <div class="code-generator-box">
+              <input type="text" id="transClaveObs" placeholder="Ej: FB-123456789-xxxx... (Pega aquí la clave de Facebook Live)">
+              <button type="button" id="btnCopiarClaveObs" class="btn-secondary">📋 Copiar Clave</button>
+            </div>
+            <small style="color: #64748b; margin-top: 4px;">Guarda aquí la clave que colocarás en OBS Studio para tenerla lista en cada emisión.</small>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 1.5rem;">
+            <button type="submit" id="btnGuardarTrans" class="btn-primary">Guardar Señal</button>
+            <button type="button" id="btnCancelarTrans" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
+          <div id="msgTransmision" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Señales Registradas &amp; Selector de Transmisión</h3>
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarTransmisiones()">↻ Actualizar</button>
+        </div>
+        <div id="listaTransmisionesAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando señales...</p>
         </div>
       </div>
     </section>

@@ -31,7 +31,7 @@
           <a href="#" id="linkYtTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="Canal de YouTube" style="display:none;">YT</a>
         </div>
         <div class="topbar-actions">
-          <a href="admin.html" id="topbarAdminLink">Acceso Administrativo &rarr;</a>
+          <a href="login.html" id="topbarAdminLink">Acceso Administrativo &rarr;</a>
         </div>
       </div>
     </div>
@@ -48,16 +48,18 @@
         </div>
       </a>
 
+      <!-- Navegación de Escritorio con Membresía Integrada -->
       <nav class="nav-desktop" aria-label="Navegación principal">
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link active">Inicio</a></li>
           <li><a href="#noticias" class="nav-link">Noticias</a></li>
           <li><a href="revistas.html" class="nav-link">Revistas</a></li>
           <li><a href="sedes.html" class="nav-link">Sedes</a></li>
+          <li><a href="membresia.html" class="nav-link">Membresía</a></li>
           <li><a href="#liderazgo" class="nav-link">Liderazgo</a></li>
           <li><a href="#envivo" class="nav-link">En Vivo</a></li>
           <li>
-            <a href="admin.html" class="btn-admin-nav" id="navAdminBtn">
+            <a href="login.html" class="btn-admin-nav" id="navAdminBtn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -74,6 +76,7 @@
     </div>
   </header>
 
+  <!-- Menú Lateral Móvil (Off-Canvas) -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <aside class="sidebar-menu" id="sidebarMenu">
     <div class="sidebar-header">
@@ -93,13 +96,14 @@
         <li><a href="#noticias">Noticias y Devocionales</a></li>
         <li><a href="revistas.html">Revistas y Ediciones</a></li>
         <li><a href="sedes.html">Nuestras Sedes</a></li>
+        <li><a href="membresia.html">Consulta de Membresía</a></li>
         <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
         <li><a href="#envivo">Transmisión En Vivo</a></li>
       </ul>
     </nav>
 
     <div class="sidebar-footer">
-      <a href="admin.html" class="btn-sidebar-admin" id="sidebarAdminBtn">
+      <a href="login.html" class="btn-sidebar-admin" id="sidebarAdminBtn">
         Panel de Administración
       </a>
     </div>
@@ -258,6 +262,7 @@
             <li><a href="#noticias">Noticias &amp; Devocionales</a></li>
             <li><a href="revistas.html">Revistas Oficiales</a></li>
             <li><a href="sedes.html">Directorio de Sedes</a></li>
+            <li><a href="membresia.html">Consulta de Membresía</a></li>
             <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
           </ul>
         </div>
@@ -268,7 +273,7 @@
             <li><a href="revistas.html">Descargar Ediciones</a></li>
             <li><a href="#envivo">Canal de Transmisión</a></li>
             <li><a href="sedes.html">Horarios de Culto</a></li>
-            <li><a href="admin.html">Acceso Administrativo</a></li>
+            <li><a href="login.html">Acceso Administrativo</a></li>
           </ul>
         </div>
 
@@ -302,7 +307,6 @@
       <button id="btnSaveVisualTexts" type="button" class="btn-vis-save" disabled>💾 Guardar Textos</button>
       <a href="admin.html" class="btn-vis-action btn-vis-panel">⚙️ Panel Admin</a>
     </div>
-    <!-- Input oculto para subir la imagen de fondo -->
     <input type="file" id="inputHeroBgFile" accept="image/*" style="display: none;">
   </div>
 

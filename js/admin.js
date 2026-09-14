@@ -1,27 +1,33 @@
 // js/admin.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. VERIFICAR AUTENTICACIÓN
+  // 1. VERIFICAR AUTENTICACIÓN Y EXPULSAR SI NO HAY SESIÓN
   const sessionStatus = document.getElementById('sessionStatus');
   const btnLogout = document.getElementById('btnLogout');
+  const adminMain = document.querySelector('.admin-container');
 
   try {
     const { data: { session }, error } = await db.auth.getSession();
+    
     if (error || !session) {
-      if (sessionStatus) {
-        sessionStatus.textContent = 'Sin sesión activa';
-        sessionStatus.style.backgroundColor = '#fef3c7';
-        sessionStatus.style.color = '#92400e';
-      }
-    } else {
-      if (sessionStatus) {
-        sessionStatus.textContent = `Conectado: ${session.user.email}`;
-        sessionStatus.style.backgroundColor = '#dcfce7';
-        sessionStatus.style.color = '#15803d';
-      }
+      window.location.replace('login.html');
+      return;
     }
+
+    if (sessionStatus) {
+      sessionStatus.textContent = `Conectado: ${session.user.email}`;
+      sessionStatus.style.backgroundColor = '#dcfce7';
+      sessionStatus.style.color = '#15803d';
+    }
+
+    if (adminMain) {
+      adminMain.style.display = 'block';
+    }
+
   } catch (err) {
     console.error('Error al comprobar sesión:', err);
+    window.location.replace('login.html');
+    return;
   }
 
   // 2. CERRAR SESIÓN
@@ -46,15 +52,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const panel = document.getElementById(targetId);
       if (panel) panel.classList.add('active');
 
-      // Cargar lista correspondiente al entrar a la pestaña
       if (targetId === 'tab-articulos') cargarArticulos();
       if (targetId === 'tab-revistas') cargarRevistas();
       if (targetId === 'tab-sedes') cargarSedes();
       if (targetId === 'tab-lideres') cargarLideres();
+      if (targetId === 'tab-miembros') cargarMiembros();
+      if (targetId === 'tab-transmisiones') cargarTransmisiones();
     });
   });
 
-  // 4. SUBIDA DE ARCHIVOS A SUPABASE STORAGE
+  // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN STORAGE
   async function subirArchivo(archivo, carpeta) {
     const ext = archivo.name.split('.').pop();
     const cleanName = `${carpeta}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
@@ -72,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return data.publicUrl;
   }
 
-  // FUNCIÓN PARA ELIMINAR ARCHIVO DEL STORAGE
   async function borrarArchivoDeStorage(url) {
     if (!url || !url.includes('/Archivos-iglesia/')) return;
     try {
@@ -84,45 +90,81 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ===================================================
-  // 5. SECCIÓN ARTÍCULOS: GUARDAR Y LISTAR/BORRAR
+  // 5. SECCIÓN ARTÍCULOS: REGISTRO Y EDICIÓN COMPLETA
   // ===================================================
+  let listaArticulosCache = [];
   const formArticulo = document.getElementById('formArticulo');
   const msgArticulo = document.getElementById('msgArticulo');
   const btnGuardarArt = document.getElementById('btnGuardarArt');
+  const btnCancelarArt = document.getElementById('btnCancelarArt');
+  const artEditId = document.getElementById('artEditId');
+  const artExistingImg = document.getElementById('artExistingImg');
+  const artFotoHelp = document.getElementById('artFotoHelp');
+  const titleFormArt = document.getElementById('titleFormArt');
+
+  if (btnCancelarArt) {
+    btnCancelarArt.addEventListener('click', () => {
+      formArticulo.reset();
+      if (artEditId) artEditId.value = '';
+      if (artExistingImg) artExistingImg.value = '';
+      btnGuardarArt.textContent = 'Publicar Artículo';
+      btnCancelarArt.style.display = 'none';
+      if (artFotoHelp) artFotoHelp.style.display = 'none';
+      if (titleFormArt) titleFormArt.textContent = 'Publicar Nuevo Artículo o Devocional';
+      msgArticulo.textContent = '';
+    });
+  }
 
   if (formArticulo) {
     formArticulo.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = artEditId ? artEditId.value : '';
       btnGuardarArt.disabled = true;
-      btnGuardarArt.textContent = 'Subiendo y guardando...';
+      btnGuardarArt.textContent = editId ? 'Actualizando artículo...' : 'Subiendo y guardando...';
       msgArticulo.textContent = '';
 
       try {
         const file = document.getElementById('artFoto').files[0];
-        if (!file) throw new Error('Selecciona una fotografía.');
+        let fotoUrl = artExistingImg ? artExistingImg.value : '';
 
-        const fotoUrl = await subirArchivo(file, 'articulos');
+        if (!editId && !file) {
+          throw new Error('Selecciona una fotografía.');
+        }
 
-        const { error } = await db.from('articulos').insert([{
+        if (file) {
+          fotoUrl = await subirArchivo(file, 'articulos');
+        }
+
+        const articuloData = {
           titulo: document.getElementById('artTitulo').value.trim(),
           categoria: document.getElementById('artCategoria').value,
           resumen: document.getElementById('artResumen').value.trim(),
           contenido: document.getElementById('artContenido').value.trim(),
           imagen_url: fotoUrl
-        }]);
+        };
 
-        if (error) throw error;
+        if (editId) {
+          const { error } = await db.from('articulos').update(articuloData).eq('id', editId);
+          if (error) throw error;
+          msgArticulo.className = 'alert-box success';
+          msgArticulo.textContent = '✓ Artículo actualizado con éxito.';
+          if (btnCancelarArt) btnCancelarArt.click();
+        } else {
+          const { error } = await db.from('articulos').insert([articuloData]);
+          if (error) throw error;
+          msgArticulo.className = 'alert-box success';
+          msgArticulo.textContent = '✓ Artículo publicado con éxito.';
+          formArticulo.reset();
+        }
 
-        msgArticulo.className = 'alert-box success';
-        msgArticulo.textContent = '✓ Artículo publicado con éxito.';
-        formArticulo.reset();
         cargarArticulos();
+        actualizarKPIs();
       } catch (err) {
         msgArticulo.className = 'alert-box error';
         msgArticulo.textContent = 'Error: ' + (err.message || err);
       } finally {
         btnGuardarArt.disabled = false;
-        btnGuardarArt.textContent = 'Publicar Artículo';
+        btnGuardarArt.textContent = (artEditId && artEditId.value) ? 'Actualizar Artículo' : 'Publicar Artículo';
       }
     });
   }
@@ -136,12 +178,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data, error } = await db.from('articulos').select('*').order('created_at', { ascending: false });
       if (error) throw error;
 
-      if (!data || data.length === 0) {
+      listaArticulosCache = data || [];
+
+      if (listaArticulosCache.length === 0) {
         contenedor.innerHTML = '<p class="text-muted">No hay artículos registrados.</p>';
         return;
       }
 
-      contenedor.innerHTML = data.map(item => `
+      contenedor.innerHTML = listaArticulosCache.map(item => `
         <div class="admin-item-row" id="art-${item.id}">
           <img src="${item.imagen_url || 'https://via.placeholder.com/70'}" class="admin-thumb" alt="foto">
           <div class="admin-item-info">
@@ -149,12 +193,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             <h4>${item.titulo}</h4>
             <small>${new Date(item.created_at).toLocaleDateString()} — ${item.resumen ? item.resumen.substring(0, 60) + '...' : ''}</small>
           </div>
-          <button type="button" class="btn-delete" onclick="eliminarArticulo(${item.id}, '${item.imagen_url}')">🗑️ Eliminar</button>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-secondary btn-sm" onclick="editarArticulo(${item.id})">✏️ Editar</button>
+            <button type="button" class="btn-delete" onclick="eliminarArticulo(${item.id}, '${item.imagen_url}')">🗑️ Eliminar</button>
+          </div>
         </div>
       `).join('');
     } catch (err) {
       contenedor.innerHTML = '<p style="color:red;">Error al cargar artículos.</p>';
     }
+  };
+
+  window.editarArticulo = function(id) {
+    const item = listaArticulosCache.find(a => a.id === id);
+    if (!item) return;
+
+    if (artEditId) artEditId.value = item.id;
+    if (artExistingImg) artExistingImg.value = item.imagen_url || '';
+    document.getElementById('artTitulo').value = item.titulo || '';
+    document.getElementById('artCategoria').value = item.categoria || '';
+    document.getElementById('artResumen').value = item.resumen || '';
+    document.getElementById('artContenido').value = item.contenido || '';
+
+    btnGuardarArt.textContent = 'Actualizar Artículo';
+    if (btnCancelarArt) btnCancelarArt.style.display = 'inline-block';
+    if (artFotoHelp) artFotoHelp.style.display = 'block';
+    if (titleFormArt) titleFormArt.textContent = 'Editar Artículo / Devocional';
+    formArticulo.scrollIntoView({ behavior: 'smooth' });
   };
 
   window.eliminarArticulo = async function(id, imgUrl) {
@@ -164,52 +229,97 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { error } = await db.from('articulos').delete().eq('id', id);
       if (error) throw error;
       document.getElementById(`art-${id}`)?.remove();
+      actualizarKPIs();
     } catch (err) {
       alert('Error al eliminar: ' + err.message);
     }
   };
 
   // ===================================================
-  // 6. SECCIÓN REVISTAS: GUARDAR Y LISTAR/BORRAR
+  // 6. SECCIÓN REVISTAS: REGISTRO Y EDICIÓN COMPLETA
   // ===================================================
+  let listaRevistasCache = [];
   const formRevista = document.getElementById('formRevista');
   const msgRevista = document.getElementById('msgRevista');
   const btnGuardarRev = document.getElementById('btnGuardarRev');
+  const btnCancelarRev = document.getElementById('btnCancelarRev');
+  const revEditId = document.getElementById('revEditId');
+  const revExistingPortada = document.getElementById('revExistingPortada');
+  const revExistingPdf = document.getElementById('revExistingPdf');
+  const revPortadaHelp = document.getElementById('revPortadaHelp');
+  const revPdfHelp = document.getElementById('revPdfHelp');
+  const titleFormRev = document.getElementById('titleFormRev');
+
+  if (btnCancelarRev) {
+    btnCancelarRev.addEventListener('click', () => {
+      formRevista.reset();
+      if (revEditId) revEditId.value = '';
+      if (revExistingPortada) revExistingPortada.value = '';
+      if (revExistingPdf) revExistingPdf.value = '';
+      btnGuardarRev.textContent = 'Guardar Revista';
+      btnCancelarRev.style.display = 'none';
+      if (revPortadaHelp) revPortadaHelp.style.display = 'none';
+      if (revPdfHelp) revPdfHelp.style.display = 'none';
+      if (titleFormRev) titleFormRev.textContent = 'Registrar Nueva Revista Digital';
+      msgRevista.textContent = '';
+    });
+  }
 
   if (formRevista) {
     formRevista.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = revEditId ? revEditId.value : '';
       btnGuardarRev.disabled = true;
-      btnGuardarRev.textContent = 'Subiendo archivos...';
+      btnGuardarRev.textContent = editId ? 'Actualizando revista...' : 'Subiendo archivos...';
       msgRevista.textContent = '';
 
       try {
         const filePortada = document.getElementById('revPortada').files[0];
         const filePdf = document.getElementById('revPdf').files[0];
-        if (!filePortada || !filePdf) throw new Error('Debes subir la foto y el PDF.');
 
-        const portadaUrl = await subirArchivo(filePortada, 'revistas/portadas');
-        const pdfUrl = await subirArchivo(filePdf, 'revistas/pdf');
+        let portadaUrl = revExistingPortada ? revExistingPortada.value : '';
+        let pdfUrl = revExistingPdf ? revExistingPdf.value : '';
 
-        const { error } = await db.from('revistas').insert([{
+        if (!editId && (!filePortada || !filePdf)) {
+          throw new Error('Debes subir la foto y el PDF.');
+        }
+
+        if (filePortada) {
+          portadaUrl = await subirArchivo(filePortada, 'revistas/portadas');
+        }
+        if (filePdf) {
+          pdfUrl = await subirArchivo(filePdf, 'revistas/pdf');
+        }
+
+        const revistaData = {
           edicion: document.getElementById('revEdicion').value.trim(),
           fecha: document.getElementById('revFecha').value,
           portada_url: portadaUrl,
           pdf_url: pdfUrl
-        }]);
+        };
 
-        if (error) throw error;
+        if (editId) {
+          const { error } = await db.from('revistas').update(revistaData).eq('id', editId);
+          if (error) throw error;
+          msgRevista.className = 'alert-box success';
+          msgRevista.textContent = '✓ Revista actualizada con éxito.';
+          if (btnCancelarRev) btnCancelarRev.click();
+        } else {
+          const { error } = await db.from('revistas').insert([revistaData]);
+          if (error) throw error;
+          msgRevista.className = 'alert-box success';
+          msgRevista.textContent = '✓ Revista publicada con éxito.';
+          formRevista.reset();
+        }
 
-        msgRevista.className = 'alert-box success';
-        msgRevista.textContent = '✓ Revista publicada con éxito.';
-        formRevista.reset();
         cargarRevistas();
+        actualizarKPIs();
       } catch (err) {
         msgRevista.className = 'alert-box error';
         msgRevista.textContent = 'Error: ' + (err.message || err);
       } finally {
         btnGuardarRev.disabled = false;
-        btnGuardarRev.textContent = 'Guardar Revista';
+        btnGuardarRev.textContent = (revEditId && revEditId.value) ? 'Actualizar Revista' : 'Guardar Revista';
       }
     });
   }
@@ -223,24 +333,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data, error } = await db.from('revistas').select('*').order('fecha', { ascending: false });
       if (error) throw error;
 
-      if (!data || data.length === 0) {
+      listaRevistasCache = data || [];
+
+      if (listaRevistasCache.length === 0) {
         contenedor.innerHTML = '<p class="text-muted">No hay revistas registradas.</p>';
         return;
       }
 
-      contenedor.innerHTML = data.map(item => `
+      contenedor.innerHTML = listaRevistasCache.map(item => `
         <div class="admin-item-row" id="rev-${item.id}">
           <img src="${item.portada_url || 'https://via.placeholder.com/70'}" class="admin-thumb" alt="portada">
           <div class="admin-item-info">
             <h4>${item.edicion}</h4>
             <small>Fecha: ${item.fecha} — <a href="${item.pdf_url}" target="_blank" style="color:#0b192c; font-weight:bold;">Ver PDF</a></small>
           </div>
-          <button type="button" class="btn-delete" onclick="eliminarRevista(${item.id}, '${item.portada_url}', '${item.pdf_url}')">🗑️ Eliminar</button>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-secondary btn-sm" onclick="editarRevista(${item.id})">✏️ Editar</button>
+            <button type="button" class="btn-delete" onclick="eliminarRevista(${item.id}, '${item.portada_url}', '${item.pdf_url}')">🗑️ Eliminar</button>
+          </div>
         </div>
       `).join('');
     } catch (err) {
       contenedor.innerHTML = '<p style="color:red;">Error al cargar revistas.</p>';
     }
+  };
+
+  window.editarRevista = function(id) {
+    const item = listaRevistasCache.find(r => r.id === id);
+    if (!item) return;
+
+    if (revEditId) revEditId.value = item.id;
+    if (revExistingPortada) revExistingPortada.value = item.portada_url || '';
+    if (revExistingPdf) revExistingPdf.value = item.pdf_url || '';
+    document.getElementById('revEdicion').value = item.edicion || '';
+    document.getElementById('revFecha').value = item.fecha || '';
+
+    btnGuardarRev.textContent = 'Actualizar Revista';
+    if (btnCancelarRev) btnCancelarRev.style.display = 'inline-block';
+    if (revPortadaHelp) revPortadaHelp.style.display = 'block';
+    if (revPdfHelp) revPdfHelp.style.display = 'block';
+    if (titleFormRev) titleFormRev.textContent = 'Editar Revista Digital';
+    formRevista.scrollIntoView({ behavior: 'smooth' });
   };
 
   window.eliminarRevista = async function(id, portadaUrl, pdfUrl) {
@@ -251,45 +384,72 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { error } = await db.from('revistas').delete().eq('id', id);
       if (error) throw error;
       document.getElementById(`rev-${id}`)?.remove();
+      actualizarKPIs();
     } catch (err) {
       alert('Error al eliminar: ' + err.message);
     }
   };
 
   // ===================================================
-  // 7. SECCIÓN SEDES: GUARDAR Y LISTAR/BORRAR
+  // 7. SECCIÓN SEDES: REGISTRO Y EDICIÓN COMPLETA
   // ===================================================
+  let listaSedesCache = [];
   const formSede = document.getElementById('formSede');
   const msgSede = document.getElementById('msgSede');
   const btnGuardarSede = document.getElementById('btnGuardarSede');
+  const btnCancelarSede = document.getElementById('btnCancelarSede');
+  const sedeEditId = document.getElementById('sedeEditId');
+  const titleFormSede = document.getElementById('titleFormSede');
+
+  if (btnCancelarSede) {
+    btnCancelarSede.addEventListener('click', () => {
+      formSede.reset();
+      if (sedeEditId) sedeEditId.value = '';
+      btnGuardarSede.textContent = 'Registrar Sede';
+      btnCancelarSede.style.display = 'none';
+      if (titleFormSede) titleFormSede.textContent = 'Agregar Nueva Sede o Filial';
+      msgSede.textContent = '';
+    });
+  }
 
   if (formSede) {
     formSede.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = sedeEditId ? sedeEditId.value : '';
       btnGuardarSede.disabled = true;
-      btnGuardarSede.textContent = 'Guardando sede...';
+      btnGuardarSede.textContent = editId ? 'Actualizando sede...' : 'Guardando sede...';
       msgSede.textContent = '';
 
       try {
-        const { error } = await db.from('sedes').insert([{
+        const sedeData = {
           nombre: document.getElementById('sedeNombre').value.trim(),
           direccion: document.getElementById('sedeDireccion').value.trim(),
           horarios: document.getElementById('sedeHorarios').value.trim(),
           telefono: document.getElementById('sedeTelefono').value.trim()
-        }]);
+        };
 
-        if (error) throw error;
+        if (editId) {
+          const { error } = await db.from('sedes').update(sedeData).eq('id', editId);
+          if (error) throw error;
+          msgSede.className = 'alert-box success';
+          msgSede.textContent = '✓ Sede actualizada con éxito.';
+          if (btnCancelarSede) btnCancelarSede.click();
+        } else {
+          const { error } = await db.from('sedes').insert([sedeData]);
+          if (error) throw error;
+          msgSede.className = 'alert-box success';
+          msgSede.textContent = '✓ Sede registrada con éxito.';
+          formSede.reset();
+        }
 
-        msgSede.className = 'alert-box success';
-        msgSede.textContent = '✓ Sede registrada con éxito.';
-        formSede.reset();
         cargarSedes();
+        actualizarKPIs();
       } catch (err) {
         msgSede.className = 'alert-box error';
         msgSede.textContent = 'Error: ' + (err.message || err);
       } finally {
         btnGuardarSede.disabled = false;
-        btnGuardarSede.textContent = 'Registrar Sede';
+        btnGuardarSede.textContent = (sedeEditId && sedeEditId.value) ? 'Actualizar Sede' : 'Registrar Sede';
       }
     });
   }
@@ -297,29 +457,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.cargarSedes = async function() {
     const contenedor = document.getElementById('listaSedesAdmin');
     if (!contenedor) return;
-    contenedor.innerHTML = '<p class="text-muted">Cargando...</p>';
+    contenedor.innerHTML = '<p class="text-muted">Cargando sedes...</p>';
 
     try {
       const { data, error } = await db.from('sedes').select('*').order('created_at', { ascending: false });
       if (error) throw error;
 
-      if (!data || data.length === 0) {
+      listaSedesCache = data || [];
+
+      if (listaSedesCache.length === 0) {
         contenedor.innerHTML = '<p class="text-muted">No hay sedes registradas.</p>';
         return;
       }
 
-      contenedor.innerHTML = data.map(item => `
+      contenedor.innerHTML = listaSedesCache.map(item => `
         <div class="admin-item-row" id="sede-${item.id}">
           <div class="admin-item-info">
             <h4>📍 ${item.nombre}</h4>
             <small>${item.direccion} | Horarios: ${item.horarios} ${item.telefono ? '| Tel: ' + item.telefono : ''}</small>
           </div>
-          <button type="button" class="btn-delete" onclick="eliminarSede(${item.id})">🗑️ Eliminar</button>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-secondary btn-sm" onclick="editarSede(${item.id})">✏️ Editar</button>
+            <button type="button" class="btn-delete" onclick="eliminarSede(${item.id})">🗑️ Eliminar</button>
+          </div>
         </div>
       `).join('');
     } catch (err) {
       contenedor.innerHTML = '<p style="color:red;">Error al cargar sedes.</p>';
     }
+  };
+
+  window.editarSede = function(id) {
+    const item = listaSedesCache.find(s => s.id === id);
+    if (!item) return;
+
+    if (sedeEditId) sedeEditId.value = item.id;
+    document.getElementById('sedeNombre').value = item.nombre || '';
+    document.getElementById('sedeDireccion').value = item.direccion || '';
+    document.getElementById('sedeHorarios').value = item.horarios || '';
+    document.getElementById('sedeTelefono').value = item.telefono || '';
+
+    btnGuardarSede.textContent = 'Actualizar Sede';
+    if (btnCancelarSede) btnCancelarSede.style.display = 'inline-block';
+    if (titleFormSede) titleFormSede.textContent = 'Editar Sede o Filial';
+    formSede.scrollIntoView({ behavior: 'smooth' });
   };
 
   window.eliminarSede = async function(id) {
@@ -328,50 +509,89 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { error } = await db.from('sedes').delete().eq('id', id);
       if (error) throw error;
       document.getElementById(`sede-${id}`)?.remove();
+      actualizarKPIs();
     } catch (err) {
       alert('Error al eliminar sede: ' + err.message);
     }
   };
 
   // ===================================================
-  // 8. SECCIÓN LÍDERES: GUARDAR Y LISTAR/BORRAR
+  // 8. SECCIÓN LÍDERES: REGISTRO Y EDICIÓN COMPLETA
   // ===================================================
+  let listaLideresCache = [];
   const formLider = document.getElementById('formLider');
   const msgLider = document.getElementById('msgLider');
   const btnGuardarLider = document.getElementById('btnGuardarLider');
+  const btnCancelarLider = document.getElementById('btnCancelarLider');
+  const liderEditId = document.getElementById('liderEditId');
+  const liderExistingFoto = document.getElementById('liderExistingFoto');
+  const liderFotoHelp = document.getElementById('liderFotoHelp');
+  const titleFormLider = document.getElementById('titleFormLider');
+
+  if (btnCancelarLider) {
+    btnCancelarLider.addEventListener('click', () => {
+      formLider.reset();
+      if (liderEditId) liderEditId.value = '';
+      if (liderExistingFoto) liderExistingFoto.value = '';
+      document.getElementById('liderOrden').value = '1';
+      btnGuardarLider.textContent = 'Registrar Líder';
+      btnCancelarLider.style.display = 'none';
+      if (liderFotoHelp) liderFotoHelp.style.display = 'none';
+      if (titleFormLider) titleFormLider.textContent = 'Registrar Pastor o Líder';
+      msgLider.textContent = '';
+    });
+  }
 
   if (formLider) {
     formLider.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = liderEditId ? liderEditId.value : '';
       btnGuardarLider.disabled = true;
-      btnGuardarLider.textContent = 'Subiendo fotografía...';
+      btnGuardarLider.textContent = editId ? 'Actualizando pastor...' : 'Subiendo fotografía...';
       msgLider.textContent = '';
 
       try {
         const file = document.getElementById('liderFoto').files[0];
-        if (!file) throw new Error('Selecciona la fotografía del pastor o líder.');
+        let fotoUrl = liderExistingFoto ? liderExistingFoto.value : '';
 
-        const fotoUrl = await subirArchivo(file, 'lideres');
+        if (!editId && !file) {
+          throw new Error('Selecciona la fotografía del pastor o líder.');
+        }
 
-        const { error } = await db.from('lideres').insert([{
+        if (file) {
+          fotoUrl = await subirArchivo(file, 'lideres');
+        }
+
+        const liderData = {
           nombre: document.getElementById('liderNombre').value.trim(),
           cargo: document.getElementById('liderCargo').value.trim(),
           orden: parseInt(document.getElementById('liderOrden').value, 10) || 1,
           foto_url: fotoUrl
-        }]);
+        };
 
-        if (error) throw error;
+        if (editId) {
+          const { error } = await db.from('lideres').update(liderData).eq('id', editId);
+          if (error) throw error;
+          msgLider.className = 'alert-box success';
+          msgLider.textContent = '✓ Pastor / Líder actualizado con éxito.';
+          if (btnCancelarLider) btnCancelarLider.click();
+        } else {
+          const { error } = await db.from('lideres').insert([liderData]);
+          if (error) throw error;
+          msgLider.className = 'alert-box success';
+          msgLider.textContent = '✓ Pastor / Líder guardado y agregado al carrusel.';
+          formLider.reset();
+          document.getElementById('liderOrden').value = '1';
+        }
 
-        msgLider.className = 'alert-box success';
-        msgLider.textContent = '✓ Pastor / Líder guardado y agregado al carrusel.';
-        formLider.reset();
         cargarLideres();
+        actualizarKPIs();
       } catch (err) {
         msgLider.className = 'alert-box error';
         msgLider.textContent = 'Error: ' + (err.message || err);
       } finally {
         btnGuardarLider.disabled = false;
-        btnGuardarLider.textContent = 'Registrar Líder';
+        btnGuardarLider.textContent = (liderEditId && liderEditId.value) ? 'Actualizar Líder' : 'Registrar Líder';
       }
     });
   }
@@ -385,24 +605,46 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data, error } = await db.from('lideres').select('*').order('orden', { ascending: true });
       if (error) throw error;
 
-      if (!data || data.length === 0) {
+      listaLideresCache = data || [];
+
+      if (listaLideresCache.length === 0) {
         contenedor.innerHTML = '<p class="text-muted">Aún no hay pastores registrados.</p>';
         return;
       }
 
-      contenedor.innerHTML = data.map(item => `
+      contenedor.innerHTML = listaLideresCache.map(item => `
         <div class="admin-item-row" id="lid-${item.id}">
           <img src="${item.foto_url || 'https://via.placeholder.com/70'}" class="admin-thumb" alt="${item.nombre}">
           <div class="admin-item-info">
             <h4>${item.nombre}</h4>
             <small><strong>Cargo:</strong> ${item.cargo} | <strong>Orden en carrusel:</strong> #${item.orden}</small>
           </div>
-          <button type="button" class="btn-delete" onclick="eliminarLider(${item.id}, '${item.foto_url}')">🗑️ Eliminar</button>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-secondary btn-sm" onclick="editarLider(${item.id})">✏️ Editar</button>
+            <button type="button" class="btn-delete" onclick="eliminarLider(${item.id}, '${item.foto_url}')">🗑️ Eliminar</button>
+          </div>
         </div>
       `).join('');
     } catch (err) {
       contenedor.innerHTML = '<p style="color:red;">Error al cargar líderes.</p>';
     }
+  };
+
+  window.editarLider = function(id) {
+    const item = listaLideresCache.find(l => l.id === id);
+    if (!item) return;
+
+    if (liderEditId) liderEditId.value = item.id;
+    if (liderExistingFoto) liderExistingFoto.value = item.foto_url || '';
+    document.getElementById('liderNombre').value = item.nombre || '';
+    document.getElementById('liderCargo').value = item.cargo || '';
+    document.getElementById('liderOrden').value = item.orden || 1;
+
+    btnGuardarLider.textContent = 'Actualizar Líder';
+    if (btnCancelarLider) btnCancelarLider.style.display = 'inline-block';
+    if (liderFotoHelp) liderFotoHelp.style.display = 'block';
+    if (titleFormLider) titleFormLider.textContent = 'Editar Pastor o Líder';
+    formLider.scrollIntoView({ behavior: 'smooth' });
   };
 
   window.eliminarLider = async function(id, fotoUrl) {
@@ -412,11 +654,544 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { error } = await db.from('lideres').delete().eq('id', id);
       if (error) throw error;
       document.getElementById(`lid-${id}`)?.remove();
+      actualizarKPIs();
     } catch (err) {
       alert('Error al eliminar líder: ' + err.message);
     }
   };
 
-  // Carga inicial automática de la primera pestaña
+  // ===================================================
+  // 9. SECCIÓN MEMBRESÍA: REGISTRO Y EDICIÓN COMPLETA
+  // ===================================================
+  let listaMiembrosCache = [];
+  const formMiembro = document.getElementById('formMiembro');
+  const msgMiembro = document.getElementById('msgMiembro');
+  const btnGuardarMiembro = document.getElementById('btnGuardarMiembro');
+  const btnCancelarEditMiembro = document.getElementById('btnCancelarMiembro') || document.getElementById('btnCancelarEditMiembro');
+  const miembroEditId = document.getElementById('miembroEditId');
+  const btnGenerarCodigo = document.getElementById('btnGenerarCodigo');
+  const mFechaNac = document.getElementById('mFechaNac');
+  const mEdad = document.getElementById('mEdad');
+  const mFechaReg = document.getElementById('mFechaReg');
+  const mEsPublico = document.getElementById('mEsPublico');
+  const lblEsPublico = document.getElementById('lblEsPublico');
+  const titleFormMiembro = document.getElementById('titleFormMiembro');
+
+  if (mFechaReg && !mFechaReg.value) {
+    mFechaReg.value = new Date().toISOString().split('T')[0];
+  }
+
+  if (mEsPublico && lblEsPublico) {
+    mEsPublico.addEventListener('change', () => {
+      if (mEsPublico.checked) {
+        lblEsPublico.textContent = '🌐 Miembro Público (Aparecerá en el portal web)';
+        lblEsPublico.style.color = '#15803d';
+      } else {
+        lblEsPublico.textContent = '🔒 Miembro Privado (Oculto totalmente en la web)';
+        lblEsPublico.style.color = '#b91c1c';
+      }
+    });
+  }
+
+  if (mFechaNac && mEdad) {
+    mFechaNac.addEventListener('change', () => {
+      if (!mFechaNac.value) {
+        mEdad.value = '';
+        return;
+      }
+      const fechaNac = new Date(mFechaNac.value);
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - fechaNac.getFullYear();
+      const mes = hoy.getMonth() - fechaNac.getMonth();
+      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+        edad--;
+      }
+      mEdad.value = edad >= 0 ? edad : 0;
+    });
+  }
+
+  if (btnGenerarCodigo) {
+    btnGenerarCodigo.addEventListener('click', async () => {
+      try {
+        const { count, error } = await db.from('miembros').select('*', { count: 'exact', head: true });
+        const correlativo = (count || 0) + 1;
+        const randomPad = Math.floor(100 + Math.random() * 900);
+        document.getElementById('mCodigo').value = `${correlativo}${randomPad}M26`;
+      } catch (e) {
+        const fallbackNum = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('mCodigo').value = `${fallbackNum}M26`;
+      }
+    });
+  }
+
+  if (btnCancelarEditMiembro) {
+    btnCancelarEditMiembro.addEventListener('click', () => {
+      formMiembro.reset();
+      if (miembroEditId) miembroEditId.value = '';
+      btnGuardarMiembro.textContent = 'Registrar Miembro';
+      btnCancelarEditMiembro.style.display = 'none';
+      if (titleFormMiembro) titleFormMiembro.textContent = 'Registro & Ficha de Membresía';
+      if (mFechaReg) mFechaReg.value = new Date().toISOString().split('T')[0];
+      if (mEsPublico) {
+        mEsPublico.checked = true;
+        if (lblEsPublico) {
+          lblEsPublico.textContent = '🌐 Miembro Público (Aparecerá en el portal web)';
+          lblEsPublico.style.color = '#15803d';
+        }
+      }
+      msgMiembro.textContent = '';
+    });
+  }
+
+  if (formMiembro) {
+    formMiembro.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editandoId = miembroEditId ? miembroEditId.value : '';
+
+      btnGuardarMiembro.disabled = true;
+      btnGuardarMiembro.textContent = editandoId ? 'Actualizando datos...' : 'Registrando miembro...';
+      msgMiembro.textContent = '';
+
+      const visibilidad = {
+        nombre: document.getElementById('pub_nombre')?.checked ?? true,
+        dni: document.getElementById('pub_dni')?.checked ?? false,
+        codigo: document.getElementById('pub_codigo')?.checked ?? true,
+        estado: document.getElementById('pub_estado')?.checked ?? true,
+        grado_espiritual: document.getElementById('pub_grado_espiritual')?.checked ?? true,
+        sexo: document.getElementById('pub_sexo')?.checked ?? false,
+        estado_civil: document.getElementById('pub_estado_civil')?.checked ?? false,
+        bautismo: document.getElementById('pub_bautismo')?.checked ?? false,
+        matrimonio: document.getElementById('pub_matrimonio')?.checked ?? false,
+        santa_cena: document.getElementById('pub_santa_cena')?.checked ?? false,
+        lavamiento_pies: document.getElementById('pub_lavamiento_pies')?.checked ?? false,
+        fecha_nacimiento: document.getElementById('pub_fecha_nacimiento')?.checked ?? false,
+        edad: document.getElementById('pub_edad')?.checked ?? false,
+        fecha_registro: document.getElementById('pub_fecha_registro')?.checked ?? true,
+        fecha_conversion: document.getElementById('pub_fecha_conversion')?.checked ?? false,
+        zona: document.getElementById('pub_zona')?.checked ?? true,
+        direccion: document.getElementById('pub_direccion')?.checked ?? false
+      };
+
+      try {
+        let codigoVal = document.getElementById('mCodigo').value.trim();
+        if (!codigoVal) {
+          codigoVal = `${Math.floor(1000 + Math.random() * 9000)}M26`;
+        }
+
+        const datosMiembro = {
+          codigo: codigoVal,
+          nombre: document.getElementById('mNombre').value.trim(),
+          dni: document.getElementById('mDni').value.trim(),
+          estado: document.getElementById('mEstado').value,
+          grado_espiritual: document.getElementById('mGrado').value,
+          sexo: document.getElementById('mSexo').value,
+          estado_civil: document.getElementById('mEstadoCivil').value,
+          bautismo: document.getElementById('mBautismo').checked,
+          matrimonio: document.getElementById('mMatrimonio').checked,
+          santa_cena: document.getElementById('mSantaCena').checked,
+          lavamiento_pies: document.getElementById('mLavamientoPies').checked,
+          fecha_nacimiento: document.getElementById('mFechaNac').value || null,
+          edad: parseInt(document.getElementById('mEdad').value, 10) || null,
+          fecha_registro: document.getElementById('mFechaReg').value || null,
+          fecha_conversion: document.getElementById('mFechaConv').value || null,
+          zona: document.getElementById('mZona').value.trim(),
+          direccion: document.getElementById('mDireccion').value.trim(),
+          es_publico: document.getElementById('mEsPublico')?.checked ?? true,
+          visibilidad: visibilidad
+        };
+
+        if (editandoId) {
+          const { error } = await db.from('miembros').update(datosMiembro).eq('id', editandoId);
+          if (error) throw error;
+          msgMiembro.className = 'alert-box success';
+          msgMiembro.textContent = `✓ Miembro "${datosMiembro.nombre}" actualizado con éxito.`;
+          if (btnCancelarEditMiembro) btnCancelarEditMiembro.click();
+        } else {
+          const { error } = await db.from('miembros').insert([datosMiembro]);
+          if (error) throw error;
+          msgMiembro.className = 'alert-box success';
+          msgMiembro.textContent = `✓ Miembro registrado con éxito. Código asignado: ${datosMiembro.codigo}`;
+          formMiembro.reset();
+          if (mFechaReg) mFechaReg.value = new Date().toISOString().split('T')[0];
+        }
+
+        cargarMiembros();
+        actualizarKPIs();
+      } catch (err) {
+        msgMiembro.className = 'alert-box error';
+        msgMiembro.textContent = 'Error: ' + (err.message || err);
+      } finally {
+        btnGuardarMiembro.disabled = false;
+        btnGuardarMiembro.textContent = (miembroEditId && miembroEditId.value) ? 'Actualizar Miembro' : 'Registrar Miembro';
+      }
+    });
+  }
+
+  window.cargarMiembros = async function() {
+    const contenedor = document.getElementById('listaMiembrosAdmin');
+    if (!contenedor) return;
+    contenedor.innerHTML = '<p class="text-muted">Cargando padrón de miembros...</p>';
+
+    try {
+      const { data, error } = await db.from('miembros').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+
+      listaMiembrosCache = data || [];
+      renderizarListaMiembros(listaMiembrosCache);
+    } catch (err) {
+      contenedor.innerHTML = '<p style="color:red;">Error al cargar miembros.</p>';
+    }
+  };
+
+  function renderizarListaMiembros(lista) {
+    const contenedor = document.getElementById('listaMiembrosAdmin');
+    if (!contenedor) return;
+
+    if (!lista || lista.length === 0) {
+      contenedor.innerHTML = '<p class="text-muted">No hay miembros registrados en el padrón.</p>';
+      return;
+    }
+
+    contenedor.innerHTML = lista.map(m => `
+      <div class="admin-item-row" id="mb-${m.id}" style="align-items: flex-start;">
+        <div class="admin-item-info" style="flex: 1;">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px; flex-wrap:wrap;">
+            <span class="badge-cat-sm" style="background:#0b192c; color:#e5a823; font-weight:bold;">${m.codigo}</span>
+            <span class="badge-cat-sm">${m.estado}</span>
+            <span class="badge-cat-sm" style="background:#f1f5f9; color:#334155;">${m.grado_espiritual}</span>
+            <span class="badge-cat-sm" style="background:${m.es_publico !== false ? '#dcfce7; color:#166534;' : '#fee2e2; color:#991b1b;'}">
+              ${m.es_publico !== false ? '🌐 Público en Web' : '🔒 Privado'}
+            </span>
+          </div>
+          <h4 style="margin: 2px 0 4px 0;">${m.nombre}</h4>
+          <small style="color: #64748b; display: block; line-height: 1.5;">
+            DNI: ${m.dni || 'N/A'} | Zona: ${m.zona || 'N/A'} | Bautismo: ${m.bautismo ? 'Sí' : 'No'} | Santa Cena: ${m.santa_cena ? 'Sí' : 'No'}<br>
+            Dirección: ${m.direccion || 'Sin registrar'}
+          </small>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary btn-sm" onclick="editarMiembro(${m.id})">✏️ Editar</button>
+          <button type="button" class="btn-secondary btn-sm" onclick="toggleVisibilidadMiembro(${m.id}, ${!(m.es_publico !== false)})">
+            ${m.es_publico !== false ? '🔒 Privado' : '🌐 Público'}
+          </button>
+          <button type="button" class="btn-delete" onclick="eliminarMiembro(${m.id})">🗑️ Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.editarMiembro = function(id) {
+    const m = listaMiembrosCache.find(x => x.id === id);
+    if (!m) return;
+
+    if (miembroEditId) miembroEditId.value = m.id;
+    document.getElementById('mNombre').value = m.nombre || '';
+    document.getElementById('mDni').value = m.dni || '';
+    document.getElementById('mCodigo').value = m.codigo || '';
+    document.getElementById('mEstado').value = m.estado || 'Activo';
+    document.getElementById('mGrado').value = m.grado_espiritual || 'Creyente';
+    document.getElementById('mSexo').value = m.sexo || 'Masculino';
+    document.getElementById('mEstadoCivil').value = m.estado_civil || 'Soltero(a)';
+    document.getElementById('mBautismo').checked = Boolean(m.bautismo);
+    document.getElementById('mMatrimonio').checked = Boolean(m.matrimonio);
+    document.getElementById('mSantaCena').checked = Boolean(m.santa_cena);
+    document.getElementById('mLavamientoPies').checked = Boolean(m.lavamiento_pies);
+    document.getElementById('mFechaNac').value = m.fecha_nacimiento || '';
+    document.getElementById('mEdad').value = m.edad || '';
+    document.getElementById('mFechaReg').value = m.fecha_registro || '';
+    document.getElementById('mFechaConv').value = m.fecha_conversion || '';
+    document.getElementById('mZona').value = m.zona || '';
+    document.getElementById('mDireccion').value = m.direccion || '';
+
+    const esPub = m.es_publico !== false;
+    if (mEsPublico) mEsPublico.checked = esPub;
+    if (lblEsPublico) {
+      lblEsPublico.textContent = esPub ? '🌐 Miembro Público (Aparecerá en el portal web)' : '🔒 Miembro Privado (Oculto totalmente en la web)';
+      lblEsPublico.style.color = esPub ? '#15803d' : '#b91c1c';
+    }
+
+    const vis = m.visibilidad || {};
+    const setCheck = (idCheck, val) => {
+      const el = document.getElementById(idCheck);
+      if (el) el.checked = Boolean(val);
+    };
+
+    setCheck('pub_nombre', vis.nombre ?? true);
+    setCheck('pub_dni', vis.dni ?? false);
+    setCheck('pub_codigo', vis.codigo ?? true);
+    setCheck('pub_estado', vis.estado ?? true);
+    setCheck('pub_grado_espiritual', vis.grado_espiritual ?? true);
+    setCheck('pub_sexo', vis.sexo ?? false);
+    setCheck('pub_estado_civil', vis.estado_civil ?? false);
+    setCheck('pub_bautismo', vis.bautismo ?? false);
+    setCheck('pub_matrimonio', vis.matrimonio ?? false);
+    setCheck('pub_santa_cena', vis.santa_cena ?? false);
+    setCheck('pub_lavamiento_pies', vis.lavamiento_pies ?? false);
+    setCheck('pub_fecha_nacimiento', vis.fecha_nacimiento ?? false);
+    setCheck('pub_edad', vis.edad ?? false);
+    setCheck('pub_fecha_registro', vis.fecha_registro ?? true);
+    setCheck('pub_fecha_conversion', vis.fecha_conversion ?? false);
+    setCheck('pub_zona', vis.zona ?? true);
+    setCheck('pub_direccion', vis.direccion ?? false);
+
+    btnGuardarMiembro.textContent = 'Actualizar Miembro';
+    if (btnCancelarEditMiembro) btnCancelarEditMiembro.style.display = 'inline-block';
+    if (titleFormMiembro) titleFormMiembro.textContent = 'Editar Registro de Membresía';
+    formMiembro.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.toggleVisibilidadMiembro = async function(id, nuevoEstado) {
+    try {
+      const { error } = await db.from('miembros').update({ es_publico: nuevoEstado }).eq('id', id);
+      if (error) throw error;
+      cargarMiembros();
+    } catch (err) {
+      alert('Error al actualizar visibilidad: ' + err.message);
+    }
+  };
+
+  window.eliminarMiembro = async function(id) {
+    if (!confirm('¿Seguro que deseas eliminar a este miembro del padrón?')) return;
+    try {
+      const { error } = await db.from('miembros').delete().eq('id', id);
+      if (error) throw error;
+      document.getElementById(`mb-${id}`)?.remove();
+      actualizarKPIs();
+    } catch (err) {
+      alert('Error al eliminar miembro: ' + err.message);
+    }
+  };
+
+  const buscarInput = document.getElementById('buscarMiembroInput');
+  if (buscarInput) {
+    buscarInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const filtrados = listaMiembrosCache.filter(m => 
+        (m.nombre && m.nombre.toLowerCase().includes(query)) ||
+        (m.dni && m.dni.includes(query)) ||
+        (m.codigo && m.codigo.toLowerCase().includes(query))
+      );
+      renderizarListaMiembros(filtrados);
+    });
+  }
+
+  // ===================================================
+  // 10. SECCIÓN TRANSMISIONES EN VIVO (FACEBOOK / OBS)
+  // ===================================================
+  let listaTransmisionesCache = [];
+  const formTransmision = document.getElementById('formTransmision');
+  const msgTransmision = document.getElementById('msgTransmision');
+  const btnGuardarTrans = document.getElementById('btnGuardarTrans');
+  const btnCancelarTrans = document.getElementById('btnCancelarTrans');
+  const transmisionEditId = document.getElementById('transmisionEditId');
+  const btnCopiarClaveObs = document.getElementById('btnCopiarClaveObs');
+  const titleFormTransmision = document.getElementById('titleFormTransmision');
+
+  if (btnCopiarClaveObs) {
+    btnCopiarClaveObs.addEventListener('click', () => {
+      const clave = document.getElementById('transClaveObs').value.trim();
+      if (!clave) {
+        alert('No hay ninguna clave escrita.');
+        return;
+      }
+      navigator.clipboard.writeText(clave);
+      btnCopiarClaveObs.textContent = '✓ ¡Copiada!';
+      setTimeout(() => btnCopiarClaveObs.textContent = '📋 Copiar Clave', 2000);
+    });
+  }
+
+  if (btnCancelarTrans) {
+    btnCancelarTrans.addEventListener('click', () => {
+      formTransmision.reset();
+      transmisionEditId.value = '';
+      btnGuardarTrans.textContent = 'Guardar Señal';
+      btnCancelarTrans.style.display = 'none';
+      if (titleFormTransmision) titleFormTransmision.textContent = 'Configurar Transmisión en Directo (Facebook / OBS)';
+      msgTransmision.textContent = '';
+    });
+  }
+
+  if (formTransmision) {
+    formTransmision.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = transmisionEditId.value;
+      const esActiva = document.getElementById('transActiva').value === 'true';
+
+      btnGuardarTrans.disabled = true;
+      btnGuardarTrans.textContent = editId ? 'Actualizando señal...' : 'Guardando señal...';
+      msgTransmision.textContent = '';
+
+      try {
+        // Si se marca como activa, desactivar las demás para evitar conflictos en web
+        if (esActiva) {
+          await db.from('transmisiones_en_vivo').update({ activa: false }).neq('id', 0);
+        }
+
+        const dataTrans = {
+          titulo: document.getElementById('transTitulo').value.trim(),
+          url: document.getElementById('transUrl').value.trim(),
+          clave_obs: document.getElementById('transClaveObs').value.trim(),
+          activa: esActiva
+        };
+
+        if (editId) {
+          const { error } = await db.from('transmisiones_en_vivo').update(dataTrans).eq('id', editId);
+          if (error) throw error;
+          msgTransmision.className = 'alert-box success';
+          msgTransmision.textContent = '✓ Transmisión actualizada con éxito.';
+          btnCancelarTrans.click();
+        } else {
+          const { error } = await db.from('transmisiones_en_vivo').insert([dataTrans]);
+          if (error) throw error;
+          msgTransmision.className = 'alert-box success';
+          msgTransmision.textContent = '✓ Transmisión guardada con éxito.';
+          formTransmision.reset();
+        }
+
+        cargarTransmisiones();
+        actualizarKPIs();
+      } catch (err) {
+        msgTransmision.className = 'alert-box error';
+        msgTransmision.textContent = 'Error: ' + (err.message || err);
+      } finally {
+        btnGuardarTrans.disabled = false;
+        btnGuardarTrans.textContent = transmisionEditId.value ? 'Actualizar Señal' : 'Guardar Señal';
+      }
+    });
+  }
+
+  window.cargarTransmisiones = async function() {
+    const contenedor = document.getElementById('listaTransmisionesAdmin');
+    if (!contenedor) return;
+    contenedor.innerHTML = '<p class="text-muted">Cargando señales...</p>';
+
+    try {
+      const { data, error } = await db.from('transmisiones_en_vivo').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+
+      listaTransmisionesCache = data || [];
+
+      if (listaTransmisionesCache.length === 0) {
+        contenedor.innerHTML = '<p class="text-muted">No hay transmisiones registradas aún.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = listaTransmisionesCache.map(t => {
+        const esFb = t.url.includes('facebook.com') || t.url.includes('fb.watch');
+        return `
+          <div class="admin-item-row" id="trans-${t.id}" style="border-left: 5px solid ${t.activa ? '#10b981' : '#cbd5e1'};">
+            <div class="admin-item-info" style="flex: 1;">
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:4px; flex-wrap:wrap;">
+                <span class="badge-cat-sm" style="background:${esFb ? '#1877f2' : '#ff0000'}; color:#ffffff;">
+                  ${esFb ? 'Facebook Live' : 'YouTube Live'}
+                </span>
+                <span class="badge-cat-sm" style="background:${t.activa ? '#dcfce7; color:#15803d;' : '#f1f5f9; color:#64748b;'}">
+                  ${t.activa ? '🟢 REPRODUCIÉNDOSE EN WEB' : 'Inactiva'}
+                </span>
+              </div>
+              <h4 style="margin: 2px 0;">${t.titulo}</h4>
+              <small style="display:block; word-break:break-all; color:#475569;">
+                <strong>Enlace:</strong> <a href="${t.url}" target="_blank" style="color:#0b192c;">${t.url}</a>
+              </small>
+              ${t.clave_obs ? `
+                <small style="display:inline-block; margin-top:4px; background:#f8fafc; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0;">
+                  <strong>Clave OBS:</strong> ${t.clave_obs}
+                </small>
+              ` : ''}
+            </div>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              ${!t.activa ? `
+                <button type="button" class="btn-primary btn-sm" onclick="activarTransmision(${t.id})">📡 Activar en Web</button>
+              ` : ''}
+              ${t.clave_obs ? `
+                <button type="button" class="btn-secondary btn-sm" onclick="copiarTexto('${t.clave_obs}')">📋 Copiar OBS</button>
+              ` : ''}
+              <button type="button" class="btn-secondary btn-sm" onclick="editarTransmision(${t.id})">✏️ Editar</button>
+              <button type="button" class="btn-delete" onclick="eliminarTransmision(${t.id})">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      contenedor.innerHTML = '<p style="color:red;">Error al cargar transmisiones.</p>';
+    }
+  };
+
+  window.activarTransmision = async function(id) {
+    try {
+      await db.from('transmisiones_en_vivo').update({ activa: false }).neq('id', 0);
+      const { error } = await db.from('transmisiones_en_vivo').update({ activa: true }).eq('id', id);
+      if (error) throw error;
+      cargarTransmisiones();
+    } catch (err) {
+      alert('Error al activar transmisión: ' + err.message);
+    }
+  };
+
+  window.copiarTexto = function(texto) {
+    navigator.clipboard.writeText(texto);
+    alert('✓ Clave de OBS copiada al portapapeles.');
+  };
+
+  window.editarTransmision = function(id) {
+    const t = listaTransmisionesCache.find(x => x.id === id);
+    if (!t) return;
+
+    transmisionEditId.value = t.id;
+    document.getElementById('transTitulo').value = t.titulo || '';
+    document.getElementById('transUrl').value = t.url || '';
+    document.getElementById('transClaveObs').value = t.clave_obs || '';
+    document.getElementById('transActiva').value = t.activa ? 'true' : 'false';
+
+    btnGuardarTrans.textContent = 'Actualizar Señal';
+    btnCancelarTrans.style.display = 'inline-block';
+    if (titleFormTransmision) titleFormTransmision.textContent = 'Editar Transmisión';
+    formTransmision.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.eliminarTransmision = async function(id) {
+    if (!confirm('¿Deseas eliminar esta transmisión?')) return;
+    try {
+      const { error } = await db.from('transmisiones_en_vivo').delete().eq('id', id);
+      if (error) throw error;
+      document.getElementById(`trans-${id}`)?.remove();
+      actualizarKPIs();
+    } catch (err) {
+      alert('Error al eliminar: ' + err.message);
+    }
+  };
+
+  // ===================================================
+  // 11. CARGA DE CONTADORES (KPIS) Y PRIMERA VISTA
+  // ===================================================
+  async function actualizarKPIs() {
+    try {
+      const [art, rev, sed, lid, mie, tra] = await Promise.all([
+        db.from('articulos').select('*', { count: 'exact', head: true }),
+        db.from('revistas').select('*', { count: 'exact', head: true }),
+        db.from('sedes').select('*', { count: 'exact', head: true }),
+        db.from('lideres').select('*', { count: 'exact', head: true }),
+        db.from('miembros').select('*', { count: 'exact', head: true }),
+        db.from('transmisiones_en_vivo').select('*', { count: 'exact', head: true })
+      ]);
+
+      const setVal = (id, count) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = count !== null ? count : 0;
+      };
+
+      setVal('kpiArticulos', art.count);
+      setVal('kpiRevistas', rev.count);
+      setVal('kpiSedes', sed.count);
+      setVal('kpiLideres', lid.count);
+      setVal('kpiMiembros', mie.count);
+      setVal('kpiTransmisiones', tra ? tra.count : 0);
+    } catch (e) {
+      console.warn('Error calculando KPIs:', e);
+    }
+  }
+
+  // Inicialización
+  actualizarKPIs();
   cargarArticulos();
 });

@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initArticleModal();
   initMagazineModal();
 
-  // Sistema de edición visual en vivo y carga de ajustes dinámicos
+  // Carga de transmisión activa y ajustes dinámicos
   loadAjustes();
   setupVisualEditor();
 });
@@ -304,7 +304,6 @@ async function loadTeamCarousel() {
       }
     }
 
-    // Si aún no hay líderes registrados en la base de datos
     if (leaders.length === 0) {
       track.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem; width:100%;">Próximamente se presentará al cuerpo pastoral.</p>';
       dotsContainer.innerHTML = '';
@@ -315,7 +314,6 @@ async function loadTeamCarousel() {
     track.innerHTML = '';
     dotsContainer.innerHTML = '';
 
-    // Renderizar tarjetas en la pista
     leadersData.forEach((leader, idx) => {
       const card = document.createElement('div');
       card.className = 'carousel-card';
@@ -340,7 +338,6 @@ async function loadTeamCarousel() {
 
       track.appendChild(card);
 
-      // Renderizar punto/indicador
       const dot = document.createElement('button');
       dot.className = `carousel-dot ${idx === 0 ? 'active' : ''}`;
       dot.setAttribute('aria-label', `Ver a ${leader.nombre}`);
@@ -362,7 +359,6 @@ async function loadTeamCarousel() {
       });
     }
 
-    // Navegación por teclado cuando la sección es visible
     document.addEventListener('keydown', (e) => {
       const leadershipSection = document.getElementById('liderazgo');
       if (!leadershipSection) return;
@@ -377,7 +373,6 @@ async function loadTeamCarousel() {
       }
     });
 
-    // Soporte táctil móvil (Swipe)
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -497,7 +492,7 @@ function stopAutoplay() {
    7. CATÁLOGO DE REVISTAS Y VISOR DE DOBLE PÁGINA CON ANIMACIÓN 3D
    ========================================================================== */
 let pdfDoc = null;
-let currentSpreadIndex = 1; // Página izquierda actual
+let currentSpreadIndex = 1;
 let isRendering = false;
 
 function initPdfWorker() {
@@ -584,7 +579,6 @@ function initMagazineModal() {
     });
   }
 
-  // Soporte de Pantalla Completa
   if (btnFullscreen) {
     btnFullscreen.addEventListener('click', () => {
       const viewer = document.getElementById('magazineViewerBox');
@@ -600,12 +594,10 @@ function initMagazineModal() {
       if (fsText) {
         fsText.textContent = document.fullscreenElement ? 'Salir Pantalla' : 'Pantalla Completa';
       }
-      // Re-renderizar para ajustar la resolución de la pantalla completa
       renderSpread();
     });
   }
 
-  // Navegación por teclado (← / → / Esc)
   window.addEventListener('keydown', (e) => {
     if (modal && modal.style.display === 'flex') {
       if (e.key === 'ArrowLeft') cambiarPagina(-2);
@@ -653,14 +645,12 @@ async function renderSpread() {
 
   const totalPages = pdfDoc.numPages;
 
-  // Si estamos en la página 1 (Portada solitaria)
   if (currentSpreadIndex === 1) {
     canvasLeft.style.display = 'none';
     if (spine) spine.style.display = 'none';
     await renderSingleCanvas(currentSpreadIndex, canvasRight);
     if (counter) counter.textContent = `Portada (1 / ${totalPages})`;
   } else {
-    // Modo pliego doble abierto
     canvasLeft.style.display = 'block';
     if (spine) spine.style.display = 'block';
 
@@ -674,7 +664,6 @@ async function renderSpread() {
       await renderSingleCanvas(pageR, canvasRight);
       if (counter) counter.textContent = `${pageL}-${pageR} / ${totalPages}`;
     } else {
-      // Última página sola (contraportada)
       canvasRight.style.display = 'none';
       if (counter) counter.textContent = `${pageL} / ${totalPages}`;
     }
@@ -691,7 +680,6 @@ async function renderSingleCanvas(pageNumber, canvas) {
     const page = await pdfDoc.getPage(pageNumber);
     const ctx = canvas.getContext('2d');
     
-    // Altura óptima en relación a la pantalla actual
     const targetHeight = window.innerHeight * (document.fullscreenElement ? 0.88 : 0.78);
     const unscaledViewport = page.getViewport({ scale: 1 });
     const scale = targetHeight / unscaledViewport.height;
@@ -720,12 +708,11 @@ function cambiarPagina(delta) {
     if (targetIndex < 1) return;
   }
 
-  // Activar animación 3D de vuelta de hoja
   const flipLayer = document.getElementById('pageFlipLayer');
   if (flipLayer) {
     const animClass = delta > 0 ? 'anim-flip-forward' : 'anim-flip-backward';
     flipLayer.classList.remove('anim-flip-forward', 'anim-flip-backward');
-    void flipLayer.offsetWidth; // Reiniciar animación
+    void flipLayer.offsetWidth;
     flipLayer.classList.add(animClass);
 
     setTimeout(() => {
@@ -861,78 +848,148 @@ function escapeHtml(str) {
 }
 
 /* ==========================================================================
-   10. SISTEMA DE EDICIÓN VISUAL TOTAL, IMAGEN DE FONDO Y REDES SOCIALES
+   10. ADAPTADOR INTELIGENTE DE TRANSMISIONES (FACEBOOK LIVE & YOUTUBE)
+   ========================================================================== */
+function generarEmbedUrl(url) {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+
+  // 1. FACEBOOK LIVE & VIDEOS
+  if (cleanUrl.includes('facebook.com') || cleanUrl.includes('fb.watch')) {
+    
+    // Si viene de Facebook Live Producer (/live/producer/ID/), convertir al formato público
+    if (cleanUrl.includes('/live/producer/')) {
+      const match = cleanUrl.match(/\/producer\/(\d+)/);
+      if (match && match[1]) {
+        cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+      }
+    }
+
+    // Limpiar parámetros de tracking (?mibextid, ?ref, etc.) si es un enlace estándar
+    try {
+      const urlObj = new URL(cleanUrl);
+      if (urlObj.pathname.includes('/videos/') || urlObj.pathname.includes('/watch')) {
+        const vParam = urlObj.searchParams.get('v');
+        if (vParam) {
+          cleanUrl = `https://www.facebook.com/watch/?v=${vParam}`;
+        }
+      }
+    } catch (e) {}
+
+    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(cleanUrl)}&show_text=0&width=720&autoplay=1`;
+  }
+
+  // 2. YOUTUBE (Live, Shorts, Watch o youtu.be)
+  if (cleanUrl.includes('youtu.be/')) {
+    const id = cleanUrl.split('youtu.be/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+  }
+  if (cleanUrl.includes('youtube.com/watch')) {
+    try {
+      const urlObj = new URL(cleanUrl);
+      const id = urlObj.searchParams.get('v');
+      if (id) return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+    } catch (e) {}
+  }
+  if (cleanUrl.includes('youtube.com/live/')) {
+    const id = cleanUrl.split('youtube.com/live/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+  }
+  if (cleanUrl.includes('youtube.com/embed/')) {
+    return cleanUrl.includes('?') ? cleanUrl : `${cleanUrl}?autoplay=1&rel=0`;
+  }
+
+  return cleanUrl;
+}
+
+// Carga prioritaria de la señal activa desde la tabla 'transmisiones_en_vivo'
+async function loadTransmisionEnVivo() {
+  const iframeVideo = document.getElementById('liveVideoIframe');
+  const titleEl = document.querySelector('[data-editable="card_video_title"]') || document.getElementById('cardVideoTitle');
+  if (!iframeVideo || !supabaseClient) return false;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('transmisiones_en_vivo')
+      .select('*')
+      .eq('activa', true)
+      .limit(1);
+
+    if (!error && data && data.length > 0) {
+      const trans = data[0];
+      iframeVideo.src = generarEmbedUrl(trans.url);
+      iframeVideo.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
+      if (titleEl && trans.titulo) {
+        titleEl.textContent = trans.titulo;
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn('Consulta de transmisiones en vivo omitida o tabla en actualización:', err);
+  }
+  return false;
+}
+
+/* ==========================================================================
+   11. SISTEMA DE EDICIÓN VISUAL TOTAL, IMAGEN DE FONDO Y REDES SOCIALES
    ========================================================================== */
 let ajustesData = null;
 let isEditingActive = false;
-
-function formatYoutubeEmbed(url) {
-  if (!url) return '';
-  if (url.includes('/embed/')) return url;
-  if (url.includes('youtu.be/')) {
-    const id = url.split('youtu.be/')[1].split('?')[0];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-  if (url.includes('watch?v=')) {
-    const id = url.split('watch?v=')[1].split('&')[0];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-  if (url.includes('/live/')) {
-    const id = url.split('/live/')[1].split('?')[0];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-  return url;
-}
 
 async function loadAjustes() {
   if (!supabaseClient) return;
   try {
     const { data, error } = await supabaseClient.from('ajustes').select('*').eq('id', 1).single();
-    if (error) throw error;
-    if (!data) return;
+    if (error && error.code !== 'PGRST116') throw error;
 
-    ajustesData = data;
+    if (data) {
+      ajustesData = data;
 
-    // 1. Cargar imagen de fondo del Hero
-    if (data.hero_bg_url) {
-      const heroSec = document.getElementById('heroEditorialSection');
-      if (heroSec) heroSec.style.backgroundImage = `url("${data.hero_bg_url}")`;
+      // 1. Imagen de fondo del Hero
+      if (data.hero_bg_url) {
+        const heroSec = document.getElementById('heroEditorialSection');
+        if (heroSec) heroSec.style.backgroundImage = `url("${data.hero_bg_url}")`;
+      }
+
+      // 2. Cargar todos los textos personalizados guardados
+      if (data.textos_custom && typeof data.textos_custom === 'object') {
+        Object.keys(data.textos_custom).forEach(key => {
+          const el = document.querySelector(`[data-editable="${key}"]`);
+          if (el && data.textos_custom[key]) {
+            el.innerHTML = data.textos_custom[key];
+          }
+        });
+      }
+
+      // Fallback de retrocompatibilidad para textos
+      const elVersiculo = document.getElementById('editableVersiculo');
+      const elTitulo = document.getElementById('editableHeroTitle');
+      const elDesc = document.getElementById('editableHeroDesc');
+      if (elVersiculo && data.versiculo && !data.textos_custom?.topbar_verse) elVersiculo.textContent = data.versiculo;
+      if (elTitulo && data.hero_titulo && !data.textos_custom?.hero_titulo) elTitulo.innerHTML = data.hero_titulo;
+      if (elDesc && data.hero_descripcion && !data.textos_custom?.hero_desc) elDesc.textContent = data.hero_descripcion;
+
+      // 3. Radio continua
+      const audioRadio = document.getElementById('audioRadio');
+      const sourceRadio = document.getElementById('liveRadioSource');
+      if (audioRadio && sourceRadio && data.radio_url) {
+        sourceRadio.src = data.radio_url;
+        audioRadio.load();
+      }
+
+      // 4. Redes sociales
+      aplicarRedSocial('linkFbTop', 'linkFbFooter', data.facebook_url);
+      aplicarRedSocial('linkTkTop', 'linkTkFooter', data.tiktok_url);
+      aplicarRedSocial('linkIgTop', 'linkIgFooter', data.instagram_url);
+      aplicarRedSocial('linkYtTop', 'linkYtFooter', data.youtube_canal);
     }
 
-    // 2. Cargar todos los textos personalizados guardados
-    if (data.textos_custom && typeof data.textos_custom === 'object') {
-      Object.keys(data.textos_custom).forEach(key => {
-        const el = document.querySelector(`[data-editable="${key}"]`);
-        if (el && data.textos_custom[key]) {
-          el.innerHTML = data.textos_custom[key];
-        }
-      });
-    }
-
-    // Fallback de retrocompatibilidad
-    const elVersiculo = document.getElementById('editableVersiculo');
-    const elTitulo = document.getElementById('editableHeroTitle');
-    const elDesc = document.getElementById('editableHeroDesc');
-    if (elVersiculo && data.versiculo && !data.textos_custom?.topbar_verse) elVersiculo.textContent = data.versiculo;
-    if (elTitulo && data.hero_titulo && !data.textos_custom?.hero_titulo) elTitulo.innerHTML = data.hero_titulo;
-    if (elDesc && data.hero_descripcion && !data.textos_custom?.hero_desc) elDesc.textContent = data.hero_descripcion;
-
-    // 3. Cargar transmisiones
+    // 5. Cargar señal de video: Prioridad a transmisiones_en_vivo y fallback a ajustes
+    const transActivaCargada = await loadTransmisionEnVivo();
     const iframeVideo = document.getElementById('liveVideoIframe');
-    const audioRadio = document.getElementById('audioRadio');
-    const sourceRadio = document.getElementById('liveRadioSource');
-
-    if (iframeVideo && data.youtube_url) iframeVideo.src = formatYoutubeEmbed(data.youtube_url);
-    if (audioRadio && sourceRadio && data.radio_url) {
-      sourceRadio.src = data.radio_url;
-      audioRadio.load();
+    if (!transActivaCargada && iframeVideo && data?.youtube_url) {
+      iframeVideo.src = generarEmbedUrl(data.youtube_url);
     }
-
-    // 4. Cargar enlaces de redes sociales
-    aplicarRedSocial('linkFbTop', 'linkFbFooter', data.facebook_url);
-    aplicarRedSocial('linkTkTop', 'linkTkFooter', data.tiktok_url);
-    aplicarRedSocial('linkIgTop', 'linkIgFooter', data.instagram_url);
-    aplicarRedSocial('linkYtTop', 'linkYtFooter', data.youtube_canal);
 
   } catch (err) {
     console.error('Error cargando ajustes:', err);
@@ -994,7 +1051,7 @@ async function setupVisualEditor() {
 
   if (visualBar) visualBar.style.display = 'flex';
 
-  // 1. ALTERNAR EDICIÓN DE TODOS LOS ELEMENTOS CON data-editable
+  // 1. Alternar edición de textos con data-editable
   if (btnToggleEdit) {
     btnToggleEdit.addEventListener('click', () => {
       isEditingActive = !isEditingActive;
@@ -1010,7 +1067,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // 2. GUARDAR TODOS LOS TEXTOS EN SUPABASE
+  // 2. Guardar textos editados en Supabase
   if (btnSaveVisualTexts) {
     btnSaveVisualTexts.addEventListener('click', async () => {
       btnSaveVisualTexts.disabled = true;
@@ -1046,7 +1103,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // 3. CAMBIAR IMAGEN DE FONDO DE LA PORTADA
+  // 3. Cambiar fondo del Hero
   if (btnChangeHeroBg && inputHeroBgFile) {
     btnChangeHeroBg.addEventListener('click', () => {
       inputHeroBgFile.click();
@@ -1075,7 +1132,6 @@ async function setupVisualEditor() {
 
         const nuevaImgUrl = urlData.publicUrl;
 
-        // Guardar la URL en la tabla ajustes
         const { error: dbErr } = await supabaseClient.from('ajustes').upsert({
           id: 1,
           hero_bg_url: nuevaImgUrl
@@ -1096,7 +1152,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // 4. MODAL REDES SOCIALES
+  // 4. Modal de redes sociales
   if (btnOpenSocialModal && modalSocials) {
     btnOpenSocialModal.addEventListener('click', () => {
       if (ajustesData) {
@@ -1146,7 +1202,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // 5. MODAL TRANSMISIONES
+  // 5. Modal de transmisiones en vivo
   if (btnOpenStreamModal && modalStreams) {
     btnOpenStreamModal.addEventListener('click', () => {
       if (ajustesData) {
