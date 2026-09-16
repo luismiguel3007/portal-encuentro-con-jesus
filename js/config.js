@@ -1,12 +1,11 @@
 // js/config.js
-// Configuración e inicialización del cliente de Supabase para la Asociación Cristiana Un Encuentro con Jesús
+// Configuración e inicialización de Supabase y Cloudflare R2
 
 const SUPABASE_URL = 'https://uwfdsuhrfuqlcsucbtts.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_IFDwx-p7yBjRTfdAyllJYg_tiDvZ4jX';
-const STORAGE_BUCKET = 'archivos-iglesia';
 
 if (typeof window.supabase === 'undefined') {
-  console.error('El script del SDK de Supabase no ha sido cargado. Asegúrate de incluir la librería CDN de Supabase.');
+  console.error('El script del SDK de Supabase no ha sido cargado.');
 }
 
 // Inicialización del cliente Supabase
@@ -15,7 +14,12 @@ const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // Exposición global segura
 window.db = db;
 window.SUPABASE_CONFIG = {
-  url: SUPABASE_URL,
-  bucket: STORAGE_BUCKET
+  url: SUPABASE_URL
 };
 
+// CONFIGURACIÓN CLOUDFLARE R2
+window.R2_CONFIG = {
+  workerUrl: 'https://r2-iglesia-api.luismi-lmas75.workers.dev',
+  publicUrl: 'https://pub-9b1857fb52164101a7bcecbfeb41ef8f.r2.dev',
+  apiKey: 'ENCUENTRO_JESUS_R2_2026'
+};

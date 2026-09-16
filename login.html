@@ -5,156 +5,369 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acceso Administrativo | Un Encuentro con Jesús</title>
   
-  <!-- Google Fonts: Inter -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Estilos del Administrador y Login -->
-  <link rel="stylesheet" href="css/admin.css">
-
-  <!-- Supabase JS Client v2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="admin-body">
 
-  <div class="login-page">
+  <style>
+    :root {
+      --navy-dark: #07101c;
+      --navy-main: #0b192c;
+      --navy-light: #1e3e62;
+      --gold-main: #e5a823;
+      --gold-hover: #d19416;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #1e3e62 0%, #0b192c 55%, #050b14 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      color: var(--text-dark);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Detalle sutil de fondo */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(229, 168, 35, 0.08) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 2.8rem 2.2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border-top: 4px solid var(--gold-main);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--gold-main) 0%, #b88210 100%);
+      color: var(--navy-main);
+      font-weight: 900;
+      font-size: 1.4rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 16px rgba(229, 168, 35, 0.35);
+    }
+
+    .login-header h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--navy-main);
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .login-header p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .form-group {
+      margin-bottom: 1.3rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 7px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      width: 18px;
+      height: 18px;
+      color: #94a3b8;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      background-color: #f8fafc;
+      border: 1.5px solid var(--border-color);
+      border-radius: 9px;
+      font-size: 0.92rem;
+      color: var(--text-dark);
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+      background-color: #ffffff;
+      border-color: var(--gold-main);
+      box-shadow: 0 0 0 4px rgba(229, 168, 35, 0.16);
+    }
+
+    .input-field:focus + .input-icon,
+    .input-wrapper:focus-within .input-icon {
+      color: var(--gold-main);
+    }
+
+    .btn-toggle-pass {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+    }
+
+    .btn-toggle-pass:hover {
+      color: var(--navy-main);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold-main) 0%, var(--gold-hover) 100%);
+      color: var(--navy-main);
+      border: none;
+      padding: 13px;
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(229, 168, 35, 0.35);
+      transition: all 0.2s ease;
+      margin-top: 0.6rem;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(229, 168, 35, 0.45);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert-box {
+      margin-top: 1.2rem;
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .alert-box.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .alert-box.success {
+      display: block;
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 1.8rem;
+    }
+
+    .btn-back-portal {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .btn-back-portal:hover {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <div class="login-badge">EJ</div>
-        <h1 class="login-title">Acceso al Sistema</h1>
-        <p class="login-subtitle">Asociación Cristiana Un Encuentro con Jesús</p>
+        <div class="brand-badge">EJ</div>
+        <h1>Acceso Administrativo</h1>
+        <p>Asociación Cristiana Un Encuentro con Jesús</p>
       </div>
 
-      <!-- Alerta visual de error / éxito -->
-      <div id="loginMessage" class="login-message"></div>
-
-      <!-- Formulario de Autenticación -->
-      <form id="loginForm">
+      <form id="loginForm" autocomplete="on">
         <div class="form-group">
-          <label for="email" class="form-label">Correo Electrónico Institucional</label>
-          <input 
-            type="email" 
-            id="email" 
-            class="form-control" 
-            placeholder="pastor@encuentroconjesus.org" 
-            required 
-            autocomplete="email"
-          >
+          <label for="email">Correo Electrónico Institucional</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <input type="email" id="email" class="input-field" placeholder="ejemplo@encuentroconjesus.org" required>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="password" class="form-label">Contraseña</label>
-          <input 
-            type="password" 
-            id="password" 
-            class="form-control" 
-            placeholder="••••••••••••" 
-            required 
-            autocomplete="current-password"
-          >
+          <label for="password">Contraseña de Administrador</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+            <button type="button" id="btnTogglePass" class="btn-toggle-pass" aria-label="Mostrar u ocultar contraseña">
+              <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <button type="submit" id="btnLoginSubmit" class="btn-login">
-          <span id="btnText">Iniciar Sesión</span>
+        <button type="submit" id="btnSubmit" class="btn-submit">
+          Ingresar al Panel
         </button>
-      </form>
 
-      <div class="login-footer">
-        <a href="index.html">&larr; Regresar al Portal Principal</a>
-      </div>
+        <div id="loginMsg" class="alert-box"></div>
+      </form>
+    </div>
+
+    <div class="login-footer">
+      <a href="index.html" class="btn-back-portal">
+        &larr; Regresar al Portal Principal
+      </a>
     </div>
   </div>
 
-  <!-- Configuración de Supabase -->
   <script src="js/config.js"></script>
-
-  <!-- Lógica de Inicio de Sesión -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const loginForm = document.getElementById('loginForm');
+      const form = document.getElementById('loginForm');
       const emailInput = document.getElementById('email');
       const passwordInput = document.getElementById('password');
-      const loginMessage = document.getElementById('loginMessage');
-      const btnSubmit = document.getElementById('btnLoginSubmit');
-      const btnText = document.getElementById('btnText');
+      const btnSubmit = document.getElementById('btnSubmit');
+      const loginMsg = document.getElementById('loginMsg');
+      const btnTogglePass = document.getElementById('btnTogglePass');
 
-      // Verificar si ya existe una sesión activa
-      if (window.db) {
-        try {
-          const { data: { session } } = await window.db.auth.getSession();
-          if (session) {
-            window.location.href = 'admin.html';
-            return;
-          }
-        } catch (err) {
-          console.warn('Error verificando sesión previa:', err);
+      // 1. Si ya tiene sesión iniciada, enviar directo a admin.html
+      try {
+        const { data: { session } } = await db.auth.getSession();
+        if (session) {
+          window.location.replace('admin.html');
+          return;
         }
+      } catch (e) {
+        console.warn('Verificación previa de sesión omitida');
       }
 
-      function showMessage(text, isError = true) {
-        loginMessage.textContent = text;
-        loginMessage.className = `login-message ${isError ? 'error' : 'success'}`;
-        loginMessage.style.display = 'block';
+      // 2. Alternar visibilidad de contraseña
+      if (btnTogglePass) {
+        btnTogglePass.addEventListener('click', () => {
+          const isPassword = passwordInput.getAttribute('type') === 'password';
+          passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+          btnTogglePass.style.color = isPassword ? '#0b192c' : '#94a3b8';
+        });
       }
 
-      function setLoading(isLoading) {
-        btnSubmit.disabled = isLoading;
-        if (isLoading) {
-          btnText.innerHTML = '<span class="btn-spinner"></span> Autenticando...';
-        } else {
-          btnText.textContent = 'Iniciar Sesión';
-        }
-      }
-
-      loginForm.addEventListener('submit', async (e) => {
+      // 3. Procesar autenticación en Supabase
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        loginMessage.style.display = 'none';
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Verificando credenciales...';
+        loginMsg.className = 'alert-box';
+        loginMsg.style.display = 'none';
 
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
-        if (!email || !password) {
-          showMessage('Por favor completa todos los campos.');
-          return;
-        }
-
-        if (!window.db) {
-          showMessage('No se pudo inicializar la conexión con Supabase. Revisa js/config.js.');
-          return;
-        }
-
-        setLoading(true);
-
         try {
-          const { data, error } = await window.db.auth.signInWithPassword({
+          const { data, error } = await db.auth.signInWithPassword({
             email: email,
             password: password
           });
 
           if (error) {
-            let errorMsg = 'Error al iniciar sesión: ' + error.message;
-            if (error.message.includes('Invalid login credentials')) {
-              errorMsg = 'Credenciales incorrectas. Verifica el correo y la contraseña.';
-            }
-            showMessage(errorMsg, true);
-            setLoading(false);
-            return;
+            throw error;
           }
 
-          if (data && data.session) {
-            showMessage('Acceso concedido. Redirigiendo al panel...', false);
-            setTimeout(() => {
-              window.location.href = 'admin.html';
-            }, 800);
-          }
+          loginMsg.className = 'alert-box success';
+          loginMsg.textContent = '✓ Acceso correcto. Redirigiendo al panel...';
+          loginMsg.style.display = 'block';
+
+          setTimeout(() => {
+            window.location.replace('admin.html');
+          }, 600);
+
         } catch (err) {
-          showMessage('Ocurrió un error inesperado al conectar con el servidor: ' + err.message, true);
-          setLoading(false);
+          loginMsg.className = 'alert-box error';
+          loginMsg.textContent = err.message === 'Invalid login credentials' 
+            ? 'Correo o contraseña incorrectos. Revisa tus datos.' 
+            : 'Error de acceso: ' + (err.message || err);
+          loginMsg.style.display = 'block';
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Ingresar al Panel';
         }
       });
     });
   </script>
 </body>
 </html>
-

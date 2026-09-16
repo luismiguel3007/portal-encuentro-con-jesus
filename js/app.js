@@ -1103,7 +1103,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // 3. Cambiar fondo del Hero
+  // 3. Cambiar fondo del Hero (Subida directa a Cloudflare R2)
   if (btnChangeHeroBg && inputHeroBgFile) {
     btnChangeHeroBg.addEventListener('click', () => {
       inputHeroBgFile.click();
@@ -1114,23 +1114,27 @@ async function setupVisualEditor() {
       if (!file) return;
 
       btnChangeHeroBg.disabled = true;
-      btnChangeHeroBg.textContent = 'Subiendo imagen...';
+      btnChangeHeroBg.textContent = 'Subiendo a Cloudflare R2...';
 
       try {
         const ext = file.name.split('.').pop();
         const ruta = `portadas/fondo_hero_${Date.now()}.${ext}`;
 
-        const { error: upErr } = await supabaseClient.storage
-          .from('Archivos-iglesia')
-          .upload(ruta, file);
+        const res = await fetch(`${window.R2_CONFIG.workerUrl}/upload?key=${encodeURIComponent(ruta)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type || 'image/jpeg',
+            'x-api-key': window.R2_CONFIG.apiKey
+          },
+          body: file
+        });
 
-        if (upErr) throw upErr;
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Error al subir imagen a Cloudflare R2.');
+        }
 
-        const { data: urlData } = supabaseClient.storage
-          .from('Archivos-iglesia')
-          .getPublicUrl(ruta);
-
-        const nuevaImgUrl = urlData.publicUrl;
+        const nuevaImgUrl = `${window.R2_CONFIG.publicUrl}/${ruta}`;
 
         const { error: dbErr } = await supabaseClient.from('ajustes').upsert({
           id: 1,
@@ -1142,7 +1146,7 @@ async function setupVisualEditor() {
         const heroSec = document.getElementById('heroEditorialSection');
         if (heroSec) heroSec.style.backgroundImage = `url("${nuevaImgUrl}")`;
 
-        alert('✓ ¡Imagen de portada actualizada exitosamente!');
+        alert('✓ ¡Imagen de portada actualizada exitosamente en Cloudflare R2!');
       } catch (err) {
         alert('Error al subir imagen de portada: ' + err.message);
       } finally {

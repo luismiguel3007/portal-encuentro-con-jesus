@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santa Biblia RVR1960 & Versículo del Día | Un Encuentro con Jesús</title>
+  <meta name="description" content="Lee la Santa Biblia en línea versión Reina-Valera 1960 y recibe el versículo del día por temas de fe, ánimo y fortaleza.">
+  
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* Estilos exclusivos para la sección de Biblia */
+    .verse-day-card {
+      background: linear-gradient(135deg, #0b192c 0%, #1e3e62 100%);
+      border: 2px solid #e5a823;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      color: #ffffff;
+      box-shadow: 0 12px 35px rgba(11, 25, 44, 0.25);
+      margin-bottom: 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .verse-day-card::after {
+      content: "“";
+      position: absolute;
+      right: 20px;
+      bottom: -30px;
+      font-size: 11rem;
+      color: rgba(229, 168, 35, 0.07);
+      font-family: serif;
+      pointer-events: none;
+    }
+    .theme-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 1.2rem 0 1.6rem;
+    }
+    .theme-pill {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .theme-pill:hover, .theme-pill.active {
+      background: #e5a823;
+      color: #0b192c;
+      border-color: #e5a823;
+    }
+    .verse-text-highlight {
+      font-size: 1.35rem;
+      font-style: italic;
+      line-height: 1.7;
+      color: #f8fafc;
+      margin-bottom: 1rem;
+    }
+    .verse-reference {
+      color: #e5a823;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: 0.5px;
+    }
+    .verse-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .bible-reader-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    .bible-controls {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1.5px solid #f1f5f9;
+    }
+    .bible-select-group {
+      flex: 1;
+      min-width: 180px;
+    }
+    .bible-select-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .bible-select-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      font-weight: 600;
+      color: #0b192c;
+      outline: none;
+    }
+    .bible-select-group select:focus {
+      border-color: #e5a823;
+      background: #ffffff;
+    }
+    .bible-chapter-title {
+      font-size: 1.6rem;
+      color: #0b192c;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .bible-verses-container {
+      font-size: 1.12rem;
+      line-height: 2;
+      color: #1e293b;
+      max-height: 65vh;
+      overflow-y: auto;
+      padding-right: 15px;
+    }
+    .bible-verses-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .bible-verses-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .v-num {
+      color: #e5a823;
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-right: 6px;
+      vertical-align: super;
+    }
+    .bible-nav-btns {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid #f1f5f9;
+    }
+    .verse-focus-card {
+      background: #f8fafc;
+      border-left: 4px solid #e5a823;
+      padding: 2rem 1.8rem;
+      border-radius: 12px;
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 15px rgba(11, 25, 44, 0.04);
+    }
+    .verse-focus-text {
+      font-size: 1.35rem;
+      line-height: 1.85;
+      color: #0b192c;
+      font-style: italic;
+    }
+    .verse-focus-meta {
+      margin-top: 1.2rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .v-box {
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 2px 4px;
+      transition: background 0.15s ease;
+    }
+    .v-box:hover {
+      background-color: rgba(229, 168, 35, 0.18);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra Superior -->
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <div class="topbar-verse">
+        &ldquo;Toda la Escritura es inspirada por Dios, y útil para enseñar, para redargüir...&rdquo; &mdash; 2 Timoteo 3:16
+      </div>
+      <div class="topbar-actions">
+        <a href="login.html">Acceso Administrativo &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cabecera Principal -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-link">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Asociación Cristiana</span>
+        </div>
+      </a>
+
+      <nav class="nav-desktop">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Inicio</a></li>
+          <li><a href="index.html#noticias" class="nav-link">Noticias</a></li>
+          <li><a href="revistas.html" class="nav-link">Revistas</a></li>
+          <li><a href="sedes.html" class="nav-link">Sedes</a></li>
+          <li><a href="membresia.html" class="nav-link">Membresía</a></li>
+          <li><a href="biblia.html" class="nav-link active">Biblia</a></li>
+          <li><a href="index.html#envivo" class="nav-link">En Vivo</a></li>
+          <li>
+            <a href="login.html" class="btn-admin-nav">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Admin
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <button class="btn-hamburger" id="menuToggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Menú Lateral Móvil -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar-menu" id="sidebarMenu">
+    <div class="sidebar-header">
+      <div class="brand-link">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Portal Oficial</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose">&times;</button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="index.html#noticias">Noticias y Devocionales</a></li>
+        <li><a href="revistas.html">Revistas y Ediciones</a></li>
+        <li><a href="sedes.html">Nuestras Sedes</a></li>
+        <li><a href="membresia.html">Consulta de Membresía</a></li>
+        <li><a href="biblia.html" class="active">Santa Biblia</a></li>
+        <li><a href="index.html#envivo">Transmisión En Vivo</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Portada Editorial -->
+  <section class="hero-editorial" style="padding: 3.5rem 0 2.5rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">Sagradas Escrituras</div>
+        <h1 class="hero-title">Santa Biblia &amp; Promesa Diaria</h1>
+        <p class="hero-description">
+          Escudriña la Palabra de Dios en la traducción clásica Reina-Valera 1960. Encuentra fortaleza, dirección y el versículo oportuno para cada circunstancia.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <main class="container" style="padding: 3.5rem 1.25rem 5rem;">
+    
+    <!-- TARJETA: VERSÍCULO DEL DÍA CON TEMAS -->
+    <div class="verse-day-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span class="section-tag" style="background: rgba(229,168,35,0.2); margin:0;">Palabra para Hoy</span>
+        <span id="vdFecha" style="color: #94a3b8; font-size: 0.88rem;">Cargando fecha...</span>
+      </div>
+
+      <!-- Selector interactivo de temas -->
+      <div class="theme-pills" id="themePillsContainer">
+        <button type="button" class="theme-pill active" data-theme="animo">💪 Ánimo</button>
+        <button type="button" class="theme-pill" data-theme="no_temas">🛡️ No Temas</button>
+        <button type="button" class="theme-pill" data-theme="fe">✨ Fe</button>
+        <button type="button" class="theme-pill" data-theme="fortaleza">⛰️ Fortaleza</button>
+        <button type="button" class="theme-pill" data-theme="paz">🕊️ Paz</button>
+        <button type="button" class="theme-pill" data-theme="esperanza">🌅 Esperanza</button>
+      </div>
+
+      <div class="verse-text-highlight" id="vdTexto">
+        Cargando versículo del día...
+      </div>
+      <div class="verse-reference" id="vdReferencia">
+        &mdash;
+      </div>
+
+      <div class="verse-actions">
+        <button type="button" class="btn-primary" id="btnCopiarVersiculo" style="padding: 8px 16px; font-size: 0.85rem;">
+          📋 Copiar Versículo
+        </button>
+        <button type="button" class="btn-outline" id="btnCompartirWa" style="padding: 8px 16px; font-size: 0.85rem;">
+          💬 Compartir en WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- LECTOR COMPLETO DE LA BIBLIA (RVR1960) -->
+    <div class="bible-reader-box">
+      <div class="bible-controls">
+        <div class="bible-select-group">
+          <label for="selTestamento">Testamento</label>
+          <select id="selTestamento">
+            <option value="antiguo">Antiguo Testamento</option>
+            <option value="nuevo" selected>Nuevo Testamento</option>
+          </select>
+        </div>
+
+        <div class="bible-select-group">
+          <label for="selLibro">Libro</label>
+          <select id="selLibro"></select>
+        </div>
+
+        <div class="bible-select-group">
+          <label for="selCapitulo">Capítulo</label>
+          <select id="selCapitulo"></select>
+        </div>
+
+        <div class="bible-select-group">
+          <label for="selVersiculo">Vista / Versículo</label>
+          <select id="selVersiculo">
+            <option value="0">📖 Capítulo Completo</option>
+          </select>
+        </div>
+        
+      </div>
+
+      <div class="bible-chapter-title">
+        <span id="txtLibroCap">Cargando pasaje...</span>
+        <span style="font-size: 0.85rem; background:#f1f5f9; color:#475569; padding: 4px 10px; border-radius:6px; font-weight:600;">Reina-Valera 1960</span>
+      </div>
+
+      <div class="bible-verses-container" id="contenedorVersiculos">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <span>Cargando capítulo...</span>
+        </div>
+      </div>
+
+      <div class="bible-nav-btns">
+        <button type="button" class="btn-secondary" id="btnCapAnterior">&larr; Capítulo Anterior</button>
+        <button type="button" class="btn-secondary" id="btnCapSiguiente">Capítulo Siguiente &rarr;</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Pie de página -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
+        <p>Textos bíblicos provistos en línea bajo el canon Reina-Valera 1960.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/biblia.js"></script>
+</body>
+</html>

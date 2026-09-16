@@ -61,31 +61,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN STORAGE
+ // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN CLOUDFLARE R2
   async function subirArchivo(archivo, carpeta) {
     const ext = archivo.name.split('.').pop();
     const cleanName = `${carpeta}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
-    const { error: uploadErr } = await db.storage
-      .from('Archivos-iglesia')
-      .upload(cleanName, archivo);
+    const res = await fetch(`${window.R2_CONFIG.workerUrl}/upload?key=${encodeURIComponent(cleanName)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': archivo.type || 'application/octet-stream',
+        'x-api-key': window.R2_CONFIG.apiKey
+      },
+      body: archivo
+    });
 
-    if (uploadErr) throw uploadErr;
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al subir archivo a Cloudflare R2.');
+    }
 
-    const { data } = db.storage
-      .from('Archivos-iglesia')
-      .getPublicUrl(cleanName);
-
-    return data.publicUrl;
+    return `${window.R2_CONFIG.publicUrl}/${cleanName}`;
   }
 
   async function borrarArchivoDeStorage(url) {
-    if (!url || !url.includes('/Archivos-iglesia/')) return;
+    if (!url || !url.includes(window.R2_CONFIG.publicUrl)) return;
     try {
-      const ruta = decodeURIComponent(url.split('/Archivos-iglesia/')[1]);
-      await db.storage.from('Archivos-iglesia').remove([ruta]);
+      const cleanKey = url.replace(`${window.R2_CONFIG.publicUrl}/`, '');
+      await fetch(`${window.R2_CONFIG.workerUrl}/delete?key=${encodeURIComponent(cleanKey)}`, {
+        method: 'DELETE',
+        headers: {
+          'x-api-key': window.R2_CONFIG.apiKey
+        }
+      });
     } catch (e) {
-      console.warn('No se pudo borrar el archivo del storage:', e);
+      console.warn('No se pudo borrar el archivo de Cloudflare R2:', e);
     }
   }
 
