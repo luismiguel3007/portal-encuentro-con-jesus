@@ -2189,3 +2189,684 @@ h1, h2, h3, h4, h5, h6 {
   background: #e5a823;
   color: #0b192c;
 }
+
+/* ==========================================================================
+   BLOQUE DE OPTIMIZACIÓN MOBILE-FIRST
+   Responsive 320px → 768px — Añadido sobre base auditada
+   NO modifica lógica JS ni configuración de backend
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   BASE: Prevención de scroll horizontal global
+   -------------------------------------------------------------------------- */
+html {
+  overflow-x: hidden;
+}
+
+img, video, canvas, iframe, embed, object {
+  max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   1. TOPBAR — Ocultar verso en pantallas muy estrechas para evitar desborde
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .topbar-verse {
+    display: none;
+  }
+
+  .topbar .container,
+  .topbar-inner {
+    justify-content: flex-end;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. HEADER Y BOTÓN HAMBURGUESA — Touch target mínimo 44×44 px
+   -------------------------------------------------------------------------- */
+@media (max-width: 991px) {
+  /* Área táctil expandida sin cambiar la apariencia visual */
+  .btn-hamburger {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* El brand-title puede truncarse en pantallas MUY estrechas */
+  .brand-title {
+    font-size: 0.92rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.68rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. MENÚ LATERAL (SIDEBAR) — Ancho y comportamiento mejorado
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .sidebar-menu {
+    width: 88%;
+    max-width: 320px;
+  }
+
+  /* Impedir scroll del body cuando el sidebar está abierto */
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  /* Links del sidebar: touch target generoso (min 48px altura) */
+  .sidebar-nav a {
+    padding: 0.85rem 1.5rem;
+    min-height: 48px;
+  }
+
+  /* Botón de cierre con área táctil amplia */
+  .sidebar-close {
+    font-size: 2rem;
+    padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. HERO SECTION — Tipografía fluida para evitar cortes de línea
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .hero-editorial {
+    padding: 3rem 0 2.5rem;
+  }
+
+  .hero-title {
+    font-size: 1.9rem;
+    line-height: 1.25;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .btn-primary,
+  .btn-outline {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-description {
+    font-size: 0.95rem;
+  }
+
+  .hero-badge {
+    font-size: 0.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. SECCIÓN TÍTULOS — Reducción proporcional en pantallas estrechas
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .section-header {
+    margin-bottom: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. SECCIÓN MULTIMEDIA — Padding ajustado en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .section-multimedia {
+    padding: 2.5rem 0;
+  }
+
+  .multimedia-grid {
+    gap: 1.5rem;
+  }
+
+  .radio-card {
+    padding: 1.25rem;
+  }
+
+  .radio-top {
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .radio-icon-box {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+
+  .radio-info h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. CARRUSEL DE LIDERAZGO — Ajuste dimensional para móviles < 600px
+   -------------------------------------------------------------------------- */
+@media (max-width: 599px) {
+  .section-leadership {
+    padding: 3rem 0;
+  }
+
+  /* Contenedor de altura reducida */
+  .carousel-container {
+    height: 320px;
+  }
+
+  /* Tarjetas con dimensiones aptas para móvil */
+  .carousel-card {
+    width: 200px;
+    height: 270px;
+  }
+
+  /* Tarjeta activa ligeramente más grande */
+  .carousel-card.active {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  /* Tarjetas laterales: desplazamiento reducido para que no se corten */
+  .carousel-card.prev-card {
+    transform: translate(calc(-50% - 160px), -50%) scale(0.82);
+    opacity: 0.55;
+  }
+
+  .carousel-card.next-card {
+    transform: translate(calc(-50% + 160px), -50%) scale(0.82);
+    opacity: 0.55;
+  }
+
+  /* Tarjetas lejanas: completamente ocultas fuera del área visible */
+  .carousel-card.far-prev {
+    transform: translate(calc(-50% - 290px), -50%) scale(0.65);
+    opacity: 0.15;
+  }
+
+  .carousel-card.far-next {
+    transform: translate(calc(-50% + 290px), -50%) scale(0.65);
+    opacity: 0.15;
+  }
+
+  /* Nombre del líder activo más compacto */
+  .active-member-name {
+    font-size: 1.3rem;
+  }
+
+  .active-member-role {
+    font-size: 0.85rem;
+  }
+
+  /* Flechas de navegación del carrusel: touch target garantizado */
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .carousel-btn-prev {
+    left: 0.25rem;
+  }
+
+  .carousel-btn-next {
+    right: 0.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .carousel-container {
+    height: 300px;
+  }
+
+  .carousel-card {
+    width: 180px;
+    height: 250px;
+  }
+
+  .carousel-card.prev-card {
+    transform: translate(calc(-50% - 140px), -50%) scale(0.78);
+  }
+
+  .carousel-card.next-card {
+    transform: translate(calc(-50% + 140px), -50%) scale(0.78);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. ARTÍCULOS Y SECCIONES CON PADDING — Reducción en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .section-articles {
+    padding: 2.5rem 0;
+  }
+
+  .section-leadership {
+    padding: 2.5rem 0;
+  }
+
+  .article-body {
+    padding: 1.25rem;
+  }
+
+  .article-title {
+    font-size: 1.15rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. SEDES — Grid a 1 columna en móvil, botones accesibles al pulgar
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .sedes-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem 0;
+  }
+
+  .sede-card {
+    padding: 1.5rem;
+  }
+
+  .sede-actions {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .btn-whatsapp,
+  .btn-call {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. MEMBRESÍA — Grid a 1 columna; búsqueda y botones accesibles
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .members-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .member-search-bar {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .member-search-bar input {
+    width: 100%;
+  }
+
+  .btn-ver-ficha {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    padding: 10px 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. MODAL ARTÍCULO (#articleModal) — Ajuste para móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end; /* sheet desde abajo en móvil */
+  }
+
+  .modal-dialog {
+    max-height: 92vh;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    width: 100%;
+  }
+
+  .modal-hero-img {
+    height: 200px;
+  }
+
+  .modal-content-wrap {
+    padding: 1.25rem;
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+  }
+
+  .modal-article-text {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  /* Botón de cierre: siempre sticky, tamaño táctil suficiente */
+  .modal-close-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. MODAL FICHA MIEMBRO (#modalFichaMiembro) — padding reducido en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .member-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .member-modal-box {
+    max-height: 92vh;
+    padding: 1.25rem;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .modal-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .member-modal-close {
+    font-size: 2rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .member-modal-box {
+    padding: 1rem;
+  }
+
+  .modal-info-item {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. BIBLIA — Controles apilados ordenadamente, texto cómodo de leer
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  /* Controles de selección en columna única */
+  .bible-controls {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+  }
+
+  .bible-select-group {
+    flex: none;
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .bible-select-group select {
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  /* Título del capítulo en columna para evitar overflow */
+  .bible-chapter-title {
+    font-size: 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  /* Versículos: font-size cómodo para lectura continua */
+  .bible-verses-container {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    max-height: 55vh;
+    padding-right: 8px;
+  }
+
+  /* Botones de navegación capítulo: ancho completo en móvil */
+  .bible-nav-btns {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .bible-nav-btns .btn-secondary {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* Versículo destacado */
+  .verse-day-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .verse-text-highlight {
+    font-size: 1.15rem;
+  }
+
+  /* Pills de temas: scroll horizontal si son muchos */
+  .theme-pills {
+    gap: 6px;
+  }
+
+  .theme-pill {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Botones de acción versículo */
+  .verse-actions {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .verse-actions .btn-primary,
+  .verse-actions .btn-outline {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Box del lector con padding reducido */
+  .bible-reader-box {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bible-chapter-title {
+    font-size: 1.1rem;
+  }
+
+  .verse-text-highlight {
+    font-size: 1.05rem;
+  }
+
+  .verse-focus-text {
+    font-size: 1.1rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. REVISTAS — Grid sin overflow y viewer adaptado a móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .revistas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+  }
+
+  .revista-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-revista-read,
+  .btn-revista-download {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 400px) {
+  .revistas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Visor de revista (#magazineModal) en móvil */
+@media (max-width: 767px) {
+  .magazine-viewer-container {
+    height: 96vh;
+    border-radius: 8px;
+  }
+
+  .magazine-toolbar {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .magazine-info h3 {
+    font-size: 0.9rem;
+  }
+
+  .magazine-top-bar {
+    padding: 8px 14px;
+  }
+
+  .magazine-top-bar h3 {
+    font-size: 0.88rem;
+  }
+
+  /* Flechas del libro: reposicionadas para no solaparse con contenido */
+  .book-nav-arrow {
+    width: 40px;
+    height: 64px;
+    font-size: 1.3rem;
+  }
+
+  .arrow-prev { left: 4px; }
+  .arrow-next { right: 4px; }
+
+  .magazine-bottom-bar {
+    padding: 8px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mag-bar-tools {
+    gap: 8px;
+  }
+
+  .mag-btn-action {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* Botones de navegación de página */
+  .mag-nav-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  #pdfViewerCanvas {
+    max-width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   15. FOOTER — Padding compacto en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .main-footer {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .footer-grid {
+    gap: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.82rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   16. BARRA VISUAL DE EDICIÓN — Adaptar a pantalla estrecha
+   -------------------------------------------------------------------------- */
+@media (max-width: 599px) {
+  .admin-visual-bar {
+    bottom: 10px;
+    left: 12px;
+    right: 12px;
+    transform: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 16px;
+  }
+
+  .visual-bar-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-vis-action,
+  .btn-vis-save {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+}

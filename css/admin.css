@@ -767,3 +767,333 @@ input[type="file"]:hover {
   color: #991b1b;
   border: 1px solid #fca5a5;
 }
+
+/* ==========================================================================
+   BLOQUE RESPONSIVE ADMIN — Mobile-First 320px → 768px
+   Sólo afecta layout y tipografía visual. Sin tocar lógica JS.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CABECERA ADMIN — Apilado vertical en pantallas estrechas
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .admin-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .admin-user-info {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-portal-admin,
+  .btn-logout {
+    font-size: 0.8rem;
+    padding: 6px 11px;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. CONTENEDOR ADMIN — Padding lateral reducido en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .admin-container {
+    padding: 0 14px;
+    margin-top: 1.25rem;
+  }
+
+  .admin-title h1 {
+    font-size: 1.35rem;
+  }
+
+  .admin-title p {
+    font-size: 0.88rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. KPIs — 2 columnas en < 640px, 1 columna en < 380px
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.15rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.73rem;
+  }
+}
+
+@media (max-width: 379px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. PESTAÑAS DE NAVEGACIÓN (TABS) — Scroll horizontal táctil fluido
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .admin-tabs {
+    /* Scroll horizontal fluido con impulso táctil */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    /* Evitar que el contenedor se comprima */
+    flex-wrap: nowrap;
+    padding: 5px;
+    gap: 5px;
+    /* Ocultar scrollbar visualmente (sigue siendo funcional) */
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE / Edge legado */
+  }
+
+  .admin-tabs::-webkit-scrollbar {
+    display: none;               /* Chrome / Safari */
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    min-width: 160px;
+    scroll-snap-align: start;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    gap: 6px;
+  }
+
+  .tab-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    min-width: 140px;
+    padding: 9px 12px;
+    font-size: 0.78rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. FORMULARIOS — Columna única en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  /* Filas de formulario: de flex horizontal a columna única */
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Todos los grupos toman el 100% del ancho disponible */
+  .flex-1,
+  .flex-2 {
+    flex: none;
+    min-width: 100%;
+    width: 100%;
+  }
+
+  /* Inputs, selects y textareas: tamaño táctil mínimo */
+  input[type="text"],
+  input[type="date"],
+  input[type="number"],
+  input[type="url"],
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  /* Campo con privacidad: apilar también */
+  .field-with-privacy {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .privacy-tag {
+    justify-content: flex-start;
+    white-space: normal;
+  }
+
+  /* Generador de código */
+  .code-generator-box {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Checklist de Ordenanzas: 1 columna forzada */
+  .checklist-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. TARJETA DE FORMULARIO — Padding reducido en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .card-form {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .card-form h2 {
+    font-size: 1.1rem;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .form-section-block {
+    padding: 1rem 1.1rem;
+  }
+
+  .form-section-title {
+    font-size: 0.82rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. LISTA DE REGISTROS — Rows en columna, botones accesibles
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  /* Cabecera de lista: buscador debajo del título */
+  .list-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .list-header h3 {
+    font-size: 1rem;
+  }
+
+  /* Buscador: ancho completo */
+  .search-input-sm {
+    width: 100%;
+    font-size: 0.88rem;
+  }
+
+  /* Rows de items: reorganizar en columna */
+  .admin-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  /* Zona de botones de acción: ocupar ancho completo */
+  .admin-item-row > *:last-child {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Miniatura un poco más pequeña en lista compacta */
+  .admin-thumb {
+    width: 52px;
+    height: 52px;
+  }
+
+  /* Info del item */
+  .admin-item-info h4 {
+    font-size: 0.95rem;
+  }
+
+  .admin-item-info small {
+    font-size: 0.8rem;
+  }
+
+  /* Botones de acción: touch target adecuado */
+  .btn-sm {
+    min-height: 36px;
+    padding: 6px 11px;
+  }
+
+  .btn-delete {
+    min-height: 36px;
+    padding: 6px 11px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. BLOQUE DE PRIVACIDAD MAESTRO — Responsive en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .master-privacy-card {
+    padding: 14px 16px;
+  }
+
+  .privacy-switch-wrap {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .privacy-status-text {
+    font-size: 0.85rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. BOTONES DE ACCIÓN PRINCIPALES — Tamaño cómodo en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .btn-primary {
+    min-height: 44px;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+
+  .btn-secondary {
+    min-height: 44px;
+    font-size: 0.87rem;
+    padding: 10px 16px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. SEPARADORES Y ESPACIADOS — Más compactos en móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .section-divider {
+    margin: 1.5rem 0 1.25rem;
+  }
+
+  .admin-stats-grid {
+    margin-bottom: 1.25rem;
+  }
+
+  .admin-tabs {
+    margin-bottom: 1.25rem;
+  }
+}
