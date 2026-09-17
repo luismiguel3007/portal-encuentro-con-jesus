@@ -164,7 +164,7 @@ function initVersiculoDelDiaDirecto() {
 
   if (btnWa) {
     btnWa.addEventListener('click', () => {
-      const msg = encodeURIComponent(`*Versículo del Día*\n\n${elTexto.textContent}\n*${elRef.textContent}*\n\nLee la Biblia en: https://luismiguel3007.github.io/portal-encuentro-con-jesus/biblia.html`);
+      const msg = encodeURIComponent(`*Versículo del Día*\n\n${elTexto.textContent}\n*${elRef.textContent}*\n\nLee la Biblia en: https://unencuentroconjesusperu.com/biblia.html`);
       window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     });
   }
