@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initArticleModal();
   initMagazineModal();
 
-  // Carga de transmisión activa y ajustes dinámicos
+  // Carga de transmisión activa, logo y ajustes dinámicos
   loadAjustes();
   setupVisualEditor();
 });
@@ -499,7 +499,6 @@ let zoomDebounceTimer = null;
 let renderTaskLeft = null;
 let renderTaskRight = null;
 
-// Coordenadas para el arrastre libre
 let panX = 0;
 let panY = 0;
 let isDragging = false;
@@ -577,7 +576,6 @@ async function loadRevistas() {
   }
 }
 
-// Aplica el desplazamiento suave restringiendo únicamente que la hoja no se pierda fuera de la vista
 function aplicarTransformSpread() {
   const bookSpread = document.getElementById('bookSpread');
   const stage = document.getElementById('bookStage');
@@ -588,7 +586,6 @@ function aplicarTransformSpread() {
   const wBook = bookSpread.offsetWidth;
   const hBook = bookSpread.offsetHeight;
 
-  // Límite de desplazamiento: permite llegar hasta los extremos más un margen de holgura
   const limitX = Math.max(0, (wBook - wStage) / 2 + 80);
   const limitY = Math.max(0, (hBook - hStage) / 2 + 80);
 
@@ -620,15 +617,12 @@ function initMagazineModal() {
   const stage = document.getElementById('bookStage');
   const viewer = document.getElementById('magazineViewerBox');
 
-  // Navegación de páginas
   if (btnPrev) btnPrev.addEventListener('click', (e) => { e.stopPropagation(); cambiarPagina(esModoMovil() ? -1 : -2); });
   if (btnNext) btnNext.addEventListener('click', (e) => { e.stopPropagation(); cambiarPagina(esModoMovil() ? 1 : 2); });
 
-  // Botones de Zoom
   if (btnZoomIn) btnZoomIn.addEventListener('click', () => modificarZoom(currentZoom + 0.35));
   if (btnZoomOut) btnZoomOut.addEventListener('click', () => modificarZoom(currentZoom - 0.35));
 
-  // Cierre
   if (btnClose && modal) {
     btnClose.addEventListener('click', () => {
       if (document.fullscreenElement || document.webkitFullscreenElement) {
@@ -645,7 +639,6 @@ function initMagazineModal() {
     });
   }
 
-  // Pantalla Completa
   function togglePantallaCompleta() {
     const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
     if (!isFs) {
@@ -665,9 +658,6 @@ function initMagazineModal() {
     });
   }
 
-  // ====================================================
-  // ARRASTRE DIRECTO (PANNING 2D) CON RATÓN EN COMPUTADORA
-  // ====================================================
   if (stage) {
     stage.addEventListener('mousedown', (e) => {
       if (!pdfDoc || modal.style.display !== 'flex') return;
@@ -704,7 +694,6 @@ function initMagazineModal() {
       }
     });
 
-    // Zoom con rueda del ratón
     stage.addEventListener('wheel', (e) => {
       if (!pdfDoc || modal.style.display !== 'flex') return;
       e.preventDefault();
@@ -712,9 +701,6 @@ function initMagazineModal() {
       modificarZoom(currentZoom + delta);
     }, { passive: false });
 
-    // ====================================================
-    // ARRASTRE TÁCTIL Y PELLIZCO (PINCH) EN CELULARES
-    // ====================================================
     let touchStartDist = 0;
     let touchStartZoom = 1.0;
     let isPinching = false;
@@ -769,7 +755,6 @@ function initMagazineModal() {
     });
   }
 
-  // Toque / Clic limpio (sin arrastre) para alternar pantalla completa
   if (bookSpread) {
     bookSpread.addEventListener('click', () => {
       const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
@@ -825,7 +810,6 @@ function modificarZoom(nuevoZoom) {
     else modal.classList.remove('is-zoomed');
   }
 
-  // Si regresa al tamaño original, centra la vista; de lo contrario escala el desplazamiento actual
   if (currentZoom <= 1.0) {
     panX = 0;
     panY = 0;
@@ -1005,13 +989,13 @@ function cambiarPagina(delta) {
   }
 
   currentSpreadIndex = target;
-  // Al cambiar de página se restablece la posición central
   panX = 0;
   panY = 0;
   currentZoom = 1.0;
   actualizarIndicadorZoom();
   renderSpread().then(aplicarTransformSpread);
 }
+
 /* ==========================================================================
    8. DIRECTORIO DE SEDES (sedes.html)
    ========================================================================== */
@@ -1212,7 +1196,7 @@ async function loadTransmisionEnVivo() {
 }
 
 /* ==========================================================================
-   11. SISTEMA DE EDICIÓN VISUAL TOTAL, IMAGEN DE FONDO Y REDES SOCIALES
+   11. SISTEMA DE EDICIÓN VISUAL TOTAL, LOGOTIPO, FONDO Y REDES SOCIALES
    ========================================================================== */
 let ajustesData = null;
 let isEditingActive = false;
@@ -1225,6 +1209,19 @@ async function loadAjustes() {
 
     if (data) {
       ajustesData = data;
+
+      // Carga de Logotipo Editorial Personalizado
+      if (data.logo_url) {
+        const badge = document.getElementById('headerLogoBadge');
+        const badgeText = document.getElementById('logoBadgeText');
+        const badgeImg = document.getElementById('headerLogoImg');
+        if (badgeImg) {
+          badgeImg.src = data.logo_url;
+          badgeImg.style.display = 'block';
+        }
+        if (badgeText) badgeText.style.display = 'none';
+        if (badge) badge.classList.add('has-custom-logo');
+      }
 
       if (data.hero_bg_url) {
         const heroSec = document.getElementById('heroEditorialSection');
@@ -1313,6 +1310,11 @@ async function setupVisualEditor() {
   const btnChangeHeroBg = document.getElementById('btnChangeHeroBg');
   const inputHeroBgFile = document.getElementById('inputHeroBgFile');
 
+  // Controles para cambiar Logotipo
+  const btnChangeLogo = document.getElementById('btnChangeLogo');
+  const inputLogoFile = document.getElementById('inputLogoFile');
+  const badgeLogo = document.getElementById('headerLogoBadge');
+
   const btnOpenSocialModal = document.getElementById('btnOpenSocialModal');
   const modalSocials = document.getElementById('modalSocials');
   const btnCloseSocialModal = document.getElementById('btnCloseSocialModal');
@@ -1325,6 +1327,7 @@ async function setupVisualEditor() {
 
   if (visualBar) visualBar.style.display = 'flex';
 
+  // Edición interactiva de textos
   if (btnToggleEdit) {
     btnToggleEdit.addEventListener('click', () => {
       isEditingActive = !isEditingActive;
@@ -1340,6 +1343,7 @@ async function setupVisualEditor() {
     });
   }
 
+  // Guardar textos editados en la base de datos
   if (btnSaveVisualTexts) {
     btnSaveVisualTexts.addEventListener('click', async () => {
       btnSaveVisualTexts.disabled = true;
@@ -1375,6 +1379,75 @@ async function setupVisualEditor() {
     });
   }
 
+  // Subir y actualizar Logotipo Editorial
+  if (btnChangeLogo && inputLogoFile) {
+    btnChangeLogo.addEventListener('click', () => {
+      inputLogoFile.click();
+    });
+
+    if (badgeLogo) {
+      badgeLogo.style.cursor = 'pointer';
+      badgeLogo.setAttribute('title', 'Haz clic para cambiar el logotipo');
+      badgeLogo.addEventListener('click', (e) => {
+        e.preventDefault();
+        inputLogoFile.click();
+      });
+    }
+
+    inputLogoFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      btnChangeLogo.disabled = true;
+      btnChangeLogo.textContent = 'Subiendo logo...';
+
+      try {
+        const ext = file.name.split('.').pop();
+        const ruta = `logos/logo_editorial_${Date.now()}.${ext}`;
+
+        const res = await fetch(`${window.R2_CONFIG.workerUrl}/upload?key=${encodeURIComponent(ruta)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type || 'image/png',
+            'x-api-key': window.R2_CONFIG.apiKey
+          },
+          body: file
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Error al subir la imagen a Cloudflare R2.');
+        }
+
+        const nuevoLogoUrl = `${window.R2_CONFIG.publicUrl}/${ruta}`;
+
+        const { error: dbErr } = await supabaseClient.from('ajustes').upsert({
+          id: 1,
+          logo_url: nuevoLogoUrl
+        });
+
+        if (dbErr) throw dbErr;
+
+        const badgeText = document.getElementById('logoBadgeText');
+        const badgeImg = document.getElementById('headerLogoImg');
+        if (badgeImg) {
+          badgeImg.src = nuevoLogoUrl;
+          badgeImg.style.display = 'block';
+        }
+        if (badgeText) badgeText.style.display = 'none';
+        if (badgeLogo) badgeLogo.classList.add('has-custom-logo');
+
+        alert('✓ ¡Logotipo de la editorial actualizado con éxito!');
+      } catch (err) {
+        alert('Error al subir el logo: ' + err.message);
+      } finally {
+        btnChangeLogo.disabled = false;
+        btnChangeLogo.textContent = '🏷️ Cambiar Logo';
+      }
+    });
+  }
+
+  // Cambiar fondo de la portada Hero
   if (btnChangeHeroBg && inputHeroBgFile) {
     btnChangeHeroBg.addEventListener('click', () => {
       inputHeroBgFile.click();
@@ -1427,6 +1500,7 @@ async function setupVisualEditor() {
     });
   }
 
+  // Modales de Redes Sociales
   if (btnOpenSocialModal && modalSocials) {
     btnOpenSocialModal.addEventListener('click', () => {
       if (ajustesData) {
@@ -1476,6 +1550,7 @@ async function setupVisualEditor() {
     });
   }
 
+  // Modales de Transmisiones
   if (btnOpenStreamModal && modalStreams) {
     btnOpenStreamModal.addEventListener('click', () => {
       if (ajustesData) {

@@ -39,7 +39,7 @@
   <main class="container admin-container" style="display: none;">
     <div class="admin-title">
       <h1>Centro de Control &amp; Publicaciones</h1>
-      <p>Supervisa las métricas y administra el contenido editorial, filiales, pastores, transmisiones y membresía.</p>
+      <p>Supervisa las métricas y administra el contenido editorial, filiales, pastores, transmisiones, membresía y literatura doctrinal.</p>
     </div>
 
     <!-- TARJETAS MÉTRICAS (KPIS DINÁMICOS) -->
@@ -56,6 +56,13 @@
         <div class="stat-info">
           <span class="stat-value" id="kpiRevistas">--</span>
           <span class="stat-label">Ediciones de Revistas</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <span class="stat-value" id="kpiLiteratura">--</span>
+          <span class="stat-label">Libros &amp; Estudios</span>
         </div>
       </div>
       <div class="stat-card">
@@ -113,6 +120,10 @@
       <button type="button" class="tab-btn" data-tab="tab-transmisiones">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
         6. Transmisiones en Vivo
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-literatura">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        7. Literatura / Libros
       </button>
     </div>
 
@@ -323,7 +334,7 @@
     <section id="tab-miembros" class="tab-panel">
       <div class="card-form">
         <h2 id="titleFormMiembro">Registro &amp; Ficha de Membresía</h2>
-        <p class="card-desc">Gestiona el padrón congregacional. Configura de forma granular la visibilidad de los datos para la consulta web[cite: 5, 7].</p>
+        <p class="card-desc">Gestiona el padrón congregacional. Configura de forma granular la visibilidad de los datos para la consulta web[cite: 5, 7, 27].</p>
         
         <form id="formMiembro">
           <input type="hidden" id="miembroEditId" value="">
@@ -587,6 +598,74 @@
         </div>
         <div id="listaTransmisionesAdmin" class="admin-items-list">
           <p class="text-muted">Cargando señales...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 7: LITERATURA / LIBROS Y ESTUDIOS -->
+    <section id="tab-literatura" class="tab-panel">
+      <div class="card-form">
+        <h2 id="titleFormLit">Publicar Nuevo Libro o Estudio</h2>
+        <p class="card-desc">Registra material teológico, manuales o folletos con su portada y archivo PDF.</p>
+        <form id="formLiteratura">
+          <input type="hidden" id="litEditId" value="">
+          <input type="hidden" id="litExistingPortada" value="">
+          <input type="hidden" id="litExistingPdf" value="">
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="litTitulo">Título del Material *</label>
+              <input type="text" id="litTitulo" placeholder="Ej: Fundamentos de la Fe Apostólica" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="litCategoria">Tipo de Material *</label>
+              <select id="litCategoria" required>
+                <option value="">-- Seleccionar --</option>
+                <option value="Libro">Libro</option>
+                <option value="Estudio Bíblico">Estudio Bíblico</option>
+                <option value="Manual">Manual de Discipulado</option>
+                <option value="Folleto">Folleto Evangelístico</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="litAutor">Autor o Ministerio *</label>
+              <input type="text" id="litAutor" placeholder="Ej: Pastor Juan Pérez / Asociación Cristiana" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="litPortada">Foto de Portada (JPG / PNG) *</label>
+              <input type="file" id="litPortada" accept="image/*">
+              <small id="litPortadaHelp" style="display:none; color:#64748b; margin-top:4px;">(Opcional al editar)</small>
+            </div>
+            <div class="form-group flex-1">
+              <label for="litPdf">Documento PDF *</label>
+              <input type="file" id="litPdf" accept="application/pdf">
+              <small id="litPdfHelp" style="display:none; color:#64748b; margin-top:4px;">(Opcional al editar)</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="litDescripcion">Sinopsis o Resumen Breve *</label>
+            <textarea id="litDescripcion" rows="3" placeholder="Describe brevemente el contenido de este estudio o libro..." required></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" id="btnGuardarLit" class="btn-primary">Guardar Literatura</button>
+            <button type="button" id="btnCancelarLit" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+          </div>
+          <div id="msgLiteratura" class="alert-box"></div>
+        </form>
+
+        <hr class="section-divider">
+
+        <div class="list-header">
+          <h3>Materiales Registrados</h3>
+          <button type="button" class="btn-secondary btn-sm" onclick="cargarLiteraturaAdmin()">↻ Actualizar</button>
+        </div>
+        <div id="listaLiteraturaAdmin" class="admin-items-list">
+          <p class="text-muted">Cargando biblioteca...</p>
         </div>
       </div>
     </section>

@@ -42,19 +42,23 @@
   <header class="main-header">
     <div class="container header-container">
       <a href="index.html" class="brand-link" aria-label="Inicio">
-        <div class="logo-badge">EJ</div>
-        <div class="brand-text">
-          <span class="brand-title" data-editable="brand_title">Un Encuentro con Jesús</span>
-          <span class="brand-subtitle" data-editable="brand_subtitle">Asociación Cristiana</span>
-        </div>
-      </a>
+  <div class="logo-badge" id="headerLogoBadge">
+    <span id="logoBadgeText" style="display: none;">EJ</span>
+    <img id="headerLogoImg" src="" alt="Logo Editorial">
+  </div>
+  <div class="brand-text">
+    <span class="brand-title" data-editable="brand_title">EDITORIAL - MISIÓN</span>
+    <span class="brand-subtitle" data-editable="brand_subtitle">UN ENCUENTRO CON JESÚS</span>
+  </div>
+</a>
 
-      <!-- Navegación de Escritorio con Membresía Integrada -->
+      <!-- Navegación de Escritorio -->
       <nav class="nav-desktop" aria-label="Navegación principal">
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link active">Inicio</a></li>
           <li><a href="#noticias" class="nav-link">Noticias</a></li>
           <li><a href="revistas.html" class="nav-link">Revistas</a></li>
+          <li><a href="literatura.html" class="nav-link">Literatura</a></li>
           <li><a href="sedes.html" class="nav-link">Sedes</a></li>
           <li><a href="membresia.html" class="nav-link">Membresía</a></li>
           <li><a href="#liderazgo" class="nav-link">Liderazgo</a></li>
@@ -85,8 +89,8 @@
       <div class="brand-link">
         <div class="logo-badge">EJ</div>
         <div class="brand-text">
-          <span class="brand-title">Un Encuentro con Jesús</span>
-          <span class="brand-subtitle">Portal Oficial</span>
+          <span class="brand-title" data-editable="brand_title">EDITORIAL - MISIÓN</span>
+          <span class="brand-subtitle" data-editable="brand_subtitle">UN ENCUENTRO CON JESÚS</span>
         </div>
       </div>
       <button class="sidebar-close" id="sidebarClose">&times;</button>
@@ -97,12 +101,12 @@
         <li><a href="index.html" class="active">Inicio</a></li>
         <li><a href="#noticias">Noticias y Devocionales</a></li>
         <li><a href="revistas.html">Revistas y Ediciones</a></li>
+        <li><a href="literatura.html">Literatura Cristiana</a></li>
         <li><a href="sedes.html">Nuestras Sedes</a></li>
         <li><a href="membresia.html">Consulta de Membresía</a></li>
         <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
         <li><a href="#envivo">Transmisión En Vivo</a></li>
         <li><a href="biblia.html">Santa Biblia &amp; Promesa</a></li>
-
       </ul>
     </nav>
 
@@ -243,8 +247,8 @@
           <div class="brand-link" style="margin-bottom: 1rem;">
             <div class="logo-badge">EJ</div>
             <div class="brand-text">
-              <span class="brand-title">Un Encuentro con Jesús</span>
-              <span class="brand-subtitle">Asociación Cristiana</span>
+              <span class="brand-title">EDITORIAL - MISIÓN</span>
+              <span class="brand-subtitle">UN ENCUENTRO CON JESÚS</span>
             </div>
           </div>
           <p data-editable="footer_brand_desc">
@@ -265,6 +269,7 @@
             <li><a href="index.html">Inicio</a></li>
             <li><a href="#noticias">Noticias &amp; Devocionales</a></li>
             <li><a href="revistas.html">Revistas Oficiales</a></li>
+            <li><a href="literatura.html">Literatura Cristiana</a></li>
             <li><a href="sedes.html">Directorio de Sedes</a></li>
             <li><a href="membresia.html">Consulta de Membresía</a></li>
             <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
@@ -306,6 +311,7 @@
     </div>
     <div class="visual-bar-actions">
       <button id="btnToggleEdit" type="button" class="btn-vis-action">✏️ Habilitar Edición de Textos</button>
+      <button id="btnChangeLogo" type="button" class="btn-vis-action">🏷️ Cambiar Logo</button>
       <button id="btnChangeHeroBg" type="button" class="btn-vis-action">🖼️ Cambiar Fondo Portada</button>
       <button id="btnOpenSocialModal" type="button" class="btn-vis-action">🌐 Redes Sociales</button>
       <button id="btnOpenStreamModal" type="button" class="btn-vis-action">📡 Transmisiones</button>
@@ -313,6 +319,7 @@
       <a href="admin.html" class="btn-vis-action btn-vis-panel">⚙️ Panel Admin</a>
     </div>
     <input type="file" id="inputHeroBgFile" accept="image/*" style="display: none;">
+    <input type="file" id="inputLogoFile" accept="image/*" style="display: none;">
   </div>
 
   <!-- MODAL REDES SOCIALES -->

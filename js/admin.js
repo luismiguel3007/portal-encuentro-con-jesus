@@ -58,10 +58,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (targetId === 'tab-lideres') cargarLideres();
       if (targetId === 'tab-miembros') cargarMiembros();
       if (targetId === 'tab-transmisiones') cargarTransmisiones();
+      if (targetId === 'tab-literatura') cargarLiteraturaAdmin();
     });
   });
 
- // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN CLOUDFLARE R2
+  // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN CLOUDFLARE R2
   async function subirArchivo(archivo, carpeta) {
     const ext = archivo.name.split('.').pop();
     const cleanName = `${carpeta}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
@@ -454,7 +455,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cargarSedes();
         actualizarKPIs();
       } catch (err) {
-        msgSede.className = 'alert-box error';
+        msgMiembro.className = 'alert-box error';
         msgSede.textContent = 'Error: ' + (err.message || err);
       } finally {
         btnGuardarSede.disabled = false;
@@ -1171,17 +1172,179 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // ===================================================
-  // 11. CARGA DE CONTADORES (KPIS) Y PRIMERA VISTA
+  // 11. SECCIÓN LITERATURA: REGISTRO Y EDICIÓN COMPLETA
+  // ===================================================
+  let listaLiteraturaCache = [];
+  const formLit = document.getElementById('formLiteratura');
+  const msgLit = document.getElementById('msgLiteratura');
+  const btnGuardarLit = document.getElementById('btnGuardarLit');
+  const btnCancelarLit = document.getElementById('btnCancelarLit');
+  const litEditId = document.getElementById('litEditId');
+  const litExistingPortada = document.getElementById('litExistingPortada');
+  const litExistingPdf = document.getElementById('litExistingPdf');
+  const litPortadaHelp = document.getElementById('litPortadaHelp');
+  const litPdfHelp = document.getElementById('litPdfHelp');
+  const titleFormLit = document.getElementById('titleFormLit');
+
+  if (btnCancelarLit) {
+    btnCancelarLit.addEventListener('click', () => {
+      formLit.reset();
+      if (litEditId) litEditId.value = '';
+      if (litExistingPortada) litExistingPortada.value = '';
+      if (litExistingPdf) litExistingPdf.value = '';
+      btnGuardarLit.textContent = 'Guardar Literatura';
+      btnCancelarLit.style.display = 'none';
+      if (litPortadaHelp) litPortadaHelp.style.display = 'none';
+      if (litPdfHelp) litPdfHelp.style.display = 'none';
+      if (titleFormLit) titleFormLit.textContent = 'Publicar Nuevo Libro o Estudio';
+      msgLit.textContent = '';
+    });
+  }
+
+  if (formLit) {
+    formLit.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = litEditId ? litEditId.value : '';
+      btnGuardarLit.disabled = true;
+      btnGuardarLit.textContent = editId ? 'Actualizando material...' : 'Subiendo a Cloudflare R2...';
+      msgLit.textContent = '';
+
+      try {
+        const filePortada = document.getElementById('litPortada').files[0];
+        const filePdf = document.getElementById('litPdf').files[0];
+
+        let portadaUrl = litExistingPortada ? litExistingPortada.value : '';
+        let pdfUrl = litExistingPdf ? litExistingPdf.value : '';
+
+        if (!editId && (!filePortada || !filePdf)) {
+          throw new Error('Debes seleccionar la fotografía de portada y el documento PDF.');
+        }
+
+        if (filePortada) {
+          portadaUrl = await subirArchivo(filePortada, 'literatura/portadas');
+        }
+        if (filePdf) {
+          pdfUrl = await subirArchivo(filePdf, 'literatura/pdf');
+        }
+
+        const litData = {
+          titulo: document.getElementById('litTitulo').value.trim(),
+          autor: document.getElementById('litAutor').value.trim(),
+          categoria: document.getElementById('litCategoria').value,
+          descripcion: document.getElementById('litDescripcion').value.trim(),
+          portada_url: portadaUrl,
+          archivo_url: pdfUrl
+        };
+
+        if (editId) {
+          const { error } = await db.from('literatura').update(litData).eq('id', editId);
+          if (error) throw error;
+          msgLit.className = 'alert-box success';
+          msgLit.textContent = '✓ Material actualizado con éxito.';
+          if (btnCancelarLit) btnCancelarLit.click();
+        } else {
+          const { error } = await db.from('literatura').insert([litData]);
+          if (error) throw error;
+          msgLit.className = 'alert-box success';
+          msgLit.textContent = '✓ Material publicado con éxito.';
+          formLit.reset();
+        }
+
+        cargarLiteraturaAdmin();
+        actualizarKPIs();
+      } catch (err) {
+        msgLit.className = 'alert-box error';
+        msgLit.textContent = 'Error: ' + (err.message || err);
+      } finally {
+        btnGuardarLit.disabled = false;
+        btnGuardarLit.textContent = (litEditId && litEditId.value) ? 'Actualizar Material' : 'Guardar Literatura';
+      }
+    });
+  }
+
+  window.cargarLiteraturaAdmin = async function() {
+    const contenedor = document.getElementById('listaLiteraturaAdmin');
+    if (!contenedor) return;
+    contenedor.innerHTML = '<p class="text-muted">Cargando biblioteca...</p>';
+
+    try {
+      const { data, error } = await db.from('literatura').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+
+      listaLiteraturaCache = data || [];
+
+      if (listaLiteraturaCache.length === 0) {
+        contenedor.innerHTML = '<p class="text-muted">No hay libros ni estudios registrados.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = listaLiteraturaCache.map(item => `
+        <div class="admin-item-row" id="lit-${item.id}">
+          <img src="${item.portada_url || 'https://via.placeholder.com/70'}" class="admin-thumb" alt="portada">
+          <div class="admin-item-info">
+            <span class="badge-cat-sm">${item.categoria}</span>
+            <h4>${item.titulo}</h4>
+            <small>Autor: ${item.autor} — <a href="${item.archivo_url}" target="_blank" style="color:#0b192c; font-weight:bold;">Ver PDF</a></small>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-secondary btn-sm" onclick="editarLiteratura(${item.id})">✏️ Editar</button>
+            <button type="button" class="btn-delete" onclick="eliminarLiteratura(${item.id}, '${item.portada_url}', '${item.archivo_url}')">🗑️ Eliminar</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      contenedor.innerHTML = '<p style="color:red;">Error al cargar literatura.</p>';
+    }
+  };
+
+  window.editarLiteratura = function(id) {
+    const item = listaLiteraturaCache.find(x => x.id === id);
+    if (!item) return;
+
+    if (litEditId) litEditId.value = item.id;
+    if (litExistingPortada) litExistingPortada.value = item.portada_url || '';
+    if (litExistingPdf) litExistingPdf.value = item.archivo_url || '';
+
+    document.getElementById('litTitulo').value = item.titulo || '';
+    document.getElementById('litAutor').value = item.autor || '';
+    document.getElementById('litCategoria').value = item.categoria || '';
+    document.getElementById('litDescripcion').value = item.descripcion || '';
+
+    btnGuardarLit.textContent = 'Actualizar Material';
+    if (btnCancelarLit) btnCancelarLit.style.display = 'inline-block';
+    if (litPortadaHelp) litPortadaHelp.style.display = 'block';
+    if (litPdfHelp) litPdfHelp.style.display = 'block';
+    if (titleFormLit) titleFormLit.textContent = 'Editar Libro o Estudio';
+    formLit.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.eliminarLiteratura = async function(id, portadaUrl, pdfUrl) {
+    if (!confirm('¿Seguro que deseas eliminar este libro/estudio y sus archivos?')) return;
+    try {
+      await borrarArchivoDeStorage(portadaUrl);
+      await borrarArchivoDeStorage(pdfUrl);
+      const { error } = await db.from('literatura').delete().eq('id', id);
+      if (error) throw error;
+      document.getElementById(`lit-${id}`)?.remove();
+      actualizarKPIs();
+    } catch (err) {
+      alert('Error al eliminar literatura: ' + err.message);
+    }
+  };
+
+  // ===================================================
+  // 12. CARGA DE CONTADORES (KPIS) Y PRIMERA VISTA
   // ===================================================
   async function actualizarKPIs() {
     try {
-      const [art, rev, sed, lid, mie, tra] = await Promise.all([
+      const [art, rev, sed, lid, mie, tra, lit] = await Promise.all([
         db.from('articulos').select('*', { count: 'exact', head: true }),
         db.from('revistas').select('*', { count: 'exact', head: true }),
         db.from('sedes').select('*', { count: 'exact', head: true }),
         db.from('lideres').select('*', { count: 'exact', head: true }),
         db.from('miembros').select('*', { count: 'exact', head: true }),
-        db.from('transmisiones_en_vivo').select('*', { count: 'exact', head: true })
+        db.from('transmisiones_en_vivo').select('*', { count: 'exact', head: true }),
+        db.from('literatura').select('*', { count: 'exact', head: true })
       ]);
 
       const setVal = (id, count) => {
@@ -1195,6 +1358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       setVal('kpiLideres', lid.count);
       setVal('kpiMiembros', mie.count);
       setVal('kpiTransmisiones', tra ? tra.count : 0);
+      setVal('kpiLiteratura', lit ? lit.count : 0);
     } catch (e) {
       console.warn('Error calculando KPIs:', e);
     }

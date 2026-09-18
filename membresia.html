@@ -15,6 +15,68 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
+    /* ===================================================
+       PANEL DEMOGRÁFICO DE EDADES
+       =================================================== */
+    .demographics-container {
+      max-width: 1100px;
+      margin: 0 auto 2.5rem auto;
+    }
+    .demographics-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0b192c;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .demographics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .demo-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: 3.5px solid #e5a823;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .demo-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    .demo-icon {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+    .demo-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .demo-count {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #0b192c;
+      margin: 4px 0 2px 0;
+      line-height: 1;
+    }
+    .demo-range {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    /* ===================================================
+       BUSCADOR Y TARJETAS
+       =================================================== */
     .member-search-section {
       max-width: 650px;
       margin: 0 auto 2.5rem auto;
@@ -203,29 +265,64 @@
         </div>
       </a>
 
-      <nav class="nav-desktop" aria-label="Navegación principal">
-  <ul class="nav-links">
-    <li><a href="index.html" class="nav-link">Inicio</a></li>
-    <li><a href="index.html#noticias" class="nav-link">Noticias</a></li>
-    <li><a href="revistas.html" class="nav-link">Revistas</a></li>
-    <li><a href="sedes.html" class="nav-link">Sedes</a></li>
-    <li><a href="membresia.html" class="nav-link active">Membresía</a></li>
-    <li><a href="index.html#liderazgo" class="nav-link">Liderazgo</a></li>
-    <li><a href="index.html#envivo" class="nav-link">En Vivo</a></li>
-    <li><a href="biblia.html" class="nav-link">Biblia</a></li>
-    <li>
-      <a href="login.html" class="btn-admin-nav">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        Admin
-      </a>
-    </li>
-  </ul>
-</nav>
+      <nav class="nav-desktop">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Inicio</a></li>
+          <li><a href="index.html#noticias" class="nav-link">Noticias</a></li>
+          <li><a href="revistas.html" class="nav-link">Revistas</a></li>
+          <li><a href="literatura.html" class="nav-link">Literatura</a></li>
+          <li><a href="sedes.html" class="nav-link">Sedes</a></li>
+          <li><a href="membresia.html" class="nav-link active">Membresía</a></li>
+          <li><a href="index.html#liderazgo" class="nav-link">Liderazgo</a></li>
+          <li><a href="index.html#envivo" class="nav-link">En Vivo</a></li>
+          <li><a href="biblia.html" class="nav-link">Biblia</a></li>
+          <li>
+            <a href="login.html" class="btn-admin-nav">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Admin
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <button class="btn-hamburger" id="menuToggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </header>
+
+  <!-- Menú Lateral Móvil -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar-menu" id="sidebarMenu">
+    <div class="sidebar-header">
+      <div class="brand-link">
+        <div class="logo-badge">EJ</div>
+        <div class="brand-text">
+          <span class="brand-title">Un Encuentro con Jesús</span>
+          <span class="brand-subtitle">Portal Oficial</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose">&times;</button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="index.html#noticias">Noticias y Devocionales</a></li>
+        <li><a href="revistas.html">Revistas y Ediciones</a></li>
+        <li><a href="literatura.html">Literatura Cristiana</a></li>
+        <li><a href="sedes.html">Nuestras Sedes</a></li>
+        <li><a href="membresia.html" class="active">Consulta de Membresía</a></li>
+        <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
+        <li><a href="index.html#envivo">Transmisión En Vivo</a></li>
+        <li><a href="biblia.html">Santa Biblia &amp; Promesa</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="login.html" class="btn-sidebar-admin" id="sidebarAdminBtn">
+        Panel de Administración
+      </a>
+    </div>
+  </aside>
 
   <section class="hero-editorial" style="padding: 3.5rem 0 2.5rem;">
     <div class="container">
@@ -240,6 +337,46 @@
   </section>
 
   <main class="container" style="padding: 3rem 1rem 5rem;">
+
+    <!-- PANEL DEMOGRÁFICO POR EDADES -->
+    <section class="demographics-container">
+      <div class="demographics-title">
+        <span>📊 Registro Demográfico de la Congregación</span>
+      </div>
+      <div class="demographics-grid">
+        <div class="demo-card">
+          <div class="demo-icon">👶</div>
+          <div class="demo-label">Niños</div>
+          <div class="demo-count" id="countNinos">--</div>
+          <div class="demo-range">0 a 12 años</div>
+        </div>
+        <div class="demo-card">
+          <div class="demo-icon">🎒</div>
+          <div class="demo-label">Adolescentes</div>
+          <div class="demo-count" id="countAdolescentes">--</div>
+          <div class="demo-range">13 a 17 años</div>
+        </div>
+        <div class="demo-card">
+          <div class="demo-icon">⚡</div>
+          <div class="demo-label">Jóvenes</div>
+          <div class="demo-count" id="countJovenes">--</div>
+          <div class="demo-range">18 a 40 años</div>
+        </div>
+        <div class="demo-card">
+          <div class="demo-icon">💼</div>
+          <div class="demo-label">Adultos</div>
+          <div class="demo-count" id="countAdultos">--</div>
+          <div class="demo-range">40 a 60 años</div>
+        </div>
+        <div class="demo-card">
+          <div class="demo-icon">👴</div>
+          <div class="demo-label">Adulto Mayor</div>
+          <div class="demo-count" id="countAdultoMayor">--</div>
+          <div class="demo-range">60 a más años</div>
+        </div>
+      </div>
+    </section>
+
     <!-- Buscador Integrado -->
     <div class="member-search-section">
       <div class="member-search-bar">
@@ -276,6 +413,99 @@
     const supabaseClient = window.db || (typeof db !== 'undefined' ? db : null);
     let miembrosPublicos = [];
 
+    // Manejo de Menú Móvil
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    if (menuToggle && sidebarMenu) {
+      menuToggle.addEventListener('click', () => {
+        sidebarMenu.classList.add('open');
+        if (sidebarOverlay) sidebarOverlay.classList.add('open');
+      });
+      if (sidebarClose) {
+        sidebarClose.addEventListener('click', () => {
+          sidebarMenu.classList.remove('open');
+          if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+        });
+      }
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+          sidebarMenu.classList.remove('open');
+          sidebarOverlay.classList.remove('open');
+        });
+      }
+    }
+
+    // Calcula la edad tanto del campo numérico como de la fecha de nacimiento
+    function calcularEdadMiembro(m) {
+      if (m.edad !== null && m.edad !== undefined && !isNaN(parseInt(m.edad, 10))) {
+        return parseInt(m.edad, 10);
+      }
+      if (m.fecha_nacimiento) {
+        const fechaNac = new Date(m.fecha_nacimiento);
+        if (!isNaN(fechaNac.getTime())) {
+          const hoy = new Date();
+          let edad = hoy.getFullYear() - fechaNac.getFullYear();
+          const mes = hoy.getMonth() - fechaNac.getMonth();
+          if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+          }
+          return edad >= 0 ? edad : null;
+        }
+      }
+      return null;
+    }
+
+    // Actualiza los contadores demográficos
+    async function actualizarConteoDemografico() {
+      let datosParaMetricas = [];
+
+      try {
+        // Consultar el total de miembros registrados para que las métricas representen a toda la congregación
+        const { data, error } = await supabaseClient
+          .from('miembros')
+          .select('edad, fecha_nacimiento');
+
+        if (!error && data && data.length > 0) {
+          datosParaMetricas = data;
+        } else {
+          datosParaMetricas = miembrosPublicos;
+        }
+      } catch (e) {
+        datosParaMetricas = miembrosPublicos;
+      }
+
+      let ninos = 0;          // 0 a 12
+      let adolescentes = 0;   // 13 a 17
+      let jovenes = 0;        // 18 a 40
+      let adultos = 0;        // 40 a 60
+      let adultoMayor = 0;    // 60 a más
+
+      datosParaMetricas.forEach(m => {
+        const edad = calcularEdadMiembro(m);
+        if (edad === null || edad < 0) return;
+
+        if (edad <= 12) {
+          ninos++;
+        } else if (edad <= 17) {
+          adolescentes++;
+        } else if (edad <= 39) {
+          jovenes++;
+        } else if (edad <= 59) {
+          adultos++;
+        } else {
+          adultoMayor++;
+        }
+      });
+
+      document.getElementById('countNinos').textContent = ninos;
+      document.getElementById('countAdolescentes').textContent = adolescentes;
+      document.getElementById('countJovenes').textContent = jovenes;
+      document.getElementById('countAdultos').textContent = adultos;
+      document.getElementById('countAdultoMayor').textContent = adultoMayor;
+    }
+
     async function cargarPadronPublico() {
       const grid = document.getElementById('gridMembresiaPublica');
       if (!supabaseClient) {
@@ -294,6 +524,7 @@
 
         miembrosPublicos = data || [];
         renderizarMiembros(miembrosPublicos);
+        actualizarConteoDemografico();
 
       } catch (err) {
         console.error('Error:', err);
@@ -304,16 +535,17 @@
     function renderizarMiembros(lista) {
       const grid = document.getElementById('gridMembresiaPublica');
       if (!lista || lista.length === 0) {
-        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#64748b; padding:2rem;">No se encontraron miembros públicos registrados.</p>';
+        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#64748b; padding:2rem;">No se encontraron miembros con ese criterio de búsqueda.</p>';
         return;
       }
 
-      grid.innerHTML = lista.map((m, idx) => {
+      // Se usa m.id en vez del índice de iteración para evitar cruces en la búsqueda
+      grid.innerHTML = lista.map((m) => {
         const vis = m.visibilidad || {};
         const nombreVisible = (vis.nombre === false) ? 'Miembro Reservado' : (m.nombre || 'Miembro de la Iglesia');
 
         return `
-          <div class="public-member-card" onclick="abrirFichaMiembro(${idx})">
+          <div class="public-member-card" onclick="abrirFichaMiembroPorId('${m.id}')">
             <div>
               ${(vis.codigo !== false && m.codigo) ? `<span class="member-card-badge">${m.codigo}</span>` : ''}
               <h3 class="member-card-title">${nombreVisible}</h3>
@@ -329,9 +561,9 @@
       }).join('');
     }
 
-    // Modal para ver toda la información pública del miembro
-    window.abrirFichaMiembro = function(index) {
-      const m = miembrosPublicos[index];
+    // Abre la ficha buscando el miembro exacto por su ID único
+    window.abrirFichaMiembroPorId = function(memberId) {
+      const m = miembrosPublicos.find(item => String(item.id) === String(memberId));
       if (!m) return;
 
       const vis = m.visibilidad || {};
@@ -343,6 +575,7 @@
       nombreEl.textContent = (vis.nombre === false) ? 'Miembro Reservado' : (m.nombre || 'Miembro de la Iglesia');
       codigoEl.textContent = (vis.codigo !== false && m.codigo) ? m.codigo : 'OFICIAL';
 
+      const edadCalculada = calcularEdadMiembro(m);
       let itemsHtml = '';
 
       if (vis.dni && m.dni) itemsHtml += `<div class="modal-info-item"><strong>Documento DNI</strong>${m.dni}</div>`;
@@ -353,7 +586,7 @@
       if (vis.fecha_conversion && m.fecha_conversion) itemsHtml += `<div class="modal-info-item"><strong>Fecha de Conversión</strong>${m.fecha_conversion}</div>`;
       if (vis.sexo && m.sexo) itemsHtml += `<div class="modal-info-item"><strong>Sexo</strong>${m.sexo}</div>`;
       if (vis.estado_civil && m.estado_civil) itemsHtml += `<div class="modal-info-item"><strong>Estado Civil</strong>${m.estado_civil}</div>`;
-      if (vis.edad && m.edad) itemsHtml += `<div class="modal-info-item"><strong>Edad</strong>${m.edad} años</div>`;
+      if (vis.edad && edadCalculada !== null) itemsHtml += `<div class="modal-info-item"><strong>Edad</strong>${edadCalculada} años</div>`;
       if (vis.fecha_nacimiento && m.fecha_nacimiento) itemsHtml += `<div class="modal-info-item"><strong>Fecha de Nacimiento</strong>${m.fecha_nacimiento}</div>`;
       if (vis.bautismo) itemsHtml += `<div class="modal-info-item"><strong>Bautismo en Agua</strong>${m.bautismo ? 'Sí' : 'No'}</div>`;
       if (vis.matrimonio) itemsHtml += `<div class="modal-info-item"><strong>Matrimonio Eclesiástico</strong>${m.matrimonio ? 'Sí' : 'No'}</div>`;

@@ -140,7 +140,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* --------------------------------------------------------------------------
-   3. BARRA SUPERIOR Y NAVEGACIÓN STICKY
+   3. BARRA SUPERIOR Y CABECERA STICKY
    -------------------------------------------------------------------------- */
 .topbar {
   background-color: #060D17;
@@ -182,55 +182,89 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 72px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  height: 78px !important;
 }
 
+/* Disposición horizontal estricta para logo y textos */
 .brand-link {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  text-decoration: none;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+  flex-shrink: 0 !important;
 }
 
-.logo-badge {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--accent) 0%, #B88210 100%);
-  color: var(--primary);
-  font-weight: 900;
-  font-size: 1.25rem;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(229, 168, 35, 0.4);
-  border: 2px solid #FFF5D6;
-  flex-shrink: 0;
+/* Cuadro dorado del logo */
+.logo-badge,
+.logo-badge.has-custom-logo {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  background: linear-gradient(135deg, #FDE047 0%, #E5A823 60%, #B88210 100%) !important;
+  border: 2px solid #FFF5D6 !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px !important;
+  box-shadow: 0 4px 15px rgba(229, 168, 35, 0.45) !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
+.logo-badge:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 18px rgba(229, 168, 35, 0.6) !important;
+}
+
+.logo-badge img,
+#headerLogoImg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25)) !important;
+}
+
+/* Contenedor tipográfico apilado al lado del logo */
 .brand-text {
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  text-align: left !important;
+  line-height: 1.15 !important;
 }
 
 .brand-title {
-  color: #FFFFFF;
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
+  color: #FFFFFF !important;
+  font-size: 1.05rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.03em !important;
+  line-height: 1.15 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .brand-subtitle {
-  color: #CBD5E1;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 500;
+  color: #E5A823 !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  margin: 2px 0 0 0 !important;
+  padding: 0 !important;
 }
 
 .nav-desktop {
@@ -1521,7 +1555,7 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
   }
   .btn-hamburger {
-    display: none !important; /* Ocultar siempre en computadoras de escritorio */
+    display: none !important;
   }
   .hero-title {
     font-size: 3.4rem;
@@ -2103,14 +2137,34 @@ img, video, canvas, iframe, embed, object {
   .topbar-inner {
     justify-content: flex-end;
   }
+  .brand-title {
+    font-size: 0.82rem !important;
+  }
+  .brand-subtitle {
+    font-size: 0.60rem !important;
+  }
+  .logo-badge,
+  .logo-badge.has-custom-logo {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
 }
 
 @media (max-width: 991px) {
   .brand-title {
-    font-size: 0.92rem;
+    font-size: 0.88rem !important;
   }
   .brand-subtitle {
-    font-size: 0.68rem;
+    font-size: 0.66rem !important;
+  }
+  .logo-badge,
+  .logo-badge.has-custom-logo {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
   }
 }
 
