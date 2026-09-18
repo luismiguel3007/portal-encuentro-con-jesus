@@ -291,6 +291,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 4px 14px rgba(229, 168, 35, 0.35);
 }
 
+/* BOTÓN HAMBURGUESA MÓVIL ESTILIZADO */
 .btn-hamburger {
   display: flex;
   flex-direction: column;
@@ -300,8 +301,8 @@ h1, h2, h3, h4, h5, h6 {
   width: 42px;
   height: 42px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(229, 168, 35, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(229, 168, 35, 0.45);
   border-radius: 10px;
   cursor: pointer;
   z-index: 1001;
@@ -319,7 +320,7 @@ h1, h2, h3, h4, h5, h6 {
 .btn-hamburger span {
   display: block;
   height: 2.5px;
-  width: 22px;
+  width: 20px;
   background-color: #FFFFFF;
   border-radius: 3px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -327,7 +328,7 @@ h1, h2, h3, h4, h5, h6 {
               background-color 0.2s ease;
 }
 
-/* Animación a 'X' al desplegarse el menú */
+/* Animación a 'X' al abrirse el menú */
 .btn-hamburger.active {
   background-color: var(--accent);
   border-color: var(--accent);
@@ -1520,15 +1521,8 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
   }
   .btn-hamburger {
-    display: flex;
+    display: none !important; /* Ocultar siempre en computadoras de escritorio */
   }
-  .brand-title {
-    font-size: 0.92rem;
-  }
-  .brand-subtitle {
-    font-size: 0.68rem;
-  }
-}
   .hero-title {
     font-size: 3.4rem;
   }
@@ -1762,12 +1756,11 @@ h1, h2, h3, h4, h5, h6 {
   color: #e5a823;
 }
 
-/* Escenario sin barras de scroll: navegación 100% libre por arrastre */
 .book-stage {
   flex: 1;
   width: 100%;
   height: 100%;
-  overflow: hidden !important; /* Desaparece por completo la barra inferior limitante */
+  overflow: hidden !important;
   position: relative;
   display: flex;
   align-items: center;
@@ -1782,7 +1775,6 @@ h1, h2, h3, h4, h5, h6 {
   cursor: grabbing !important;
 }
 
-/* Contenedor del libro abierto con aceleración por hardware */
 .book-spread {
   display: flex;
   align-items: center;
@@ -1806,7 +1798,6 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
 }
 
-/* Lienzo interactivo: sin límites forzados para crecer a máxima resolución */
 .book-page canvas {
   display: block;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
@@ -1817,7 +1808,6 @@ h1, h2, h3, h4, h5, h6 {
   max-height: none !important;
 }
 
-/* Botón Flotante Central estilo Issuu */
 .mag-floating-fullscreen {
   position: absolute;
   top: 50%;
@@ -1873,7 +1863,6 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 5;
 }
 
-/* Flechas fijadas en los extremos del visor */
 .book-nav-arrow {
   position: absolute;
   top: 50%;
@@ -2117,14 +2106,6 @@ img, video, canvas, iframe, embed, object {
 }
 
 @media (max-width: 991px) {
-  .btn-hamburger {
-    width: 44px;
-    height: 44px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
   .brand-title {
     font-size: 0.92rem;
   }
@@ -2483,7 +2464,7 @@ img, video, canvas, iframe, embed, object {
   }
 }
 
-/* Visor en Móviles: sin restricciones de altura */
+/* Visor en Móviles */
 @media (max-width: 767px) {
   .magazine-viewer-container {
     height: 100vh;
