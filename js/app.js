@@ -1210,17 +1210,30 @@ async function loadAjustes() {
     if (data) {
       ajustesData = data;
 
-      // Carga de Logotipo Editorial Personalizado
-      if (data.logo_url) {
-        const badge = document.getElementById('headerLogoBadge');
-        const badgeText = document.getElementById('logoBadgeText');
-        const badgeImg = document.getElementById('headerLogoImg');
+      // Carga Segura del Logotipo Editorial con verificación onLoad y onError
+      const badge = document.getElementById('headerLogoBadge');
+      const badgeText = document.getElementById('logoBadgeText');
+      const badgeImg = document.getElementById('headerLogoImg');
+
+      if (data.logo_url && data.logo_url.trim() !== '') {
         if (badgeImg) {
+          badgeImg.onload = () => {
+            badgeImg.style.display = 'block';
+            if (badgeText) badgeText.style.display = 'none';
+            if (badge) badge.classList.add('has-custom-logo');
+          };
+          badgeImg.onerror = () => {
+            badgeImg.style.display = 'none';
+            if (badgeText) badgeText.style.display = 'block';
+            if (badge) badge.classList.remove('has-custom-logo');
+            console.warn('No se pudo cargar la imagen del logotipo desde:', data.logo_url);
+          };
           badgeImg.src = data.logo_url;
-          badgeImg.style.display = 'block';
         }
-        if (badgeText) badgeText.style.display = 'none';
-        if (badge) badge.classList.add('has-custom-logo');
+      } else {
+        if (badgeImg) badgeImg.style.display = 'none';
+        if (badgeText) badgeText.style.display = 'block';
+        if (badge) badge.classList.remove('has-custom-logo');
       }
 
       if (data.hero_bg_url) {
@@ -1310,7 +1323,7 @@ async function setupVisualEditor() {
   const btnChangeHeroBg = document.getElementById('btnChangeHeroBg');
   const inputHeroBgFile = document.getElementById('inputHeroBgFile');
 
-  // Controles para cambiar Logotipo
+  // Controles del Logotipo Editorial
   const btnChangeLogo = document.getElementById('btnChangeLogo');
   const inputLogoFile = document.getElementById('inputLogoFile');
   const badgeLogo = document.getElementById('headerLogoBadge');
@@ -1379,7 +1392,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // Subir y actualizar Logotipo Editorial
+  // Subir y actualizar Logotipo Editorial en Cloudflare R2
   if (btnChangeLogo && inputLogoFile) {
     btnChangeLogo.addEventListener('click', () => {
       inputLogoFile.click();
@@ -1428,14 +1441,23 @@ async function setupVisualEditor() {
 
         if (dbErr) throw dbErr;
 
+        // Actualización inmediata del DOM con validación onLoad
         const badgeText = document.getElementById('logoBadgeText');
         const badgeImg = document.getElementById('headerLogoImg');
+
         if (badgeImg) {
+          badgeImg.onload = () => {
+            badgeImg.style.display = 'block';
+            if (badgeText) badgeText.style.display = 'none';
+            if (badgeLogo) badgeLogo.classList.add('has-custom-logo');
+          };
+          badgeImg.onerror = () => {
+            badgeImg.style.display = 'none';
+            if (badgeText) badgeText.style.display = 'block';
+            if (badgeLogo) badgeLogo.classList.remove('has-custom-logo');
+          };
           badgeImg.src = nuevoLogoUrl;
-          badgeImg.style.display = 'block';
         }
-        if (badgeText) badgeText.style.display = 'none';
-        if (badgeLogo) badgeLogo.classList.add('has-custom-logo');
 
         alert('✓ ¡Logotipo de la editorial actualizado con éxito!');
       } catch (err) {

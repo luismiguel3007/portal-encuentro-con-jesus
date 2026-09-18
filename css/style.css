@@ -231,8 +231,13 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: contain !important;
-  display: block !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25)) !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+/* Ocultar estrictamente si no tiene src asignado */
+#headerLogoImg:not([src]),
+#headerLogoImg[src=""] {
+  display: none !important;
 }
 
 /* Contenedor tipográfico apilado al lado del logo */
