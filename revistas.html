@@ -20,6 +20,114 @@
 
   <!-- PDF.js para renderizado interactivo de páginas de revistas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    /* Estilos de alta definición y controles interactivos para el visor */
+    .book-stage {
+      position: relative;
+      overflow: auto !important;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      width: 100%;
+      height: 100%;
+      touch-action: pan-x pan-y pinch-zoom;
+    }
+
+    .book-spread {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
+      transition: transform 0.15s ease-out;
+      cursor: pointer;
+    }
+
+    .book-page canvas {
+      display: block;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+      border-radius: 4px;
+    }
+
+    /* Botón flotante central estilo Issuu */
+    .mag-floating-fullscreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+      width: 62px;
+      height: 62px;
+      border-radius: 14px;
+      background: rgba(11, 25, 44, 0.88);
+      border: 2px solid rgba(229, 168, 35, 0.85);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(6px);
+      transition: transform 0.2s ease, background 0.2s ease, opacity 0.3s ease;
+    }
+
+    .mag-floating-fullscreen:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+      background: #0b192c;
+      border-color: #e5a823;
+    }
+
+    .mag-floating-fullscreen:active {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+
+    /* Ocultar el botón central flotante cuando ya está en pantalla completa */
+    :fullscreen .mag-floating-fullscreen,
+    :-webkit-full-screen .mag-floating-fullscreen,
+    .magazine-viewer-container:fullscreen .mag-floating-fullscreen {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mag-zoom-label {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: 700;
+      min-width: 44px;
+      text-align: center;
+      user-select: none;
+    }
+
+    /* Ajustes compactos para móviles */
+    @media (max-width: 640px) {
+      .magazine-bottom-bar {
+        padding: 8px 12px;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .mag-bar-tools {
+        gap: 6px;
+      }
+      .mag-btn-action span {
+        display: none;
+      }
+      .book-nav-arrow {
+        width: 38px;
+        height: 38px;
+        font-size: 1.2rem;
+      }
+      .mag-floating-fullscreen {
+        width: 52px;
+        height: 52px;
+      }
+      .mag-floating-fullscreen svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -164,8 +272,8 @@
           &#10094;
         </button>
 
-        <!-- Contenedor del Libro Abierto -->
-        <div class="book-spread" id="bookSpread">
+        <!-- Contenedor del Libro Abierto (Clicable para expandir pantalla completa) -->
+        <div class="book-spread" id="bookSpread" title="Toca o haz clic para ver en pantalla completa">
           <!-- Hoja Izquierda -->
           <div class="book-page page-left">
             <canvas id="canvasLeft"></canvas>
@@ -183,18 +291,51 @@
           <div class="page-flip-layer" id="pageFlipLayer"></div>
         </div>
 
+        <!-- Botón Flotante Central estilo Issuu -->
+        <button type="button" class="mag-floating-fullscreen" id="btnFloatingFullscreen" title="Abrir en pantalla completa">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+        </button>
+
         <!-- Flecha Derecha flotante -->
         <button type="button" class="book-nav-arrow arrow-next" id="magBtnNext" aria-label="Página siguiente">
           &#10095;
         </button>
       </div>
 
-      <!-- Barra de herramientas inferior idéntica al visor editorial -->
+      <!-- Barra de herramientas inferior con Lupa y Pantalla Completa -->
       <div class="magazine-bottom-bar">
         <!-- Indicador de página (ej. 14-15 / 68) -->
         <div class="mag-counter-badge" id="magPageCounter">1 / 1</div>
 
         <div class="mag-bar-tools">
+          <!-- Botón Alejar Zoom -->
+          <button type="button" class="mag-btn-action" id="btnZoomOut" title="Alejar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+          </button>
+
+          <!-- Porcentaje de Zoom -->
+          <span class="mag-zoom-label" id="zoomPercent">100%</span>
+
+          <!-- Botón Acercar Zoom -->
+          <button type="button" class="mag-btn-action" id="btnZoomIn" title="Acercar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="11" y1="8" x2="11" y2="14"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+          </button>
+
+          <!-- Botón Pantalla Completa -->
           <button type="button" class="mag-btn-action" id="btnToggleFullscreen" title="Pantalla Completa">
             <svg id="fsIconExpand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
@@ -202,6 +343,7 @@
             <span id="fsText">Pantalla Completa</span>
           </button>
           
+          <!-- Enlace Descarga Directa PDF -->
           <a id="magDownloadDirect" href="#" target="_blank" download class="mag-btn-action" title="Descargar PDF">
             📥 Descargar
           </a>
@@ -236,7 +378,6 @@
             <li><a href="revistas.html">Revistas Oficiales</a></li>
             <li><a href="sedes.html">Directorio de Sedes</a></li>
             <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
-
           </ul>
         </div>
 

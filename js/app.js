@@ -489,11 +489,29 @@ function stopAutoplay() {
 }
 
 /* ==========================================================================
-   7. CATÁLOGO DE REVISTAS Y VISOR DE DOBLE PÁGINA CON ANIMACIÓN 3D
+   7. CATÁLOGO DE REVISTAS Y VISOR ULTRA HD CON DRAG PAN Y ZOOM LIBRE
    ========================================================================== */
 let pdfDoc = null;
 let currentSpreadIndex = 1;
 let isRendering = false;
+let currentZoom = 1.0;
+let zoomDebounceTimer = null;
+let renderTaskLeft = null;
+let renderTaskRight = null;
+
+// Coordenadas para el arrastre libre
+let panX = 0;
+let panY = 0;
+let isDragging = false;
+let startMouseX = 0;
+let startMouseY = 0;
+let startPanX = 0;
+let startPanY = 0;
+let hasMoved = false;
+
+function esModoMovil() {
+  return window.innerWidth <= 768;
+}
 
 function initPdfWorker() {
   if (window.pdfjsLib) {
@@ -559,52 +577,280 @@ async function loadRevistas() {
   }
 }
 
+// Aplica el desplazamiento suave restringiendo únicamente que la hoja no se pierda fuera de la vista
+function aplicarTransformSpread() {
+  const bookSpread = document.getElementById('bookSpread');
+  const stage = document.getElementById('bookStage');
+  if (!bookSpread || !stage) return;
+
+  const wStage = stage.clientWidth;
+  const hStage = stage.clientHeight;
+  const wBook = bookSpread.offsetWidth;
+  const hBook = bookSpread.offsetHeight;
+
+  // Límite de desplazamiento: permite llegar hasta los extremos más un margen de holgura
+  const limitX = Math.max(0, (wBook - wStage) / 2 + 80);
+  const limitY = Math.max(0, (hBook - hStage) / 2 + 80);
+
+  if (wBook <= wStage) {
+    panX = 0;
+  } else {
+    panX = Math.min(limitX, Math.max(-limitX, panX));
+  }
+
+  if (hBook <= hStage) {
+    panY = 0;
+  } else {
+    panY = Math.min(limitY, Math.max(-limitY, panY));
+  }
+
+  bookSpread.style.transform = `translate3d(${panX}px, ${panY}px, 0)`;
+}
+
 function initMagazineModal() {
   const modal = document.getElementById('magazineModal');
   const btnClose = document.getElementById('closeMagazineBtn');
   const btnPrev = document.getElementById('magBtnPrev');
   const btnNext = document.getElementById('magBtnNext');
   const btnFullscreen = document.getElementById('btnToggleFullscreen');
+  const btnZoomIn = document.getElementById('btnZoomIn');
+  const btnZoomOut = document.getElementById('btnZoomOut');
+  const btnFloatingFullscreen = document.getElementById('btnFloatingFullscreen');
+  const bookSpread = document.getElementById('bookSpread');
+  const stage = document.getElementById('bookStage');
+  const viewer = document.getElementById('magazineViewerBox');
 
-  if (btnPrev) btnPrev.addEventListener('click', () => cambiarPagina(-2));
-  if (btnNext) btnNext.addEventListener('click', () => cambiarPagina(2));
+  // Navegación de páginas
+  if (btnPrev) btnPrev.addEventListener('click', (e) => { e.stopPropagation(); cambiarPagina(esModoMovil() ? -1 : -2); });
+  if (btnNext) btnNext.addEventListener('click', (e) => { e.stopPropagation(); cambiarPagina(esModoMovil() ? 1 : 2); });
 
+  // Botones de Zoom
+  if (btnZoomIn) btnZoomIn.addEventListener('click', () => modificarZoom(currentZoom + 0.35));
+  if (btnZoomOut) btnZoomOut.addEventListener('click', () => modificarZoom(currentZoom - 0.35));
+
+  // Cierre
   if (btnClose && modal) {
     btnClose.addEventListener('click', () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       }
       modal.style.display = 'none';
+      cancelarRenders();
       pdfDoc = null;
+      currentZoom = 1.0;
+      panX = 0;
+      panY = 0;
+      actualizarIndicadorZoom();
     });
   }
 
-  if (btnFullscreen) {
-    btnFullscreen.addEventListener('click', () => {
-      const viewer = document.getElementById('magazineViewerBox');
-      if (!document.fullscreenElement) {
-        if (viewer.requestFullscreen) viewer.requestFullscreen();
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
+  // Pantalla Completa
+  function togglePantallaCompleta() {
+    const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs) {
+      if (viewer.requestFullscreen) viewer.requestFullscreen().catch(() => {});
+      else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  }
+
+  if (btnFullscreen) btnFullscreen.addEventListener('click', togglePantallaCompleta);
+  if (btnFloatingFullscreen) {
+    btnFloatingFullscreen.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePantallaCompleta();
+    });
+  }
+
+  // ====================================================
+  // ARRASTRE DIRECTO (PANNING 2D) CON RATÓN EN COMPUTADORA
+  // ====================================================
+  if (stage) {
+    stage.addEventListener('mousedown', (e) => {
+      if (!pdfDoc || modal.style.display !== 'flex') return;
+      if (e.target.closest('button') || e.target.closest('a')) return;
+
+      isDragging = true;
+      hasMoved = false;
+      startMouseX = e.clientX;
+      startMouseY = e.clientY;
+      startPanX = panX;
+      startPanY = panY;
+      stage.classList.add('is-dragging');
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startMouseX;
+      const dy = e.clientY - startMouseY;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasMoved = true;
+      }
+
+      panX = startPanX + dx;
+      panY = startPanY + dy;
+      aplicarTransformSpread();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        if (stage) stage.classList.remove('is-dragging');
       }
     });
 
-    document.addEventListener('fullscreenchange', () => {
-      const fsText = document.getElementById('fsText');
-      if (fsText) {
-        fsText.textContent = document.fullscreenElement ? 'Salir Pantalla' : 'Pantalla Completa';
+    // Zoom con rueda del ratón
+    stage.addEventListener('wheel', (e) => {
+      if (!pdfDoc || modal.style.display !== 'flex') return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.25 : -0.25;
+      modificarZoom(currentZoom + delta);
+    }, { passive: false });
+
+    // ====================================================
+    // ARRASTRE TÁCTIL Y PELLIZCO (PINCH) EN CELULARES
+    // ====================================================
+    let touchStartDist = 0;
+    let touchStartZoom = 1.0;
+    let isPinching = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    stage.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        isPinching = true;
+        touchStartDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        touchStartZoom = currentZoom;
+      } else if (e.touches.length === 1) {
+        isDragging = true;
+        hasMoved = false;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        startPanX = panX;
+        startPanY = panY;
       }
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', (e) => {
+      if (isPinching && e.touches.length === 2) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        if (touchStartDist > 0) {
+          modificarZoom(touchStartZoom * (dist / touchStartDist));
+        }
+      } else if (isDragging && e.touches.length === 1) {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          hasMoved = true;
+        }
+
+        panX = startPanX + dx;
+        panY = startPanY + dy;
+        aplicarTransformSpread();
+      }
+    }, { passive: false });
+
+    stage.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) isPinching = false;
+      if (e.touches.length === 0) isDragging = false;
+    });
+  }
+
+  // Toque / Clic limpio (sin arrastre) para alternar pantalla completa
+  if (bookSpread) {
+    bookSpread.addEventListener('click', () => {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      if (!isFs && !hasMoved && currentZoom <= 1.05) {
+        togglePantallaCompleta();
+      }
+    });
+  }
+
+  const onFullscreenChange = () => {
+    const fsText = document.getElementById('fsText');
+    const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+    if (fsText) fsText.textContent = isFs ? 'Salir' : 'Pantalla Completa';
+    setTimeout(() => {
       renderSpread();
-    });
-  }
+      aplicarTransformSpread();
+    }, 120);
+  };
+
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+  window.addEventListener('resize', () => {
+    if (pdfDoc && modal && modal.style.display === 'flex') {
+      renderSpread();
+      aplicarTransformSpread();
+    }
+  });
 
   window.addEventListener('keydown', (e) => {
     if (modal && modal.style.display === 'flex') {
-      if (e.key === 'ArrowLeft') cambiarPagina(-2);
-      if (e.key === 'ArrowRight') cambiarPagina(2);
-      if (e.key === 'Escape' && !document.fullscreenElement) btnClose.click();
+      const step = esModoMovil() ? 1 : 2;
+      if (e.key === 'ArrowLeft') cambiarPagina(-step);
+      if (e.key === 'ArrowRight') cambiarPagina(step);
+      if (e.key === 'Escape' && !document.fullscreenElement && !document.webkitFullscreenElement) {
+        btnClose.click();
+      }
     }
   });
+}
+
+function modificarZoom(nuevoZoom) {
+  const modal = document.getElementById('magazineModal');
+  const zoomLimite = Math.min(4.0, Math.max(0.8, Math.round(nuevoZoom * 100) / 100));
+  if (zoomLimite === currentZoom) return;
+
+  const prevZoom = currentZoom;
+  currentZoom = zoomLimite;
+  actualizarIndicadorZoom();
+
+  if (modal) {
+    if (currentZoom > 1.05) modal.classList.add('is-zoomed');
+    else modal.classList.remove('is-zoomed');
+  }
+
+  // Si regresa al tamaño original, centra la vista; de lo contrario escala el desplazamiento actual
+  if (currentZoom <= 1.0) {
+    panX = 0;
+    panY = 0;
+  } else if (prevZoom > 0) {
+    const ratio = currentZoom / prevZoom;
+    panX *= ratio;
+    panY *= ratio;
+  }
+
+  clearTimeout(zoomDebounceTimer);
+  zoomDebounceTimer = setTimeout(async () => {
+    await renderSpread();
+    aplicarTransformSpread();
+  }, 90);
+}
+
+function actualizarIndicadorZoom() {
+  const lbl = document.getElementById('zoomPercent');
+  if (lbl) lbl.textContent = `${Math.round(currentZoom * 100)}%`;
+}
+
+function cancelarRenders() {
+  if (renderTaskLeft) { renderTaskLeft.cancel(); renderTaskLeft = null; }
+  if (renderTaskRight) { renderTaskRight.cancel(); renderTaskRight = null; }
+  isRendering = false;
 }
 
 function abrirVisorRevista(pdfUrl, titulo) {
@@ -622,10 +868,15 @@ function abrirVisorRevista(pdfUrl, titulo) {
   if (downloadLink) downloadLink.href = pdfUrl;
 
   currentSpreadIndex = 1;
+  currentZoom = 1.0;
+  panX = 0;
+  panY = 0;
+  actualizarIndicadorZoom();
 
   window.pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
     pdfDoc = pdf;
     renderSpread();
+    aplicarTransformSpread();
   }).catch(err => {
     alert('No se pudo abrir la revista: ' + err.message);
     modal.style.display = 'none';
@@ -633,7 +884,8 @@ function abrirVisorRevista(pdfUrl, titulo) {
 }
 
 async function renderSpread() {
-  if (!pdfDoc || isRendering) return;
+  if (!pdfDoc) return;
+  cancelarRenders();
   isRendering = true;
 
   const canvasLeft = document.getElementById('canvasLeft');
@@ -644,33 +896,49 @@ async function renderSpread() {
   const spine = document.querySelector('.book-spine');
 
   const totalPages = pdfDoc.numPages;
+  const modoMovil = esModoMovil();
 
-  if (currentSpreadIndex === 1) {
+  if (modoMovil) {
     canvasLeft.style.display = 'none';
     if (spine) spine.style.display = 'none';
-    await renderSingleCanvas(currentSpreadIndex, canvasRight);
-    if (counter) counter.textContent = `Portada (1 / ${totalPages})`;
+    canvasRight.style.display = 'block';
+
+    renderTaskRight = await renderSingleCanvas(currentSpreadIndex, canvasRight);
+    if (counter) counter.textContent = `${currentSpreadIndex} / ${totalPages}`;
+
+    if (btnPrev) btnPrev.disabled = (currentSpreadIndex <= 1);
+    if (btnNext) btnNext.disabled = (currentSpreadIndex >= totalPages);
+
   } else {
-    canvasLeft.style.display = 'block';
-    if (spine) spine.style.display = 'block';
-
-    const pageL = currentSpreadIndex;
-    const pageR = currentSpreadIndex + 1;
-
-    await renderSingleCanvas(pageL, canvasLeft);
-
-    if (pageR <= totalPages) {
+    if (currentSpreadIndex === 1) {
+      canvasLeft.style.display = 'none';
+      if (spine) spine.style.display = 'none';
       canvasRight.style.display = 'block';
-      await renderSingleCanvas(pageR, canvasRight);
-      if (counter) counter.textContent = `${pageL}-${pageR} / ${totalPages}`;
-    } else {
-      canvasRight.style.display = 'none';
-      if (counter) counter.textContent = `${pageL} / ${totalPages}`;
-    }
-  }
 
-  if (btnPrev) btnPrev.disabled = (currentSpreadIndex <= 1);
-  if (btnNext) btnNext.disabled = (currentSpreadIndex + 1 >= totalPages);
+      renderTaskRight = await renderSingleCanvas(1, canvasRight);
+      if (counter) counter.textContent = `Portada (1 / ${totalPages})`;
+    } else {
+      canvasLeft.style.display = 'block';
+      if (spine) spine.style.display = 'block';
+
+      const pL = currentSpreadIndex;
+      const pR = currentSpreadIndex + 1;
+
+      renderTaskLeft = await renderSingleCanvas(pL, canvasLeft);
+
+      if (pR <= totalPages) {
+        canvasRight.style.display = 'block';
+        renderTaskRight = await renderSingleCanvas(pR, canvasRight);
+        if (counter) counter.textContent = `${pL}-${pR} / ${totalPages}`;
+      } else {
+        canvasRight.style.display = 'none';
+        if (counter) counter.textContent = `${pL} / ${totalPages}`;
+      }
+    }
+
+    if (btnPrev) btnPrev.disabled = (currentSpreadIndex <= 1);
+    if (btnNext) btnNext.disabled = (currentSpreadIndex + 1 >= totalPages);
+  }
 
   isRendering = false;
 }
@@ -679,18 +947,40 @@ async function renderSingleCanvas(pageNumber, canvas) {
   try {
     const page = await pdfDoc.getPage(pageNumber);
     const ctx = canvas.getContext('2d');
-    
-    const targetHeight = window.innerHeight * (document.fullscreenElement ? 0.88 : 0.78);
+    const modoMovil = esModoMovil();
+    const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+
+    const availableHeight = window.innerHeight * (isFs ? 0.90 : 0.80);
+    const targetHeight = availableHeight * currentZoom;
+
     const unscaledViewport = page.getViewport({ scale: 1 });
-    const scale = targetHeight / unscaledViewport.height;
-    const viewport = page.getViewport({ scale: scale > 0 ? scale : 1 });
+    let scale = targetHeight / unscaledViewport.height;
 
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+    if (modoMovil && currentZoom === 1.0) {
+      const maxMobileWidth = window.innerWidth * 0.92;
+      if (unscaledViewport.width * scale > maxMobileWidth) {
+        scale = maxMobileWidth / unscaledViewport.width;
+      }
+    }
 
-    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+    const viewport = page.getViewport({ scale: Math.max(scale, 0.4) });
+    const pixelRatio = Math.max(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.floor(viewport.width * pixelRatio);
+    canvas.height = Math.floor(viewport.height * pixelRatio);
+
+    canvas.style.width = `${Math.floor(viewport.width)}px`;
+    canvas.style.height = `${Math.floor(viewport.height)}px`;
+
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+    const task = page.render({ canvasContext: ctx, viewport: viewport });
+    await task.promise;
+    return task;
   } catch (e) {
-    console.warn(`Error renderizando página ${pageNumber}:`, e);
+    if (e.name !== 'RenderingCancelledException') {
+      console.warn(`Error renderizando página ${pageNumber}:`, e);
+    }
   }
 }
 
@@ -698,35 +988,30 @@ function cambiarPagina(delta) {
   if (!pdfDoc || isRendering) return;
 
   const totalPages = pdfDoc.numPages;
-  let targetIndex = currentSpreadIndex;
+  const modoMovil = esModoMovil();
+  let target = currentSpreadIndex;
 
-  if (delta > 0) {
-    targetIndex = (currentSpreadIndex === 1) ? 2 : currentSpreadIndex + 2;
-    if (targetIndex > totalPages) return;
+  if (modoMovil) {
+    target = currentSpreadIndex + delta;
+    if (target < 1 || target > totalPages) return;
   } else {
-    targetIndex = (currentSpreadIndex <= 2) ? 1 : currentSpreadIndex - 2;
-    if (targetIndex < 1) return;
+    if (delta > 0) {
+      target = (currentSpreadIndex === 1) ? 2 : currentSpreadIndex + 2;
+      if (target > totalPages) return;
+    } else {
+      target = (currentSpreadIndex <= 2) ? 1 : currentSpreadIndex - 2;
+      if (target < 1) return;
+    }
   }
 
-  const flipLayer = document.getElementById('pageFlipLayer');
-  if (flipLayer) {
-    const animClass = delta > 0 ? 'anim-flip-forward' : 'anim-flip-backward';
-    flipLayer.classList.remove('anim-flip-forward', 'anim-flip-backward');
-    void flipLayer.offsetWidth;
-    flipLayer.classList.add(animClass);
-
-    setTimeout(() => {
-      currentSpreadIndex = targetIndex;
-      renderSpread().then(() => {
-        flipLayer.classList.remove(animClass);
-      });
-    }, 280);
-  } else {
-    currentSpreadIndex = targetIndex;
-    renderSpread();
-  }
+  currentSpreadIndex = target;
+  // Al cambiar de página se restablece la posición central
+  panX = 0;
+  panY = 0;
+  currentZoom = 1.0;
+  actualizarIndicadorZoom();
+  renderSpread().then(aplicarTransformSpread);
 }
-
 /* ==========================================================================
    8. DIRECTORIO DE SEDES (sedes.html)
    ========================================================================== */
@@ -856,8 +1141,6 @@ function generarEmbedUrl(url) {
 
   // 1. FACEBOOK LIVE & VIDEOS
   if (cleanUrl.includes('facebook.com') || cleanUrl.includes('fb.watch')) {
-    
-    // Si viene de Facebook Live Producer (/live/producer/ID/), convertir al formato público
     if (cleanUrl.includes('/live/producer/')) {
       const match = cleanUrl.match(/\/producer\/(\d+)/);
       if (match && match[1]) {
@@ -865,7 +1148,6 @@ function generarEmbedUrl(url) {
       }
     }
 
-    // Limpiar parámetros de tracking (?mibextid, ?ref, etc.) si es un enlace estándar
     try {
       const urlObj = new URL(cleanUrl);
       if (urlObj.pathname.includes('/videos/') || urlObj.pathname.includes('/watch')) {
@@ -902,7 +1184,6 @@ function generarEmbedUrl(url) {
   return cleanUrl;
 }
 
-// Carga prioritaria de la señal activa desde la tabla 'transmisiones_en_vivo'
 async function loadTransmisionEnVivo() {
   const iframeVideo = document.getElementById('liveVideoIframe');
   const titleEl = document.querySelector('[data-editable="card_video_title"]') || document.getElementById('cardVideoTitle');
@@ -945,13 +1226,11 @@ async function loadAjustes() {
     if (data) {
       ajustesData = data;
 
-      // 1. Imagen de fondo del Hero
       if (data.hero_bg_url) {
         const heroSec = document.getElementById('heroEditorialSection');
         if (heroSec) heroSec.style.backgroundImage = `url("${data.hero_bg_url}")`;
       }
 
-      // 2. Cargar todos los textos personalizados guardados
       if (data.textos_custom && typeof data.textos_custom === 'object') {
         Object.keys(data.textos_custom).forEach(key => {
           const el = document.querySelector(`[data-editable="${key}"]`);
@@ -961,7 +1240,6 @@ async function loadAjustes() {
         });
       }
 
-      // Fallback de retrocompatibilidad para textos
       const elVersiculo = document.getElementById('editableVersiculo');
       const elTitulo = document.getElementById('editableHeroTitle');
       const elDesc = document.getElementById('editableHeroDesc');
@@ -969,7 +1247,6 @@ async function loadAjustes() {
       if (elTitulo && data.hero_titulo && !data.textos_custom?.hero_titulo) elTitulo.innerHTML = data.hero_titulo;
       if (elDesc && data.hero_descripcion && !data.textos_custom?.hero_desc) elDesc.textContent = data.hero_descripcion;
 
-      // 3. Radio continua
       const audioRadio = document.getElementById('audioRadio');
       const sourceRadio = document.getElementById('liveRadioSource');
       if (audioRadio && sourceRadio && data.radio_url) {
@@ -977,14 +1254,12 @@ async function loadAjustes() {
         audioRadio.load();
       }
 
-      // 4. Redes sociales
       aplicarRedSocial('linkFbTop', 'linkFbFooter', data.facebook_url);
       aplicarRedSocial('linkTkTop', 'linkTkFooter', data.tiktok_url);
       aplicarRedSocial('linkIgTop', 'linkIgFooter', data.instagram_url);
       aplicarRedSocial('linkYtTop', 'linkYtFooter', data.youtube_canal);
     }
 
-    // 5. Cargar señal de video: Prioridad a transmisiones_en_vivo y fallback a ajustes
     const transActivaCargada = await loadTransmisionEnVivo();
     const iframeVideo = document.getElementById('liveVideoIframe');
     if (!transActivaCargada && iframeVideo && data?.youtube_url) {
@@ -1038,7 +1313,6 @@ async function setupVisualEditor() {
   const btnChangeHeroBg = document.getElementById('btnChangeHeroBg');
   const inputHeroBgFile = document.getElementById('inputHeroBgFile');
 
-  // Modales
   const btnOpenSocialModal = document.getElementById('btnOpenSocialModal');
   const modalSocials = document.getElementById('modalSocials');
   const btnCloseSocialModal = document.getElementById('btnCloseSocialModal');
@@ -1051,7 +1325,6 @@ async function setupVisualEditor() {
 
   if (visualBar) visualBar.style.display = 'flex';
 
-  // 1. Alternar edición de textos con data-editable
   if (btnToggleEdit) {
     btnToggleEdit.addEventListener('click', () => {
       isEditingActive = !isEditingActive;
@@ -1067,7 +1340,6 @@ async function setupVisualEditor() {
     });
   }
 
-  // 2. Guardar textos editados en Supabase
   if (btnSaveVisualTexts) {
     btnSaveVisualTexts.addEventListener('click', async () => {
       btnSaveVisualTexts.disabled = true;
@@ -1103,7 +1375,6 @@ async function setupVisualEditor() {
     });
   }
 
-  // 3. Cambiar fondo del Hero (Subida directa a Cloudflare R2)
   if (btnChangeHeroBg && inputHeroBgFile) {
     btnChangeHeroBg.addEventListener('click', () => {
       inputHeroBgFile.click();
@@ -1156,7 +1427,6 @@ async function setupVisualEditor() {
     });
   }
 
-  // 4. Modal de redes sociales
   if (btnOpenSocialModal && modalSocials) {
     btnOpenSocialModal.addEventListener('click', () => {
       if (ajustesData) {
@@ -1206,7 +1476,6 @@ async function setupVisualEditor() {
     });
   }
 
-  // 5. Modal de transmisiones en vivo
   if (btnOpenStreamModal && modalStreams) {
     btnOpenStreamModal.addEventListener('click', () => {
       if (ajustesData) {
