@@ -670,6 +670,52 @@
       </div>
     </section>
 
+    <!-- MODAL: FICHA COMPLETA DEL MIEMBRO (EXPEDIENTE ADMINISTRATIVO) -->
+  <div id="modalFichaAdmin" class="admin-modal-overlay" style="display: none;">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <div class="modal-header-info">
+          <span class="modal-badge-code" id="fAdminCodigo">CÓDIGO</span>
+          <h2 id="fAdminNombre">Nombre del Miembro</h2>
+          <small id="fAdminSubtitulo">Expediente Oficial Congregacional &bull; Un Encuentro con Jesús</small>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCerrarFichaAdmin">&times;</button>
+      </div>
+
+      <div class="admin-modal-body">
+        <!-- 1. DATOS DE IDENTIFICACIÓN -->
+        <div class="ficha-seccion">
+          <div class="ficha-seccion-titulo">📋 Identificación & Datos Personales</div>
+          <div class="ficha-grid" id="fAdminPersonales"></div>
+        </div>
+
+        <!-- 2. VIDA ECLESIÁSTICA -->
+        <div class="ficha-seccion">
+          <div class="ficha-seccion-titulo">✝️ Vida Eclesiástica & Grado Espiritual</div>
+          <div class="ficha-grid" id="fAdminEclesiasticos"></div>
+        </div>
+
+        <!-- 3. ORDENANZAS -->
+        <div class="ficha-seccion">
+          <div class="ficha-seccion-titulo">🕊️ Ordenanzas & Sacramentos</div>
+          <div class="ficha-grid" id="fAdminOrdenanzas"></div>
+        </div>
+
+        <!-- 4. UBICACIÓN & PRIVACIDAD -->
+        <div class="ficha-seccion">
+          <div class="ficha-seccion-titulo">📍 Domicilio & Configuración de Privacidad</div>
+          <div class="ficha-grid" id="fAdminUbicacion"></div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-secondary" id="btnEditarDesdeFicha">✏️ Modificar en Formulario</button>
+        <button type="button" class="btn-primary" onclick="window.print()">🖨️ Imprimir Constancia</button>
+        <button type="button" class="btn-secondary" id="btnCerrarFichaAdminFooter">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   </main>
 
   <script src="js/config.js"></script>

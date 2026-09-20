@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Padrón y Consulta de Membresía | Un Encuentro con Jesús</title>
-  <meta name="description" content="Consulta oficial del padrón de miembros de la Asociación Cristiana Un Encuentro con Jesús.">
+  <meta name="description" content="Consulta oficial y carnet digital de miembros de la Asociación Cristiana Un Encuentro con Jesús.">
   
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +23,7 @@
       margin: 0 auto 2.5rem auto;
     }
     .demographics-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #0b192c;
       margin-bottom: 1rem;
@@ -75,168 +75,326 @@
     }
 
     /* ===================================================
-       BUSCADOR Y TARJETAS
+       FORMULARIO DE CONSULTA SEGURA
        =================================================== */
-    .member-search-section {
-      max-width: 650px;
-      margin: 0 auto 2.5rem auto;
-      text-align: center;
-    }
-    .member-search-bar {
-      display: flex;
-      gap: 10px;
+    .secure-query-box {
+      max-width: 580px;
+      margin: 0 auto 3rem auto;
       background: #ffffff;
-      padding: 8px;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-      border: 1px solid #cbd5e1;
-    }
-    .member-search-bar input {
-      flex: 1;
-      border: none;
-      outline: none;
-      padding: 10px 14px;
-      font-size: 1rem;
-      color: #0b192c;
-    }
-    .members-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 20px;
-    }
-    .public-member-card {
-      background: #ffffff;
+      border-radius: 16px;
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 22px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-      transition: all 0.25s ease;
-      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(11, 25, 44, 0.06);
+      padding: 2.2rem;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .public-member-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      border-color: #e5a823;
-    }
-    .member-card-badge {
-      background: #0b192c;
-      color: #e5a823;
-      font-size: 0.8rem;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 4px;
-      display: inline-block;
-      margin-bottom: 10px;
-      width: fit-content;
-    }
-    .member-card-title {
-      font-size: 1.2rem;
-      color: #0b192c;
-      margin: 0 0 10px 0;
-      font-weight: 700;
-      text-transform: capitalize;
-    }
-    .member-card-detail {
-      font-size: 0.88rem;
-      color: #475569;
-      line-height: 1.6;
-      margin-bottom: 5px;
-    }
-    .btn-ver-ficha {
-      margin-top: 14px;
-      background: #f1f5f9;
-      color: #0b192c;
-      border: 1px solid #cbd5e1;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-align: center;
-      transition: 0.2s;
-    }
-    .public-member-card:hover .btn-ver-ficha {
-      background: #e5a823;
-      color: #0b192c;
-      border-color: #e5a823;
     }
 
-    /* Modal Ficha Detallada */
-    .member-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(11, 25, 44, 0.85);
-      backdrop-filter: blur(5px);
-      z-index: 99999;
+    .query-header {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .query-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(229, 168, 35, 0.15);
+      color: #b88210;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .query-header h2 {
+      font-size: 1.4rem;
+      color: #0b192c;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .query-header p {
+      color: #64748b;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .query-form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .query-form-group label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .query-form-group input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 9px;
+      font-size: 0.95rem;
+      color: #0b192c;
+      outline: none;
+      transition: all 0.2s;
+      background: #f8fafc;
+    }
+
+    .query-form-group input:focus {
+      background: #ffffff;
+      border-color: #e5a823;
+      box-shadow: 0 0 0 3px rgba(229, 168, 35, 0.16);
+    }
+
+    .btn-query-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #e5a823 0%, #d19416 100%);
+      color: #0b192c;
+      border: none;
+      padding: 13px;
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(229, 168, 35, 0.35);
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 15px;
+      gap: 8px;
     }
-    .member-modal-box {
-      background: #ffffff;
-      border-radius: 14px;
-      width: 100%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-      border: 2px solid #e5a823;
-      position: relative;
-      padding: 2rem;
+
+    .btn-query-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(229, 168, 35, 0.45);
     }
-    .member-modal-header {
-      text-align: center;
-      border-bottom: 2px solid #f1f5f9;
-      padding-bottom: 1.2rem;
-      margin-bottom: 1.5rem;
-      position: relative;
+
+    .btn-query-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
     }
-    .member-modal-close {
-      position: absolute;
-      top: -10px;
-      right: 0;
-      background: transparent;
-      border: none;
-      font-size: 1.8rem;
-      color: #64748b;
-      cursor: pointer;
-    }
-    .member-modal-close:hover {
-      color: #b91c1c;
-    }
-    .modal-dni-badge {
-      background: #e5a823;
-      color: #0b192c;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-    .modal-info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
-      line-height: 1.6;
-      font-size: 0.95rem;
-      color: #1e293b;
-    }
-    .modal-info-item {
-      background: #f8fafc;
-      padding: 10px 14px;
+
+    .query-alert {
+      margin-top: 1.2rem;
+      padding: 12px 16px;
       border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      font-weight: 600;
+      display: none;
     }
-    .modal-info-item strong {
-      color: #0b192c;
+
+    .query-alert.error {
       display: block;
-      font-size: 0.8rem;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .query-alert.warning {
+      display: block;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+
+    /* ===================================================
+       TARJETA CARNET DIGITAL DE MIEMBRO
+       =================================================== */
+    .member-result-card {
+      max-width: 620px;
+      margin: 0 auto 3rem auto;
+      background: #ffffff;
+      border: 2px solid #e5a823;
+      border-radius: 18px;
+      padding: 2.2rem;
+      box-shadow: 0 15px 35px rgba(11, 25, 44, 0.12);
+      animation: fadeIn 0.3s ease-out;
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .carnet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px dashed #e2e8f0;
+      padding-bottom: 1.2rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .carnet-seal {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .carnet-badge-mini {
+      width: 44px;
+      height: 44px;
+      background: #0b192c;
+      color: #e5a823;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 1.1rem;
+    }
+
+    .carnet-title-box h3 {
+      font-size: 1.05rem;
+      color: #0b192c;
+      margin: 0;
+      font-weight: 800;
+    }
+
+    .carnet-title-box small {
+      color: #64748b;
+      font-size: 0.78rem;
+    }
+
+    .carnet-salute {
+      background: #f8fafc;
+      border-left: 4px solid #e5a823;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      color: #0b192c;
+      margin-bottom: 1.4rem;
+      line-height: 1.5;
+    }
+
+    .carnet-code-highlight {
+      display: inline-block;
+      background: #0b192c;
+      color: #e5a823;
+      font-weight: 900;
+      padding: 2px 10px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .carnet-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.6rem;
+    }
+
+    .carnet-detail-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 9px 12px;
+      border-radius: 8px;
+    }
+
+    .carnet-detail-item strong {
+      display: block;
+      font-size: 0.74rem;
+      color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       margin-bottom: 2px;
+    }
+
+    .carnet-detail-item span {
+      color: #0b192c;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .carnet-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.4rem;
+    }
+
+    .btn-carnet-copy {
+      flex: 1;
+      background: #0b192c;
+      color: #ffffff;
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-carnet-copy:hover {
+      background: #1e3e62;
+    }
+
+    .btn-carnet-print {
+      flex: 1;
+      background: #f1f5f9;
+      color: #0b192c;
+      border: 1.5px solid #cbd5e1;
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-carnet-print:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    .carnet-pastoral-help {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.84rem;
+      color: #92400e;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* Reglas para imprimir únicamente el Carnet Digital */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #memberResultBox, #memberResultBox * {
+        visibility: visible;
+      }
+      #memberResultBox {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: 2px solid #0b192c !important;
+        box-shadow: none !important;
+      }
+      .carnet-actions {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -327,10 +485,10 @@
   <section class="hero-editorial" style="padding: 3.5rem 0 2.5rem;">
     <div class="container">
       <div class="hero-content">
-        <div class="hero-badge">Padrón Congregacional</div>
-        <h1 class="hero-title">Consulta de Membresía</h1>
+        <div class="hero-badge">Padrón Congregacional Oficial</div>
+        <h1 class="hero-title">Consulta Segura de Membresía</h1>
         <p class="hero-description">
-          Verifica y consulta a los miembros activos registrados. Haz clic en cualquier tarjeta para abrir la ficha con su información pública oficial.
+          Ingresa tus datos personales para acceder a tu credencial de membresía y consultar tu código oficial registrado en la asociación.
         </p>
       </div>
     </div>
@@ -377,43 +535,97 @@
       </div>
     </section>
 
-    <!-- Buscador Integrado -->
-    <div class="member-search-section">
-      <div class="member-search-bar">
-        <input type="text" id="filtroMembresia" placeholder="🔍 Buscar por nombre, DNI o código (*M26)...">
+    <!-- FORMULARIO DE CONSULTA PRIVADA Y CONTROLADA -->
+    <section class="secure-query-box" id="formContainer">
+      <div class="query-header">
+        <div class="query-header-badge">🔒 Verificación de Identidad</div>
+        <h2>Acceso a tu Carnet Digital</h2>
+        <p>Por políticas de privacidad, ingresa tus datos personales para acceder a tu credencial eclesiástica.</p>
       </div>
-    </div>
 
-    <!-- Contenedor del Padrón Público -->
-    <div id="gridMembresiaPublica" class="members-cards-grid">
-      <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center;">
-        <div class="spinner"></div>
-        <span>Cargando padrón de miembros...</span>
+      <form id="formConsultaMembresia" autocomplete="off">
+        <div class="query-form-group">
+          <label for="inputDni">Documento Nacional de Identidad (DNI) *</label>
+          <input 
+            type="text" 
+            id="inputDni" 
+            placeholder="Ingresa tus 8 dígitos" 
+            maxlength="8" 
+            pattern="\d{8}" 
+            inputmode="numeric" 
+            required
+          >
+        </div>
+
+        <div class="query-form-group">
+          <label for="inputFechaNac">Fecha de Nacimiento *</label>
+          <input type="date" id="inputFechaNac" required>
+        </div>
+
+        <button type="submit" id="btnConsultar" class="btn-query-submit">
+          🔍 Consultar mi Membresía
+        </button>
+
+        <div id="queryMsg" class="query-alert"></div>
+      </form>
+    </section>
+
+    <!-- TARJETA INDIVIDUAL (CARNET DIGITAL) -->
+    <section class="member-result-card" id="memberResultBox" style="display: none;">
+      <div class="carnet-header">
+        <div class="carnet-seal">
+          <div class="carnet-badge-mini">EJ</div>
+          <div class="carnet-title-box">
+            <h3>Un Encuentro con Jesús</h3>
+            <small>Constancia y Credencial Eclesiástica Oficial</small>
+          </div>
+        </div>
+        <span class="query-header-badge" style="margin: 0;">Activo</span>
       </div>
-    </div>
+
+      <div class="carnet-salute" id="carnetSaludo">
+        <!-- Saludo dinámico -->
+      </div>
+
+      <div class="carnet-details-grid" id="carnetDetalles">
+        <!-- Detalles adicionales configurados -->
+      </div>
+
+      <div class="carnet-actions">
+        <button type="button" class="btn-carnet-copy" id="btnCopiarCodigo">
+          📋 Copiar Código Oficial
+        </button>
+        <button type="button" class="btn-carnet-print" id="btnImprimirCarnet">
+          📥 Descargar Carnet (PDF)
+        </button>
+      </div>
+
+      <div class="carnet-pastoral-help">
+        <span>ℹ️</span>
+        <div>
+          Si detectas algún error en tus datos o requieres una constancia oficial, comunícate con la casa pastoral.
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- MODAL FICHA DETALLADA DE MIEMBRO -->
-  <div id="modalFichaMiembro" class="member-modal-overlay" style="display: none;">
-    <div class="member-modal-box">
-      <div class="member-modal-header">
-        <button type="button" class="member-modal-close" id="btnCerrarModalFicha">&times;</button>
-        <span class="modal-dni-badge" id="mFichaCodigo">CÓDIGO</span>
-        <h2 id="mFichaNombre" style="color:#0b192c; margin: 10px 0 4px 0; text-transform: capitalize;">Nombre Completo</h2>
-        <small style="color:#64748b;">Asociación Cristiana Un Encuentro con Jesús &bull; Constancia Digital</small>
-      </div>
-      <div class="modal-info-grid" id="mFichaDetalles">
-        <!-- Se inyecta dinámicamente según visibilidad -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
+        <p>Padrón oficial de membresía protegido bajo estrictos controles de privacidad.</p>
       </div>
     </div>
-  </div>
+  </footer>
 
   <script src="js/config.js"></script>
   <script>
     const supabaseClient = window.db || (typeof db !== 'undefined' ? db : null);
-    let miembrosPublicos = [];
 
-    // Manejo de Menú Móvil
+    // =========================================================================
+    // 1. MANEJO DEL MENÚ MÓVIL
+    // =========================================================================
     const menuToggle = document.getElementById('menuToggle');
     const sidebarClose = document.getElementById('sidebarClose');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -437,7 +649,9 @@
       }
     }
 
-    // Calcula la edad tanto del campo numérico como de la fecha de nacimiento
+    // =========================================================================
+    // 2. CONTEO DEMOGRÁFICO ANÓNIMO
+    // =========================================================================
     function calcularEdadMiembro(m) {
       if (m.edad !== null && m.edad !== undefined && !isNaN(parseInt(m.edad, 10))) {
         return parseInt(m.edad, 10);
@@ -457,166 +671,201 @@
       return null;
     }
 
-    // Actualiza los contadores demográficos
     async function actualizarConteoDemografico() {
-      let datosParaMetricas = [];
+      if (!supabaseClient) return;
 
       try {
-        // Consultar el total de miembros registrados para que las métricas representen a toda la congregación
         const { data, error } = await supabaseClient
           .from('miembros')
           .select('edad, fecha_nacimiento');
 
-        if (!error && data && data.length > 0) {
-          datosParaMetricas = data;
-        } else {
-          datosParaMetricas = miembrosPublicos;
-        }
+        if (error || !data) return;
+
+        let ninos = 0;          // 0 a 12
+        let adolescentes = 0;   // 13 a 17
+        let jovenes = 0;        // 18 a 40
+        let adultos = 0;        // 40 a 60
+        let adultoMayor = 0;    // 60 a más
+
+        data.forEach(m => {
+          const edad = calcularEdadMiembro(m);
+          if (edad === null || edad < 0) return;
+
+          if (edad <= 12) ninos++;
+          else if (edad <= 17) adolescentes++;
+          else if (edad <= 39) jovenes++;
+          else if (edad <= 59) adultos++;
+          else adultoMayor++;
+        });
+
+        document.getElementById('countNinos').textContent = ninos;
+        document.getElementById('countAdolescentes').textContent = adolescentes;
+        document.getElementById('countJovenes').textContent = jovenes;
+        document.getElementById('countAdultos').textContent = adultos;
+        document.getElementById('countAdultoMayor').textContent = adultoMayor;
       } catch (e) {
-        datosParaMetricas = miembrosPublicos;
+        console.warn('Error demográfico:', e);
       }
-
-      let ninos = 0;          // 0 a 12
-      let adolescentes = 0;   // 13 a 17
-      let jovenes = 0;        // 18 a 40
-      let adultos = 0;        // 40 a 60
-      let adultoMayor = 0;    // 60 a más
-
-      datosParaMetricas.forEach(m => {
-        const edad = calcularEdadMiembro(m);
-        if (edad === null || edad < 0) return;
-
-        if (edad <= 12) {
-          ninos++;
-        } else if (edad <= 17) {
-          adolescentes++;
-        } else if (edad <= 39) {
-          jovenes++;
-        } else if (edad <= 59) {
-          adultos++;
-        } else {
-          adultoMayor++;
-        }
-      });
-
-      document.getElementById('countNinos').textContent = ninos;
-      document.getElementById('countAdolescentes').textContent = adolescentes;
-      document.getElementById('countJovenes').textContent = jovenes;
-      document.getElementById('countAdultos').textContent = adultos;
-      document.getElementById('countAdultoMayor').textContent = adultoMayor;
     }
 
-    async function cargarPadronPublico() {
-      const grid = document.getElementById('gridMembresiaPublica');
-      if (!supabaseClient) {
-        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Error al conectar con la base de datos.</p>';
+    // =========================================================================
+    // 3. CONTROL DE INTENTOS (RATE LIMITING / ANTI-BRUTE FORCE)
+    // =========================================================================
+    const MAX_INTENTOS = 5;
+    const VENTANA_MS = 60 * 1000;       // 1 minuto
+    const BLOQUEO_MS = 120 * 1000;      // 2 minutos de bloqueo si excede
+
+    function verificarBloqueoConsultas() {
+      const bloqueoHasta = parseInt(localStorage.getItem('mb_lockout_until') || '0', 10);
+      const ahora = Date.now();
+
+      if (bloqueoHasta > ahora) {
+        const segRestantes = Math.ceil((bloqueoHasta - ahora) / 1000);
+        mostrarMensajeAlerta(`Demasiados intentos fallidos. Por motivos de seguridad, espera ${segRestantes} segundos antes de volver a consultar.`, 'warning');
+        return true;
+      }
+      return false;
+    }
+
+    function registrarIntentoFallido() {
+      const ahora = Date.now();
+      let intentos = JSON.parse(localStorage.getItem('mb_attempts') || '[]');
+      
+      // Filtrar los intentos de la última ventana (1 min)
+      intentos = intentos.filter(timestamp => ahora - timestamp < VENTANA_MS);
+      intentos.push(ahora);
+      localStorage.setItem('mb_attempts', JSON.stringify(intentos));
+
+      if (intentos.length >= MAX_INTENTOS) {
+        const bloqueoHasta = ahora + BLOQUEO_MS;
+        localStorage.setItem('mb_lockout_until', bloqueoHasta.toString());
+        localStorage.removeItem('mb_attempts');
+        mostrarMensajeAlerta('Has superado el límite de 5 consultas por minuto. Acceso bloqueado por 2 minutos para proteger los datos de la congregación.', 'warning');
+        return true;
+      }
+      return false;
+    }
+
+    function mostrarMensajeAlerta(msg, tipo = 'error') {
+      const alertBox = document.getElementById('queryMsg');
+      alertBox.textContent = msg;
+      alertBox.className = `query-alert ${tipo}`;
+      alertBox.style.display = 'block';
+    }
+
+    function ocultarMensajeAlerta() {
+      const alertBox = document.getElementById('queryMsg');
+      alertBox.style.display = 'none';
+      alertBox.textContent = '';
+    }
+
+    // =========================================================================
+    // 4. CONSULTA CONTROLADA DE MEMBRESÍA
+    // =========================================================================
+    const form = document.getElementById('formConsultaMembresia');
+    const inputDni = document.getElementById('inputDni');
+    const inputFechaNac = document.getElementById('inputFechaNac');
+    const btnConsultar = document.getElementById('btnConsultar');
+    const resultBox = document.getElementById('memberResultBox');
+    const carnetSaludo = document.getElementById('carnetSaludo');
+    const carnetDetalles = document.getElementById('carnetDetalles');
+    const btnCopiarCodigo = document.getElementById('btnCopiarCodigo');
+    const btnImprimirCarnet = document.getElementById('btnImprimirCarnet');
+
+    let codigoMiembroActual = '';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      ocultarMensajeAlerta();
+      resultBox.style.display = 'none';
+
+      // Validar rate limit
+      if (verificarBloqueoConsultas()) return;
+
+      const dni = inputDni.value.trim();
+      const fechaNac = inputFechaNac.value;
+
+      if (!/^\d{8}$/.test(dni)) {
+        mostrarMensajeAlerta('El número de DNI debe contener exactamente 8 dígitos.');
         return;
       }
 
+      btnConsultar.disabled = true;
+      btnConsultar.textContent = 'Verificando datos...';
+
       try {
+        // Consulta exacta por DNI y fecha de nacimiento (Solo retorna el registro correspondiente)
         const { data, error } = await supabaseClient
           .from('miembros')
           .select('*')
-          .neq('es_publico', false)
-          .order('nombre', { ascending: true });
+          .eq('dni', dni)
+          .eq('fecha_nacimiento', fechaNac)
+          .maybeSingle();
 
         if (error) throw error;
 
-        miembrosPublicos = data || [];
-        renderizarMiembros(miembrosPublicos);
-        actualizarConteoDemografico();
+        // Si no coincide o está marcado como no público
+        if (!data) {
+          const bloqueado = registrarIntentoFallido();
+          if (!bloqueado) {
+            mostrarMensajeAlerta('Los datos ingresados no coinciden con nuestros registros. Verifica la información o consulta con la administración.');
+          }
+          return;
+        }
+
+        // Éxito: Limpiar historial de intentos fallidos
+        localStorage.removeItem('mb_attempts');
+        localStorage.removeItem('mb_lockout_until');
+
+        codigoMiembroActual = data.codigo || 'SIN-CÓDIGO';
+
+        // 1. Mensaje de Paz y Código
+        carnetSaludo.innerHTML = `
+          <strong>Paz de Dios, hermano(a) ${data.nombre || 'Miembro'}.</strong><br>
+          Tu Código Oficial de Miembro es: <span class="carnet-code-highlight">${codigoMiembroActual}</span>
+        `;
+
+        // 2. Render de datos oficiales configurados
+        let itemsHtml = '';
+        if (data.grado_espiritual) itemsHtml += `<div class="carnet-detail-item"><strong>Grado Espiritual</strong><span>${data.grado_espiritual}</span></div>`;
+        if (data.estado) itemsHtml += `<div class="carnet-detail-item"><strong>Estado</strong><span>${data.estado}</span></div>`;
+        if (data.zona) itemsHtml += `<div class="carnet-detail-item"><strong>Sede / Zona</strong><span>${data.zona}</span></div>`;
+        if (data.fecha_registro) itemsHtml += `<div class="carnet-detail-item"><strong>Fecha de Ingreso</strong><span>${data.fecha_registro}</span></div>`;
+        if (data.bautismo !== undefined) itemsHtml += `<div class="carnet-detail-item"><strong>Bautismo en Agua</strong><span>${data.bautismo ? 'Conforme' : 'Pendiente'}</span></div>`;
+        if (data.santa_cena !== undefined) itemsHtml += `<div class="carnet-detail-item"><strong>Santa Cena</strong><span>${data.santa_cena ? 'Habilitado' : 'No'}</span></div>`;
+
+        carnetDetalles.innerHTML = itemsHtml;
+        resultBox.style.display = 'block';
+        resultBox.scrollIntoView({ behavior: 'smooth' });
 
       } catch (err) {
-        console.error('Error:', err);
-        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">No se pudo cargar el padrón.</p>';
+        console.error(err);
+        mostrarMensajeAlerta('Ocurrió un inconveniente al consultar el servidor. Intenta de nuevo.');
+      } finally {
+        btnConsultar.disabled = false;
+        btnConsultar.textContent = '🔍 Consultar mi Membresía';
       }
-    }
-
-    function renderizarMiembros(lista) {
-      const grid = document.getElementById('gridMembresiaPublica');
-      if (!lista || lista.length === 0) {
-        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#64748b; padding:2rem;">No se encontraron miembros con ese criterio de búsqueda.</p>';
-        return;
-      }
-
-      // Se usa m.id en vez del índice de iteración para evitar cruces en la búsqueda
-      grid.innerHTML = lista.map((m) => {
-        const vis = m.visibilidad || {};
-        const nombreVisible = (vis.nombre === false) ? 'Miembro Reservado' : (m.nombre || 'Miembro de la Iglesia');
-
-        return `
-          <div class="public-member-card" onclick="abrirFichaMiembroPorId('${m.id}')">
-            <div>
-              ${(vis.codigo !== false && m.codigo) ? `<span class="member-card-badge">${m.codigo}</span>` : ''}
-              <h3 class="member-card-title">${nombreVisible}</h3>
-              
-              ${(vis.grado_espiritual !== false && m.grado_espiritual) ? `<p class="member-card-detail"><strong>Grado:</strong> ${m.grado_espiritual}</p>` : ''}
-              ${(vis.estado !== false && m.estado) ? `<p class="member-card-detail"><strong>Estado:</strong> ${m.estado}</p>` : ''}
-              ${(vis.zona !== false && m.zona) ? `<p class="member-card-detail"><strong>Zona:</strong> ${m.zona}</p>` : ''}
-              ${(vis.fecha_registro && m.fecha_registro) ? `<p class="member-card-detail"><strong>Fecha Ingreso:</strong> ${m.fecha_registro}</p>` : ''}
-            </div>
-            <div class="btn-ver-ficha">📄 Ver Ficha Completa &rarr;</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Abre la ficha buscando el miembro exacto por su ID único
-    window.abrirFichaMiembroPorId = function(memberId) {
-      const m = miembrosPublicos.find(item => String(item.id) === String(memberId));
-      if (!m) return;
-
-      const vis = m.visibilidad || {};
-      const modal = document.getElementById('modalFichaMiembro');
-      const nombreEl = document.getElementById('mFichaNombre');
-      const codigoEl = document.getElementById('mFichaCodigo');
-      const contenedor = document.getElementById('mFichaDetalles');
-
-      nombreEl.textContent = (vis.nombre === false) ? 'Miembro Reservado' : (m.nombre || 'Miembro de la Iglesia');
-      codigoEl.textContent = (vis.codigo !== false && m.codigo) ? m.codigo : 'OFICIAL';
-
-      const edadCalculada = calcularEdadMiembro(m);
-      let itemsHtml = '';
-
-      if (vis.dni && m.dni) itemsHtml += `<div class="modal-info-item"><strong>Documento DNI</strong>${m.dni}</div>`;
-      if (vis.estado !== false && m.estado) itemsHtml += `<div class="modal-info-item"><strong>Estado</strong>${m.estado}</div>`;
-      if (vis.grado_espiritual !== false && m.grado_espiritual) itemsHtml += `<div class="modal-info-item"><strong>Grado Espiritual</strong>${m.grado_espiritual}</div>`;
-      if (vis.zona !== false && m.zona) itemsHtml += `<div class="modal-info-item"><strong>Zona / Sede</strong>${m.zona}</div>`;
-      if (vis.fecha_registro && m.fecha_registro) itemsHtml += `<div class="modal-info-item"><strong>Fecha de Registro</strong>${m.fecha_registro}</div>`;
-      if (vis.fecha_conversion && m.fecha_conversion) itemsHtml += `<div class="modal-info-item"><strong>Fecha de Conversión</strong>${m.fecha_conversion}</div>`;
-      if (vis.sexo && m.sexo) itemsHtml += `<div class="modal-info-item"><strong>Sexo</strong>${m.sexo}</div>`;
-      if (vis.estado_civil && m.estado_civil) itemsHtml += `<div class="modal-info-item"><strong>Estado Civil</strong>${m.estado_civil}</div>`;
-      if (vis.edad && edadCalculada !== null) itemsHtml += `<div class="modal-info-item"><strong>Edad</strong>${edadCalculada} años</div>`;
-      if (vis.fecha_nacimiento && m.fecha_nacimiento) itemsHtml += `<div class="modal-info-item"><strong>Fecha de Nacimiento</strong>${m.fecha_nacimiento}</div>`;
-      if (vis.bautismo) itemsHtml += `<div class="modal-info-item"><strong>Bautismo en Agua</strong>${m.bautismo ? 'Sí' : 'No'}</div>`;
-      if (vis.matrimonio) itemsHtml += `<div class="modal-info-item"><strong>Matrimonio Eclesiástico</strong>${m.matrimonio ? 'Sí' : 'No'}</div>`;
-      if (vis.santa_cena) itemsHtml += `<div class="modal-info-item"><strong>Santa Cena</strong>${m.santa_cena ? 'Sí' : 'No'}</div>`;
-      if (vis.lavamiento_pies) itemsHtml += `<div class="modal-info-item"><strong>Lavamiento de Pies</strong>${m.lavamiento_pies ? 'Sí' : 'No'}</div>`;
-      if (vis.direccion && m.direccion) itemsHtml += `<div class="modal-info-item" style="grid-column: 1 / -1;"><strong>Dirección Domiciliaria</strong>${m.direccion}</div>`;
-
-      contenedor.innerHTML = itemsHtml || '<p style="color:#64748b; grid-column:1/-1;">No hay detalles adicionales configurados como públicos.</p>';
-      modal.style.display = 'flex';
-    };
-
-    const modal = document.getElementById('modalFichaMiembro');
-    const btnCerrar = document.getElementById('btnCerrarModalFicha');
-    if (btnCerrar) btnCerrar.addEventListener('click', () => modal.style.display = 'none');
-    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal) modal.style.display = 'none'; });
-
-    // Filtro instantáneo de búsqueda
-    document.getElementById('filtroMembresia').addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase().trim();
-      const filtrados = miembrosPublicos.filter(m => {
-        const nom = (m.nombre || '').toLowerCase();
-        const cod = (m.codigo || '').toLowerCase();
-        const dni = (m.dni || '').toLowerCase();
-        return nom.includes(query) || cod.includes(query) || dni.includes(query);
-      });
-      renderizarMiembros(filtrados);
     });
 
-    document.addEventListener('DOMContentLoaded', cargarPadronPublico);
+    // Copiar código al portapapeles
+    btnCopiarCodigo.addEventListener('click', () => {
+      if (!codigoMiembroActual) return;
+      navigator.clipboard.writeText(codigoMiembroActual).then(() => {
+        btnCopiarCodigo.textContent = '✓ ¡Código Copiado!';
+        setTimeout(() => btnCopiarCodigo.textContent = '📋 Copiar Código Oficial', 2000);
+      });
+    });
+
+    // Descargar/Imprimir carnet digital en PDF
+    btnImprimirCarnet.addEventListener('click', () => {
+      window.print();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      actualizarConteoDemografico();
+      verificarBloqueoConsultas();
+    });
   </script>
+  <script src="js/radio-flotante.js"></script>
 </body>
 </html>

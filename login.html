@@ -43,7 +43,6 @@
       overflow-x: hidden;
     }
 
-    /* Detalle sutil de fondo */
     body::before {
       content: '';
       position: absolute;
@@ -216,6 +215,13 @@
       border: 1px solid #fca5a5;
     }
 
+    .alert-box.warning {
+      display: block;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+
     .alert-box.success {
       display: block;
       background: #dcfce7;
@@ -308,6 +314,80 @@
       const loginMsg = document.getElementById('loginMsg');
       const btnTogglePass = document.getElementById('btnTogglePass');
 
+      // -----------------------------------------------------------
+      // CONFIGURACIÓN DE BLOQUEO POR CONTRASEÑAS FALLIDAS
+      // -----------------------------------------------------------
+      const MAX_INTENTOS_LOGIN = 4;
+      const TIEMPO_BLOQUEO_MINUTOS = 3;
+      const TIEMPO_BLOQUEO_MS = TIEMPO_BLOQUEO_MINUTOS * 60 * 1000;
+
+      let timerBloqueo = null;
+
+      function verificarBloqueoAdmin() {
+        const bloqueoHasta = parseInt(localStorage.getItem('admin_lockout_until') || '0', 10);
+        const ahora = Date.now();
+
+        if (bloqueoHasta > ahora) {
+          activarModoBloqueo(bloqueoHasta);
+          return true;
+        } else {
+          desactivarModoBloqueo();
+          return false;
+        }
+      }
+
+      function activarModoBloqueo(bloqueoHasta) {
+        btnSubmit.disabled = true;
+        emailInput.disabled = true;
+        passwordInput.disabled = true;
+
+        if (timerBloqueo) clearInterval(timerBloqueo);
+
+        function actualizarContador() {
+          const ahora = Date.now();
+          const restantes = Math.ceil((bloqueoHasta - ahora) / 1000);
+
+          if (restantes <= 0) {
+            clearInterval(timerBloqueo);
+            desactivarModoBloqueo();
+            loginMsg.style.display = 'none';
+          } else {
+            loginMsg.className = 'alert-box warning';
+            loginMsg.textContent = `Demasiados intentos fallidos. Panel bloqueado por seguridad. Reintenta en ${restantes} segundos.`;
+            loginMsg.style.display = 'block';
+            btnSubmit.textContent = `Bloqueado (${restantes}s)`;
+          }
+        }
+
+        actualizarContador();
+        timerBloqueo = setInterval(actualizarContador, 1000);
+      }
+
+      function desactivarModoBloqueo() {
+        localStorage.removeItem('admin_lockout_until');
+        localStorage.removeItem('admin_failed_attempts');
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Ingresar al Panel';
+        emailInput.disabled = false;
+        passwordInput.disabled = false;
+      }
+
+      function registrarFalloLogin() {
+        let intentos = parseInt(localStorage.getItem('admin_failed_attempts') || '0', 10) + 1;
+        localStorage.setItem('admin_failed_attempts', intentos.toString());
+
+        if (intentos >= MAX_INTENTOS_LOGIN) {
+          const bloqueoHasta = Date.now() + TIEMPO_BLOQUEO_MS;
+          localStorage.setItem('admin_lockout_until', bloqueoHasta.toString());
+          activarModoBloqueo(bloqueoHasta);
+        } else {
+          const restantes = MAX_INTENTOS_LOGIN - intentos;
+          loginMsg.className = 'alert-box error';
+          loginMsg.textContent = `Correo o contraseña incorrectos. Te quedan ${restantes} intento(s) antes del bloqueo temporal.`;
+          loginMsg.style.display = 'block';
+        }
+      }
+
       // 1. Si ya tiene sesión iniciada, enviar directo a admin.html
       try {
         const { data: { session } } = await db.auth.getSession();
@@ -316,8 +396,11 @@
           return;
         }
       } catch (e) {
-        console.warn('Verificación previa de sesión omitida');
+        console.warn('Verificación de sesión omitida');
       }
+
+      // Comprobar estado de bloqueo al cargar
+      verificarBloqueoAdmin();
 
       // 2. Alternar visibilidad de contraseña
       if (btnTogglePass) {
@@ -331,6 +414,8 @@
       // 3. Procesar autenticación en Supabase
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (verificarBloqueoAdmin()) return;
+
         btnSubmit.disabled = true;
         btnSubmit.textContent = 'Verificando credenciales...';
         loginMsg.className = 'alert-box';
@@ -345,9 +430,11 @@
             password: password
           });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
+
+          // Inicio exitoso: limpiar contadores de fallo
+          localStorage.removeItem('admin_failed_attempts');
+          localStorage.removeItem('admin_lockout_until');
 
           loginMsg.className = 'alert-box success';
           loginMsg.textContent = '✓ Acceso correcto. Redirigiendo al panel...';
@@ -358,13 +445,9 @@
           }, 600);
 
         } catch (err) {
-          loginMsg.className = 'alert-box error';
-          loginMsg.textContent = err.message === 'Invalid login credentials' 
-            ? 'Correo o contraseña incorrectos. Revisa tus datos.' 
-            : 'Error de acceso: ' + (err.message || err);
-          loginMsg.style.display = 'block';
           btnSubmit.disabled = false;
           btnSubmit.textContent = 'Ingresar al Panel';
+          registrarFalloLogin();
         }
       });
     });

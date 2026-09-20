@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Santa Biblia RVR1960 & Versículo del Día | Un Encuentro con Jesús</title>
-  <meta name="description" content="Lee la Santa Biblia en línea versión Reina-Valera 1960 y recibe el versículo del día por temas de fe, ánimo y fortaleza.">
+  <title>Santa Biblia RVR1960, Guía de Cultos & Recursos | Un Encuentro con Jesús</title>
+  <meta name="description" content="Lee la Santa Biblia en línea, consulta versículos para dirigir cultos de enseñanza y oración, busca pasajes temáticos y guarda tus favoritos.">
   
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,130 +12,280 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Estilos exclusivos para la sección de Biblia */
+    /* ===================================================
+       1. PESTAÑAS DE NAVEGACIÓN ENTRE MÓDULOS
+       =================================================== */
+    .bible-tabs-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .bible-tab-btn {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: #0b192c;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(11, 25, 44, 0.04);
+    }
+    .bible-tab-btn:hover, .bible-tab-btn.active {
+      background: #0b192c;
+      color: #e5a823;
+      border-color: #0b192c;
+      box-shadow: 0 6px 18px rgba(11, 25, 44, 0.2);
+    }
+    .bible-module-panel {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .bible-module-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===================================================
+       2. TARJETA SOLEMNE: PALABRA PARA HOY (VERSÍCULO DEL DÍA)
+       =================================================== */
     .verse-day-card {
       background: linear-gradient(135deg, #0b192c 0%, #1e3e62 100%);
       border: 2px solid #e5a823;
-      border-radius: 16px;
-      padding: 2.5rem 2rem;
+      border-radius: 18px;
+      padding: 2.5rem 2.2rem;
       color: #ffffff;
-      box-shadow: 0 12px 35px rgba(11, 25, 44, 0.25);
-      margin-bottom: 3.5rem;
+      box-shadow: 0 15px 35px rgba(11, 25, 44, 0.22);
+      margin-bottom: 2.5rem;
       position: relative;
       overflow: hidden;
     }
     .verse-day-card::after {
       content: "“";
       position: absolute;
-      right: 20px;
-      bottom: -30px;
-      font-size: 11rem;
-      color: rgba(229, 168, 35, 0.07);
+      right: 25px;
+      bottom: -35px;
+      font-size: 12rem;
+      color: rgba(229, 168, 35, 0.08);
       font-family: serif;
       pointer-events: none;
+      line-height: 1;
+    }
+    .verse-day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+    .verse-badge-tag {
+      background: rgba(229, 168, 35, 0.2);
+      color: #e5a823;
+      border: 1px solid rgba(229, 168, 35, 0.4);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .verse-date-text {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: capitalize;
     }
     .theme-pills {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin: 1.2rem 0 1.6rem;
+      margin: 1.2rem 0 1.6rem 0;
+      position: relative;
+      z-index: 2;
     }
     .theme-pill {
-      background: rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 7px 15px;
       border-radius: 20px;
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .theme-pill:hover, .theme-pill.active {
       background: #e5a823;
       color: #0b192c;
       border-color: #e5a823;
+      box-shadow: 0 4px 12px rgba(229, 168, 35, 0.3);
     }
     .verse-text-highlight {
-      font-size: 1.35rem;
+      font-size: 1.38rem;
       font-style: italic;
-      line-height: 1.7;
+      line-height: 1.75;
       color: #f8fafc;
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
+      position: relative;
+      z-index: 2;
     }
     .verse-reference {
       color: #e5a823;
       font-weight: 800;
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       letter-spacing: 0.5px;
+      position: relative;
+      z-index: 2;
     }
     .verse-actions {
       display: flex;
-      gap: 10px;
-      margin-top: 1.5rem;
+      gap: 12px;
+      margin-top: 1.6rem;
       flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
     }
+    .verse-actions .btn-primary {
+      background: #e5a823;
+      color: #0b192c;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .verse-actions .btn-primary:hover {
+      background: #cf9317;
+    }
+    .verse-actions .btn-outline {
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .verse-actions .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #ffffff;
+    }
+    .verse-actions .btn-secondary {
+      background: rgba(11, 25, 44, 0.6);
+      color: #e5a823;
+      border: 1.5px solid rgba(229, 168, 35, 0.45);
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+    .verse-actions .btn-secondary:hover {
+      background: #e5a823;
+      color: #0b192c;
+    }
+
+    /* ===================================================
+       3. CONTENEDOR Y SELECTORES DEL LECTOR BÍBLICO
+       =================================================== */
     .bible-reader-box {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border-radius: 18px;
+      padding: 2.2rem;
+      box-shadow: 0 8px 25px rgba(11, 25, 44, 0.05);
+      margin-bottom: 5rem;
     }
     .bible-controls {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 14px;
-      flex-wrap: wrap;
       margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
+      padding-bottom: 1.8rem;
       border-bottom: 1.5px solid #f1f5f9;
     }
     .bible-select-group {
-      flex: 1;
-      min-width: 180px;
+      display: flex;
+      flex-direction: column;
     }
     .bible-select-group label {
       display: block;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #475569;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #64748b;
       margin-bottom: 6px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .bible-select-group select {
       width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
+      box-sizing: border-box;
+      padding: 11px 14px;
+      border-radius: 9px;
       border: 1.5px solid #cbd5e1;
       background: #f8fafc;
-      font-weight: 600;
+      font-weight: 700;
       color: #0b192c;
       outline: none;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
     .bible-select-group select:focus {
       border-color: #e5a823;
       background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(229, 168, 35, 0.16);
     }
     .bible-chapter-title {
       font-size: 1.6rem;
       color: #0b192c;
       font-weight: 800;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.4rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 10px;
     }
+    .badge-rvr {
+      font-size: 0.82rem;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: 1px solid #e2e8f0;
+    }
     .bible-verses-container {
-      font-size: 1.12rem;
-      line-height: 2;
+      font-size: 1.15rem;
+      line-height: 2.1;
       color: #1e293b;
       max-height: 65vh;
       overflow-y: auto;
-      padding-right: 15px;
+      padding-right: 18px;
     }
     .bible-verses-container::-webkit-scrollbar {
       width: 6px;
@@ -144,49 +294,364 @@
       background: #cbd5e1;
       border-radius: 4px;
     }
-    .v-num {
-      color: #e5a823;
-      font-weight: 800;
-      font-size: 0.85rem;
-      margin-right: 6px;
-      vertical-align: super;
-    }
-    .bible-nav-btns {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1.5rem;
-      padding-top: 1.2rem;
-      border-top: 1px solid #f1f5f9;
-    }
-    .verse-focus-card {
-      background: #f8fafc;
-      border-left: 4px solid #e5a823;
-      padding: 2rem 1.8rem;
-      border-radius: 12px;
-      margin: 1.5rem 0;
-      box-shadow: 0 4px 15px rgba(11, 25, 44, 0.04);
-    }
-    .verse-focus-text {
-      font-size: 1.35rem;
-      line-height: 1.85;
-      color: #0b192c;
-      font-style: italic;
-    }
-    .verse-focus-meta {
-      margin-top: 1.2rem;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
     .v-box {
       cursor: pointer;
       border-radius: 4px;
       padding: 2px 4px;
       transition: background 0.15s ease;
+      display: inline;
     }
     .v-box:hover {
-      background-color: rgba(229, 168, 35, 0.18);
+      background-color: rgba(229, 168, 35, 0.2);
+    }
+    .v-num {
+      color: #e5a823;
+      font-weight: 900;
+      font-size: 0.85rem;
+      margin-right: 5px;
+      vertical-align: super;
+    }
+    .bible-nav-btns {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.8rem;
+      padding-top: 1.4rem;
+      border-top: 1.5px solid #f1f5f9;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .bible-nav-btns .btn-secondary {
+      background: #f8fafc;
+      color: #0b192c;
+      border: 1.5px solid #cbd5e1;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .bible-nav-btns .btn-secondary:hover {
+      background: #0b192c;
+      color: #e5a823;
+      border-color: #0b192c;
+    }
+    .verse-focus-card {
+      background: #f8fafc;
+      border-left: 4.5px solid #e5a823;
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin: 1rem 0;
+    }
+    .verse-focus-text {
+      font-size: 1.35rem;
+      line-height: 1.8;
+      color: #0b192c;
+      font-style: italic;
+    }
+    .verse-focus-meta {
+      margin-top: 1.4rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ===================================================
+       4. SECCIÓN: VERSÍCULOS PARA DIRIGIR CULTOS
+       =================================================== */
+    .liturgy-card {
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid #e2e8f0;
+      padding: 2.2rem;
+      box-shadow: 0 8px 25px rgba(11, 25, 44, 0.05);
+      margin-bottom: 5rem;
+    }
+    .liturgy-format-toggle {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 1.2rem;
+    }
+    .btn-format-type {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      padding: 11px 20px;
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-format-type.active {
+      background: #e5a823;
+      color: #0b192c;
+      border-color: #d19416;
+      box-shadow: 0 4px 12px rgba(229, 168, 35, 0.25);
+    }
+    .liturgy-moments-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .moment-accordion {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .moment-header {
+      background: #f8fafc;
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #0b192c;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .moment-header:hover {
+      background: #f1f5f9;
+    }
+    .moment-header span.badge {
+      background: #0b192c;
+      color: #e5a823;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .moment-content {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .lead-verse-card {
+      background: #f8fafc;
+      border-left: 3.5px solid #e5a823;
+      padding: 12px 14px;
+      border-radius: 6px;
+      border: 1px solid #eef2f6;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .lead-verse-text {
+      font-size: 0.92rem;
+      font-style: italic;
+      color: #1e293b;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .lead-verse-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .lead-verse-ref {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #0b192c;
+    }
+    .btn-copy-mini {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-copy-mini:hover {
+      background: #0b192c;
+      color: #e5a823;
+    }
+
+    /* ===================================================
+       5. BUSCADOR TEMÁTICO
+       =================================================== */
+    .search-box-wrap {
+      max-width: 680px;
+      margin: 0 auto 2rem auto;
+      display: flex;
+      gap: 10px;
+    }
+    .search-box-wrap input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 1rem;
+      outline: none;
+    }
+    .search-box-wrap input:focus {
+      border-color: #e5a823;
+    }
+    .search-results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 65vh;
+      overflow-y: auto;
+    }
+    .search-res-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    .search-res-item:hover {
+      border-color: #e5a823;
+    }
+    .search-res-text {
+      font-size: 0.95rem;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+    .search-res-ref {
+      color: #e5a823;
+      font-weight: 800;
+      margin-bottom: 4px;
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    /* ===================================================
+       6. CAJÓN DE FAVORITOS (DRAWER)
+       =================================================== */
+    .fav-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 25, 44, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: none;
+    }
+    .fav-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 88%;
+      max-width: 420px;
+      background: #ffffff;
+      box-shadow: -8px 0 30px rgba(0,0,0,0.3);
+      z-index: 10000;
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    .fav-drawer.open {
+      transform: translateX(0);
+    }
+    .fav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid #f1f5f9;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .fav-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .fav-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .fav-card-ref {
+      font-weight: 800;
+      color: #0b192c;
+      font-size: 0.88rem;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ===================================================
+       7. REPRODUCTOR DE RADIO FLOTANTE DISCRETO
+       =================================================== */
+    .radio-float-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 9000;
+      background: rgba(11, 25, 44, 0.95);
+      border: 2px solid #e5a823;
+      border-radius: 50px;
+      padding: 6px 16px 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      color: #ffffff;
+      backdrop-filter: blur(6px);
+    }
+    .radio-float-btn {
+      width: 36px;
+      height: 36px;
+      background: #e5a823;
+      color: #0b192c;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .radio-float-btn:hover {
+      transform: scale(1.08);
+    }
+    .radio-float-info {
+      font-size: 0.78rem;
+      line-height: 1.25;
+    }
+    .radio-float-info strong {
+      display: block;
+      color: #ffffff;
+      font-weight: 800;
+    }
+    .radio-float-info small {
+      color: #e5a823;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .bible-controls {
+        grid-template-columns: 1fr;
+      }
+      .verse-day-card {
+        padding: 1.8rem 1.4rem;
+      }
+      .bible-reader-box, .liturgy-card {
+        padding: 1.4rem 1.1rem;
+      }
+      .radio-float-bar {
+        bottom: 12px;
+        left: 12px;
+      }
     }
   </style>
 </head>
@@ -215,7 +680,7 @@
         </div>
       </a>
 
-      <nav class="nav-desktop" aria-label="Navegación principal">
+      <nav class="nav-desktop">
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link">Inicio</a></li>
           <li><a href="index.html#noticias" class="nav-link">Noticias</a></li>
@@ -227,13 +692,7 @@
           <li><a href="index.html#envivo" class="nav-link">En Vivo</a></li>
           <li><a href="biblia.html" class="nav-link active">Biblia</a></li>
           <li>
-            <a href="login.html" class="btn-admin-nav">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              Admin
-            </a>
+            <a href="login.html" class="btn-admin-nav">Admin</a>
           </li>
         </ul>
       </nav>
@@ -265,127 +724,168 @@
         <li><a href="literatura.html">Literatura Cristiana</a></li>
         <li><a href="sedes.html">Nuestras Sedes</a></li>
         <li><a href="membresia.html">Consulta de Membresía</a></li>
-        <li><a href="index.html#liderazgo">Cuerpo Pastoral</a></li>
-        <li><a href="index.html#envivo">Transmisión En Vivo</a></li>
         <li><a href="biblia.html" class="active">Santa Biblia &amp; Promesa</a></li>
       </ul>
     </nav>
-    <div class="sidebar-footer">
-      <a href="login.html" class="btn-sidebar-admin" id="sidebarAdminBtn">
-        Panel de Administración
-      </a>
-    </div>
   </aside>
 
-  <!-- Portada Editorial -->
+  <!-- Portada Hero -->
   <section class="hero-editorial" style="padding: 3.5rem 0 2.5rem;">
     <div class="container">
       <div class="hero-content">
-        <div class="hero-badge">Sagradas Escrituras</div>
-        <h1 class="hero-title">Santa Biblia &amp; Promesa Diaria</h1>
+        <div class="hero-badge">Sagradas Escrituras &amp; Liturgia Pastoral</div>
+        <h1 class="hero-title">Santa Biblia &amp; Guía de Cultos</h1>
         <p class="hero-description">
-          Escudriña la Palabra de Dios en la traducción clásica Reina-Valera 1960. Encuentra fortaleza, dirección y el versículo oportuno para cada circunstancia.
+          Escudriña las Escrituras en versión Reina-Valera 1960, busca pasajes temáticos al instante y apóyate en el devocionario litúrgico para dirigir cultos de enseñanza y oración.
         </p>
       </div>
     </div>
   </section>
 
-  <main class="container" style="padding: 3.5rem 1.25rem 5rem;">
-    
-    <!-- TARJETA: VERSÍCULO DEL DÍA CON TEMAS -->
-    <div class="verse-day-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-        <span class="section-tag" style="background: rgba(229,168,35,0.2); margin:0;">Palabra para Hoy</span>
-        <span id="vdFecha" style="color: #94a3b8; font-size: 0.88rem;">Cargando fecha...</span>
-      </div>
+  <main class="container" style="padding: 3rem 1rem 5rem;">
 
-      <!-- Selector interactivo de temas -->
-      <div class="theme-pills" id="themePillsContainer">
-        <button type="button" class="theme-pill active" data-theme="animo">💪 Ánimo</button>
-        <button type="button" class="theme-pill" data-theme="no_temas">🛡️ No Temas</button>
-        <button type="button" class="theme-pill" data-theme="fe">✨ Fe</button>
-        <button type="button" class="theme-pill" data-theme="fortaleza">⛰️ Fortaleza</button>
-        <button type="button" class="theme-pill" data-theme="paz">🕊️ Paz</button>
-        <button type="button" class="theme-pill" data-theme="esperanza">🌅 Esperanza</button>
-      </div>
-
-      <div class="verse-text-highlight" id="vdTexto">
-        Cargando versículo del día...
-      </div>
-      <div class="verse-reference" id="vdReferencia">
-        &mdash;
-      </div>
-
-      <div class="verse-actions">
-        <button type="button" class="btn-primary" id="btnCopiarVersiculo" style="padding: 8px 16px; font-size: 0.85rem;">
-          📋 Copiar Versículo
-        </button>
-        <button type="button" class="btn-outline" id="btnCompartirWa" style="padding: 8px 16px; font-size: 0.85rem;">
-          💬 Compartir en WhatsApp
-        </button>
-      </div>
+    <!-- BARRA SELECTORA DE MÓDULOS -->
+    <div class="bible-tabs-nav">
+      <button type="button" class="bible-tab-btn active" data-target="mod-lector">📖 Lector Bíblico</button>
+      <button type="button" class="bible-tab-btn" data-target="mod-dirigir">🕊️ Versículos para Dirigir</button>
+      <button type="button" class="bible-tab-btn" data-target="mod-buscador">🔍 Buscador Temático</button>
+      <button type="button" class="bible-tab-btn" id="btnAbrirFavoritos">⭐ Mis Favoritos (<span id="favCount">0</span>)</button>
     </div>
 
-    <!-- LECTOR COMPLETO DE LA BIBLIA (RVR1960) -->
-    <div class="bible-reader-box">
-      <div class="bible-controls">
-        <div class="bible-select-group">
-          <label for="selTestamento">Testamento</label>
-          <select id="selTestamento">
-            <option value="antiguo">Antiguo Testamento</option>
-            <option value="nuevo" selected>Nuevo Testamento</option>
-          </select>
+    <!-- MÓDULO 1: LECTOR BÍBLICO Y PROMESA DEL DÍA -->
+    <section id="mod-lector" class="bible-module-panel active">
+      <!-- Tarjeta Versículo del Día -->
+      <div class="verse-day-card">
+        <div class="verse-day-header">
+          <span class="verse-badge-tag">Palabra para Hoy</span>
+          <span id="vdFecha" class="verse-date-text">--</span>
         </div>
 
-        <div class="bible-select-group">
-          <label for="selLibro">Libro</label>
-          <select id="selLibro"></select>
+        <div class="theme-pills">
+          <button type="button" class="theme-pill active" data-theme="animo">💪 Ánimo</button>
+          <button type="button" class="theme-pill" data-theme="no_temas">🛡️ No Temas</button>
+          <button type="button" class="theme-pill" data-theme="fe">✨ Fe</button>
+          <button type="button" class="theme-pill" data-theme="fortaleza">⛰️ Fortaleza</button>
+          <button type="button" class="theme-pill" data-theme="paz">🕊️ Paz</button>
+          <button type="button" class="theme-pill" data-theme="esperanza">🌅 Esperanza</button>
         </div>
 
-        <div class="bible-select-group">
-          <label for="selCapitulo">Capítulo</label>
-          <select id="selCapitulo"></select>
-        </div>
+        <div class="verse-text-highlight" id="vdTexto">Consultando versículo...</div>
+        <div class="verse-reference" id="vdReferencia">—</div>
 
-        <div class="bible-select-group">
-          <label for="selVersiculo">Vista / Versículo</label>
-          <select id="selVersiculo">
-            <option value="0">📖 Capítulo Completo</option>
-          </select>
-        </div>
-        
-      </div>
-
-      <div class="bible-chapter-title">
-        <span id="txtLibroCap">Cargando pasaje...</span>
-        <span style="font-size: 0.85rem; background:#f1f5f9; color:#475569; padding: 4px 10px; border-radius:6px; font-weight:600;">Reina-Valera 1960</span>
-      </div>
-
-      <div class="bible-verses-container" id="contenedorVersiculos">
-        <div class="loading-spinner">
-          <div class="spinner"></div>
-          <span>Cargando capítulo...</span>
+        <div class="verse-actions">
+          <button type="button" class="btn-primary" id="btnCopiarVersiculo">📋 Copiar</button>
+          <button type="button" class="btn-outline" id="btnCompartirWa">💬 Compartir</button>
+          <button type="button" class="btn-secondary" id="btnFavPromesa">⭐ Guardar en Favoritos</button>
         </div>
       </div>
 
-      <div class="bible-nav-btns">
-        <button type="button" class="btn-secondary" id="btnCapAnterior">&larr; Capítulo Anterior</button>
-        <button type="button" class="btn-secondary" id="btnCapSiguiente">Capítulo Siguiente &rarr;</button>
+      <!-- Lector Completo RVR1960 -->
+      <div class="bible-reader-box">
+        <div class="bible-controls">
+          <div class="bible-select-group">
+            <label for="selTestamento">Testamento</label>
+            <select id="selTestamento">
+              <option value="antiguo">Antiguo Testamento</option>
+              <option value="nuevo" selected>Nuevo Testamento</option>
+            </select>
+          </div>
+          <div class="bible-select-group">
+            <label for="selLibro">Libro</label>
+            <select id="selLibro"></select>
+          </div>
+          <div class="bible-select-group">
+            <label for="selCapitulo">Capítulo</label>
+            <select id="selCapitulo"></select>
+          </div>
+          <div class="bible-select-group">
+            <label for="selVersiculo">Vista / Versículo</label>
+            <select id="selVersiculo">
+              <option value="0">📖 Capítulo Completo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bible-chapter-title">
+          <span id="txtLibroCap">Cargando pasaje...</span>
+          <span class="badge-rvr">Reina-Valera 1960</span>
+        </div>
+
+        <div class="bible-verses-container" id="contenedorVersiculos">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span>Consultando Escrituras...</span>
+          </div>
+        </div>
+
+        <div class="bible-nav-btns">
+          <button type="button" class="btn-secondary" id="btnCapAnterior">&larr; Capítulo Anterior</button>
+          <button type="button" class="btn-secondary" id="btnCapSiguiente">Capítulo Siguiente &rarr;</button>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- MÓDULO 2: VERSÍCULOS PARA DIRIGIR CULTOS -->
+    <section id="mod-dirigir" class="bible-module-panel">
+      <div class="liturgy-card">
+        <div class="section-header" style="margin-bottom: 1.5rem; text-align: left;">
+          <span class="section-tag">Devocionario y Liturgia</span>
+          <h2 class="section-title" style="font-size: 1.6rem; margin-bottom: 4px;">Versículos para la Dirección de Cultos</h2>
+          <p class="section-subtitle" style="margin: 0;">Selecciona el tipo de reunión para desplegar los pasajes adecuados para cada parte del servicio.</p>
+        </div>
+
+        <div class="liturgy-format-toggle">
+          <button type="button" class="btn-format-type active" data-culto="ensenanza">📖 Culto de Enseñanza</button>
+          <button type="button" class="btn-format-type" data-culto="oracion">🙏 Culto de Oración</button>
+        </div>
+
+        <div class="liturgy-moments-grid" id="contenedorLiturgia">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULO 3: BUSCADOR TEMÁTICO TEXTUAL -->
+    <section id="mod-buscador" class="bible-module-panel">
+      <div class="liturgy-card">
+        <div class="section-header" style="margin-bottom: 1.5rem;">
+          <span class="section-tag">Concordancia en Línea</span>
+          <h2 class="section-title" style="font-size: 1.6rem;">Búsqueda Temática de las Escrituras</h2>
+          <p class="section-subtitle">Escribe un término (ej. <em>paz, sanidad, fe, consolación</em>) para localizar todos los versículos RVR1960 relacionados.</p>
+        </div>
+
+        <div class="search-box-wrap">
+          <input type="text" id="inputBuscarBiblia" placeholder="Ej: justicia, clamor, gracia...">
+          <button type="button" class="btn-primary" id="btnEjecutarBusqueda">Buscar</button>
+        </div>
+
+        <div id="searchResultStats" style="margin-bottom: 1rem; font-size: 0.9rem; color: #64748b; font-weight: 600;"></div>
+        <div class="search-results-list" id="contenedorResultadosBusqueda"></div>
+      </div>
+    </section>
 
   </main>
 
-  <!-- Pie de página -->
+  <!-- CAJÓN LATERAL DE FAVORITOS (DRAWER) -->
+  <div class="fav-drawer-overlay" id="favOverlay"></div>
+  <aside class="fav-drawer" id="favDrawer">
+    <div class="fav-header">
+      <h3 style="margin: 0; color: #0b192c;">⭐ Mis Versículos Favoritos</h3>
+      <button type="button" id="btnCerrarFav" style="font-size: 1.5rem; background: none; border: none; cursor: pointer;">&times;</button>
+    </div>
+    <div class="fav-list" id="favList"></div>
+  </aside>
+
   <footer class="main-footer">
     <div class="container">
       <div class="footer-bottom">
         <p>&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
-        <p>Textos bíblicos provistos en línea bajo el canon Reina-Valera 1960.</p>
       </div>
     </div>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/biblia.js"></script>
+  <script src="js/radio-flotante.js"></script>
 </body>
 </html>

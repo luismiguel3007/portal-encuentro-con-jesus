@@ -853,6 +853,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+ // 1. Renderizado con enlace interactivo en el nombre
   function renderizarListaMiembros(lista) {
     const contenedor = document.getElementById('listaMiembrosAdmin');
     if (!contenedor) return;
@@ -870,11 +871,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="badge-cat-sm">${m.estado}</span>
             <span class="badge-cat-sm" style="background:#f1f5f9; color:#334155;">${m.grado_espiritual}</span>
             <span class="badge-cat-sm" style="background:${m.es_publico !== false ? '#dcfce7; color:#166534;' : '#fee2e2; color:#991b1b;'}">
-              ${m.es_publico !== false ? '🌐 Público en Web' : '🔒 Privado'}
+              ${m.es_publico !== false ? '🌐 Público' : '🔒 Privado'}
             </span>
           </div>
-          <h4 style="margin: 2px 0 4px 0;">${m.nombre}</h4>
-          <small style="color: #64748b; display: block; line-height: 1.5;">
+          
+          <!-- NOMBRE CLICABLE -->
+          <h4 class="member-name-click" onclick="verFichaAdmin(${m.id})" title="Ver ficha completa de ${m.nombre}">
+            ${m.nombre} 
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--admin-gold);"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </h4>
+
+          <small style="color: #64748b; display: block; line-height: 1.5; margin-top: 4px;">
             DNI: ${m.dni || 'N/A'} | Zona: ${m.zona || 'N/A'} | Bautismo: ${m.bautismo ? 'Sí' : 'No'} | Santa Cena: ${m.santa_cena ? 'Sí' : 'No'}<br>
             Dirección: ${m.direccion || 'Sin registrar'}
           </small>
@@ -889,6 +896,102 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `).join('');
   }
+
+  // 2. Función para abrir y armar la Ficha Completa
+  window.verFichaAdmin = function(id) {
+    const m = listaMiembrosCache.find(x => x.id === id);
+    if (!m) return;
+
+    const modal = document.getElementById('modalFichaAdmin');
+    const fCodigo = document.getElementById('fAdminCodigo');
+    const fNombre = document.getElementById('fAdminNombre');
+    const boxPersonales = document.getElementById('fAdminPersonales');
+    const boxEclesiasticos = document.getElementById('fAdminEclesiasticos');
+    const boxOrdenanzas = document.getElementById('fAdminOrdenanzas');
+    const boxUbicacion = document.getElementById('fAdminUbicacion');
+    const btnEditarDesdeFicha = document.getElementById('btnEditarDesdeFicha');
+
+    fCodigo.textContent = m.codigo || 'SIN CÓDIGO';
+    fNombre.textContent = m.nombre || 'Miembro';
+
+    // Cálculo de edad exacta
+    let edadCalculada = m.edad;
+    if (!edadCalculada && m.fecha_nacimiento) {
+      const fNac = new Date(m.fecha_nacimiento);
+      if (!isNaN(fNac.getTime())) {
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - fNac.getFullYear();
+        const mes = hoy.getMonth() - fNac.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < fNac.getDate())) edad--;
+        edadCalculada = edad >= 0 ? `${edad} años` : 'N/A';
+      }
+    } else if (edadCalculada) {
+      edadCalculada = `${edadCalculada} años`;
+    } else {
+      edadCalculada = 'No registrada';
+    }
+
+    // Identificación Personal
+    boxPersonales.innerHTML = `
+      <div class="ficha-item"><strong>Documento DNI</strong><span>${m.dni || 'N/A'}</span></div>
+      <div class="ficha-item"><strong>Fecha de Nacimiento</strong><span>${m.fecha_nacimiento || 'No registrada'}</span></div>
+      <div class="ficha-item"><strong>Edad</strong><span>${edadCalculada}</span></div>
+      <div class="ficha-item"><strong>Sexo</strong><span>${m.sexo || 'N/A'}</span></div>
+      <div class="ficha-item"><strong>Estado Civil</strong><span>${m.estado_civil || 'N/A'}</span></div>
+    `;
+
+    // Vida Eclesiástica
+    boxEclesiasticos.innerHTML = `
+      <div class="ficha-item"><strong>Estado Congregacional</strong><span>${m.estado || 'Activo'}</span></div>
+      <div class="ficha-item"><strong>Grado Espiritual</strong><span>${m.grado_espiritual || 'Creyente'}</span></div>
+      <div class="ficha-item"><strong>Fecha de Registro</strong><span>${m.fecha_registro || 'No registrada'}</span></div>
+      <div class="ficha-item"><strong>Fecha de Conversión</strong><span>${m.fecha_conversion || 'No registrada'}</span></div>
+    `;
+
+    // Ordenanzas & Sacramentos
+    boxOrdenanzas.innerHTML = `
+      <div class="ficha-item"><strong>Bautismo en Agua</strong><span>${m.bautismo ? '✅ Conforme' : '❌ No'}</span></div>
+      <div class="ficha-item"><strong>Santa Cena</strong><span>${m.santa_cena ? '✅ Participa' : '❌ No'}</span></div>
+      <div class="ficha-item"><strong>Lavamiento de Pies</strong><span>${m.lavamiento_pies ? '✅ Sí' : '❌ No'}</span></div>
+      <div class="ficha-item"><strong>Matrimonio Eclesiástico</strong><span>${m.matrimonio ? '✅ Conforme' : '❌ No'}</span></div>
+    `;
+
+    // Ubicación & Visibilidad
+    boxUbicacion.innerHTML = `
+      <div class="ficha-item"><strong>Sede / Zona</strong><span>${m.zona || 'Sin asignar'}</span></div>
+      <div class="ficha-item" style="grid-column: 1 / -1;"><strong>Dirección Domiciliaria</strong><span>${m.direccion || 'Sin registrar'}</span></div>
+      <div class="ficha-item"><strong>Visibilidad en Web</strong><span>${m.es_publico !== false ? '🌐 Miembro Público' : '🔒 Miembro Privado'}</span></div>
+    `;
+
+    // Conectar botón para transferir al formulario de edición
+    if (btnEditarDesdeFicha) {
+      btnEditarDesdeFicha.onclick = () => {
+        modal.style.display = 'none';
+        editarMiembro(m.id);
+      };
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  // Cierre del modal
+  const modalFicha = document.getElementById('modalFichaAdmin');
+  const btnCerrarModal = document.getElementById('btnCerrarFichaAdmin');
+  const btnCerrarModalFooter = document.getElementById('btnCerrarFichaAdminFooter');
+
+  const cerrarModal = () => { if (modalFicha) modalFicha.style.display = 'none'; };
+  if (btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
+  if (btnCerrarModalFooter) btnCerrarModalFooter.addEventListener('click', cerrarModal);
+  if (modalFicha) {
+    modalFicha.addEventListener('click', (e) => {
+      if (e.target === modalFicha) cerrarModal();
+    });
+  }
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalFicha && modalFicha.style.display === 'flex') {
+      cerrarModal();
+    }
+  });
 
   window.editarMiembro = function(id) {
     const m = listaMiembrosCache.find(x => x.id === id);
