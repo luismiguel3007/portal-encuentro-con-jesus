@@ -17,9 +17,8 @@ window.SUPABASE_CONFIG = {
   url: SUPABASE_URL
 };
 
-// CONFIGURACIÓN CLOUDFLARE R2
+// CONFIGURACIÓN CLOUDFLARE R2 (Segura: autenticación gestionada vía Bearer JWT de Supabase)
 window.R2_CONFIG = {
   workerUrl: 'https://r2-iglesia-api.luismi-lmas75.workers.dev',
-  publicUrl: 'https://pub-9b1857fb52164101a7bcecbfeb41ef8f.r2.dev',
-  apiKey: 'ENCUENTRO_JESUS_R2_2026'
+  publicUrl: 'https://pub-9b1857fb52164101a7bcecbfeb41ef8f.r2.dev'
 };

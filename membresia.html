@@ -620,16 +620,18 @@
   </footer>
 
   <script src="js/config.js"></script>
+  <script src="js/radio-flotante.js"></script>
   <script>
     const supabaseClient = window.db || (typeof db !== 'undefined' ? db : null);
 
     // =========================================================================
-    // 1. MANEJO DEL MENÚ MÓVIL
+    // 1. MENÚ MÓVIL
     // =========================================================================
     const menuToggle = document.getElementById('menuToggle');
     const sidebarClose = document.getElementById('sidebarClose');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebarMenu = document.getElementById('sidebarMenu');
+
     if (menuToggle && sidebarMenu) {
       menuToggle.addEventListener('click', () => {
         sidebarMenu.classList.add('open');
@@ -650,9 +652,9 @@
     }
 
     // =========================================================================
-    // 2. CONTEO DEMOGRÁFICO ANÓNIMO
+    // 2. CONTEO DEMOGRÁFICO RESISTENTE A FALLOS
     // =========================================================================
-    function calcularEdadMiembro(m) {
+    function calcularEdad(m) {
       if (m.edad !== null && m.edad !== undefined && !isNaN(parseInt(m.edad, 10))) {
         return parseInt(m.edad, 10);
       }
@@ -675,22 +677,31 @@
       if (!supabaseClient) return;
 
       try {
+        // Intento 1: Función RPC en el servidor (si la creaste en Supabase)
+        const { data: rpcData, error: rpcError } = await supabaseClient.rpc('conteo_demografico_miembros');
+
+        if (!rpcError && rpcData && rpcData.length > 0) {
+          const c = rpcData[0];
+          document.getElementById('countNinos').textContent = c.ninos ?? 0;
+          document.getElementById('countAdolescentes').textContent = c.adolescentes ?? 0;
+          document.getElementById('countJovenes').textContent = c.jovenes ?? 0;
+          document.getElementById('countAdultos').textContent = c.adultos ?? 0;
+          document.getElementById('countAdultoMayor').textContent = c.adulto_mayor ?? 0;
+          return;
+        }
+
+        // Intento 2: Consulta directa tradicional (fallback automático si no hay RPC)
         const { data, error } = await supabaseClient
           .from('miembros')
           .select('edad, fecha_nacimiento');
 
         if (error || !data) return;
 
-        let ninos = 0;          // 0 a 12
-        let adolescentes = 0;   // 13 a 17
-        let jovenes = 0;        // 18 a 40
-        let adultos = 0;        // 40 a 60
-        let adultoMayor = 0;    // 60 a más
+        let ninos = 0, adolescentes = 0, jovenes = 0, adultos = 0, adultoMayor = 0;
 
         data.forEach(m => {
-          const edad = calcularEdadMiembro(m);
+          const edad = calcularEdad(m);
           if (edad === null || edad < 0) return;
-
           if (edad <= 12) ninos++;
           else if (edad <= 17) adolescentes++;
           else if (edad <= 39) jovenes++;
@@ -703,17 +714,18 @@
         document.getElementById('countJovenes').textContent = jovenes;
         document.getElementById('countAdultos').textContent = adultos;
         document.getElementById('countAdultoMayor').textContent = adultoMayor;
+
       } catch (e) {
-        console.warn('Error demográfico:', e);
+        console.warn('Error al calcular métricas demográficas:', e);
       }
     }
 
     // =========================================================================
-    // 3. CONTROL DE INTENTOS (RATE LIMITING / ANTI-BRUTE FORCE)
+    // 3. SEGURIDAD Y RATE LIMITING
     // =========================================================================
     const MAX_INTENTOS = 5;
-    const VENTANA_MS = 60 * 1000;       // 1 minuto
-    const BLOQUEO_MS = 120 * 1000;      // 2 minutos de bloqueo si excede
+    const VENTANA_MS = 60 * 1000;
+    const BLOQUEO_MS = 120 * 1000;
 
     function verificarBloqueoConsultas() {
       const bloqueoHasta = parseInt(localStorage.getItem('mb_lockout_until') || '0', 10);
@@ -721,7 +733,7 @@
 
       if (bloqueoHasta > ahora) {
         const segRestantes = Math.ceil((bloqueoHasta - ahora) / 1000);
-        mostrarMensajeAlerta(`Demasiados intentos fallidos. Por motivos de seguridad, espera ${segRestantes} segundos antes de volver a consultar.`, 'warning');
+        mostrarMensajeAlerta(`Demasiados intentos fallidos. Por seguridad, espera ${segRestantes} segundos.`, 'warning');
         return true;
       }
       return false;
@@ -730,9 +742,7 @@
     function registrarIntentoFallido() {
       const ahora = Date.now();
       let intentos = JSON.parse(localStorage.getItem('mb_attempts') || '[]');
-      
-      // Filtrar los intentos de la última ventana (1 min)
-      intentos = intentos.filter(timestamp => ahora - timestamp < VENTANA_MS);
+      intentos = intentos.filter(t => ahora - t < VENTANA_MS);
       intentos.push(ahora);
       localStorage.setItem('mb_attempts', JSON.stringify(intentos));
 
@@ -740,7 +750,7 @@
         const bloqueoHasta = ahora + BLOQUEO_MS;
         localStorage.setItem('mb_lockout_until', bloqueoHasta.toString());
         localStorage.removeItem('mb_attempts');
-        mostrarMensajeAlerta('Has superado el límite de 5 consultas por minuto. Acceso bloqueado por 2 minutos para proteger los datos de la congregación.', 'warning');
+        mostrarMensajeAlerta('Has superado el límite de intentos. Acceso bloqueado por 2 minutos.', 'warning');
         return true;
       }
       return false;
@@ -748,6 +758,7 @@
 
     function mostrarMensajeAlerta(msg, tipo = 'error') {
       const alertBox = document.getElementById('queryMsg');
+      if (!alertBox) return;
       alertBox.textContent = msg;
       alertBox.className = `query-alert ${tipo}`;
       alertBox.style.display = 'block';
@@ -755,12 +766,13 @@
 
     function ocultarMensajeAlerta() {
       const alertBox = document.getElementById('queryMsg');
+      if (!alertBox) return;
       alertBox.style.display = 'none';
       alertBox.textContent = '';
     }
 
     // =========================================================================
-    // 4. CONSULTA CONTROLADA DE MEMBRESÍA
+    // 4. ENVÍO Y CONSULTA CONTROLADA
     // =========================================================================
     const form = document.getElementById('formConsultaMembresia');
     const inputDni = document.getElementById('inputDni');
@@ -774,98 +786,119 @@
 
     let codigoMiembroActual = '';
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      ocultarMensajeAlerta();
-      resultBox.style.display = 'none';
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        // Evita el refresco de página que causaba el signo '?' en la URL
+        e.preventDefault();
+        ocultarMensajeAlerta();
+        if (resultBox) resultBox.style.display = 'none';
 
-      // Validar rate limit
-      if (verificarBloqueoConsultas()) return;
+        if (verificarBloqueoConsultas()) return;
 
-      const dni = inputDni.value.trim();
-      const fechaNac = inputFechaNac.value;
+        const dni = inputDni.value.trim();
+        const fechaNac = inputFechaNac.value;
 
-      if (!/^\d{8}$/.test(dni)) {
-        mostrarMensajeAlerta('El número de DNI debe contener exactamente 8 dígitos.');
-        return;
-      }
-
-      btnConsultar.disabled = true;
-      btnConsultar.textContent = 'Verificando datos...';
-
-      try {
-        // Consulta exacta por DNI y fecha de nacimiento (Solo retorna el registro correspondiente)
-        const { data, error } = await supabaseClient
-          .from('miembros')
-          .select('*')
-          .eq('dni', dni)
-          .eq('fecha_nacimiento', fechaNac)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        // Si no coincide o está marcado como no público
-        if (!data) {
-          const bloqueado = registrarIntentoFallido();
-          if (!bloqueado) {
-            mostrarMensajeAlerta('Los datos ingresados no coinciden con nuestros registros. Verifica la información o consulta con la administración.');
-          }
+        if (!/^\d{8}$/.test(dni)) {
+          mostrarMensajeAlerta('El número de DNI debe contener exactamente 8 dígitos.');
+          return;
+        }
+        if (!fechaNac) {
+          mostrarMensajeAlerta('Por favor selecciona tu fecha de nacimiento.');
           return;
         }
 
-        // Éxito: Limpiar historial de intentos fallidos
-        localStorage.removeItem('mb_attempts');
-        localStorage.removeItem('mb_lockout_until');
+        btnConsultar.disabled = true;
+        btnConsultar.textContent = 'Verificando datos...';
 
-        codigoMiembroActual = data.codigo || 'SIN-CÓDIGO';
+        try {
+          // 1. Intento por función RPC segura
+          let miembro = null;
+          const { data: rpcMiembro, error: errRpc } = await supabaseClient.rpc('consultar_miembro_seguro', {
+            p_dni: dni,
+            p_fecha_nac: fechaNac
+          });
 
-        // 1. Mensaje de Paz y Código
-        carnetSaludo.innerHTML = `
-          <strong>Paz de Dios, hermano(a) ${data.nombre || 'Miembro'}.</strong><br>
-          Tu Código Oficial de Miembro es: <span class="carnet-code-highlight">${codigoMiembroActual}</span>
-        `;
+          if (!errRpc && rpcMiembro && rpcMiembro.length > 0) {
+            miembro = rpcMiembro[0];
+          } else {
+            // 2. Fallback a consulta directa
+            const { data: directData, error: errDirect } = await supabaseClient
+              .from('miembros')
+              .select('*')
+              .eq('dni', dni)
+              .eq('fecha_nacimiento', fechaNac)
+              .maybeSingle();
 
-        // 2. Render de datos oficiales configurados
-        let itemsHtml = '';
-        if (data.grado_espiritual) itemsHtml += `<div class="carnet-detail-item"><strong>Grado Espiritual</strong><span>${data.grado_espiritual}</span></div>`;
-        if (data.estado) itemsHtml += `<div class="carnet-detail-item"><strong>Estado</strong><span>${data.estado}</span></div>`;
-        if (data.zona) itemsHtml += `<div class="carnet-detail-item"><strong>Sede / Zona</strong><span>${data.zona}</span></div>`;
-        if (data.fecha_registro) itemsHtml += `<div class="carnet-detail-item"><strong>Fecha de Ingreso</strong><span>${data.fecha_registro}</span></div>`;
-        if (data.bautismo !== undefined) itemsHtml += `<div class="carnet-detail-item"><strong>Bautismo en Agua</strong><span>${data.bautismo ? 'Conforme' : 'Pendiente'}</span></div>`;
-        if (data.santa_cena !== undefined) itemsHtml += `<div class="carnet-detail-item"><strong>Santa Cena</strong><span>${data.santa_cena ? 'Habilitado' : 'No'}</span></div>`;
+            if (!errDirect && directData) {
+              miembro = directData;
+            }
+          }
 
-        carnetDetalles.innerHTML = itemsHtml;
-        resultBox.style.display = 'block';
-        resultBox.scrollIntoView({ behavior: 'smooth' });
+          if (!miembro) {
+            const bloqueado = registrarIntentoFallido();
+            if (!bloqueado) {
+              mostrarMensajeAlerta('Los datos ingresados no coinciden con nuestros registros. Verifica la información o consulta con la administración.');
+            }
+            return;
+          }
 
-      } catch (err) {
-        console.error(err);
-        mostrarMensajeAlerta('Ocurrió un inconveniente al consultar el servidor. Intenta de nuevo.');
-      } finally {
-        btnConsultar.disabled = false;
-        btnConsultar.textContent = '🔍 Consultar mi Membresía';
-      }
-    });
+          // Éxito: Limpiar intentos
+          localStorage.removeItem('mb_attempts');
+          localStorage.removeItem('mb_lockout_until');
 
-    // Copiar código al portapapeles
-    btnCopiarCodigo.addEventListener('click', () => {
-      if (!codigoMiembroActual) return;
-      navigator.clipboard.writeText(codigoMiembroActual).then(() => {
-        btnCopiarCodigo.textContent = '✓ ¡Código Copiado!';
-        setTimeout(() => btnCopiarCodigo.textContent = '📋 Copiar Código Oficial', 2000);
+          codigoMiembroActual = miembro.codigo || 'OFICIAL';
+
+          if (carnetSaludo) {
+            carnetSaludo.innerHTML = `
+              <strong>Paz de Dios, hermano(a) ${miembro.nombre || 'Miembro'}.</strong><br>
+              Tu Código Oficial de Miembro es: <span class="carnet-code-highlight">${codigoMiembroActual}</span>
+            `;
+          }
+
+          if (carnetDetalles) {
+            let html = '';
+            if (miembro.grado_espiritual) html += `<div class="carnet-detail-item"><strong>Grado Espiritual</strong><span>${miembro.grado_espiritual}</span></div>`;
+            if (miembro.estado) html += `<div class="carnet-detail-item"><strong>Estado</strong><span>${miembro.estado}</span></div>`;
+            if (miembro.zona) html += `<div class="carnet-detail-item"><strong>Sede / Zona</strong><span>${miembro.zona}</span></div>`;
+            if (miembro.fecha_registro) html += `<div class="carnet-detail-item"><strong>Fecha de Ingreso</strong><span>${miembro.fecha_registro}</span></div>`;
+            if (miembro.bautismo !== undefined) html += `<div class="carnet-detail-item"><strong>Bautismo en Agua</strong><span>${miembro.bautismo ? 'Conforme' : 'Pendiente'}</span></div>`;
+            if (miembro.santa_cena !== undefined) html += `<div class="carnet-detail-item"><strong>Santa Cena</strong><span>${miembro.santa_cena ? 'Habilitado' : 'No'}</span></div>`;
+            carnetDetalles.innerHTML = html;
+          }
+
+          if (resultBox) {
+            resultBox.style.display = 'block';
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+          }
+
+        } catch (err) {
+          console.error(err);
+          mostrarMensajeAlerta('Hubo un problema de conexión. Por favor reintenta.');
+        } finally {
+          btnConsultar.disabled = false;
+          btnConsultar.textContent = '🔍 Consultar mi Membresía';
+        }
       });
-    });
+    }
 
-    // Descargar/Imprimir carnet digital en PDF
-    btnImprimirCarnet.addEventListener('click', () => {
-      window.print();
-    });
+    if (btnCopiarCodigo) {
+      btnCopiarCodigo.addEventListener('click', () => {
+        if (!codigoMiembroActual) return;
+        navigator.clipboard.writeText(codigoMiembroActual).then(() => {
+          btnCopiarCodigo.textContent = '✓ ¡Código Copiado!';
+          setTimeout(() => btnCopiarCodigo.textContent = '📋 Copiar Código Oficial', 2000);
+        });
+      });
+    }
+
+    if (btnImprimirCarnet) {
+      btnImprimirCarnet.addEventListener('click', () => window.print());
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       actualizarConteoDemografico();
       verificarBloqueoConsultas();
     });
   </script>
-  <script src="js/radio-flotante.js"></script>
 </body>
 </html>

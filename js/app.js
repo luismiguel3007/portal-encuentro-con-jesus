@@ -1210,6 +1210,11 @@ async function loadAjustes() {
     if (data) {
       ajustesData = data;
 
+      // Sincronizar URL para el reproductor de radio flotante
+      if (data.radio_url && data.radio_url.trim() !== '') {
+        localStorage.setItem('radio_live_url', data.radio_url.trim());
+      }
+
       // Carga Segura del Logotipo Editorial con verificación onLoad y onError
       const badge = document.getElementById('headerLogoBadge');
       const badgeText = document.getElementById('logoBadgeText');
@@ -1392,7 +1397,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // Subir y actualizar Logotipo Editorial en Cloudflare R2
+  // Subir y actualizar Logotipo Editorial en Cloudflare R2 usando Bearer Token de Supabase
   if (btnChangeLogo && inputLogoFile) {
     btnChangeLogo.addEventListener('click', () => {
       inputLogoFile.click();
@@ -1415,6 +1420,11 @@ async function setupVisualEditor() {
       btnChangeLogo.textContent = 'Subiendo logo...';
 
       try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.access_token) {
+          throw new Error('Sesión de administrador no válida o caducada. Por favor vuelve a iniciar sesión.');
+        }
+
         const ext = file.name.split('.').pop();
         const ruta = `logos/logo_editorial_${Date.now()}.${ext}`;
 
@@ -1422,7 +1432,7 @@ async function setupVisualEditor() {
           method: 'PUT',
           headers: {
             'Content-Type': file.type || 'image/png',
-            'x-api-key': window.R2_CONFIG.apiKey
+            'Authorization': `Bearer ${session.access_token}`
           },
           body: file
         });
@@ -1469,7 +1479,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // Cambiar fondo de la portada Hero
+  // Cambiar fondo de la portada Hero usando Bearer Token de Supabase
   if (btnChangeHeroBg && inputHeroBgFile) {
     btnChangeHeroBg.addEventListener('click', () => {
       inputHeroBgFile.click();
@@ -1483,6 +1493,11 @@ async function setupVisualEditor() {
       btnChangeHeroBg.textContent = 'Subiendo a Cloudflare R2...';
 
       try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.access_token) {
+          throw new Error('Sesión de administrador no válida o caducada. Por favor vuelve a iniciar sesión.');
+        }
+
         const ext = file.name.split('.').pop();
         const ruta = `portadas/fondo_hero_${Date.now()}.${ext}`;
 
@@ -1490,7 +1505,7 @@ async function setupVisualEditor() {
           method: 'PUT',
           headers: {
             'Content-Type': file.type || 'image/jpeg',
-            'x-api-key': window.R2_CONFIG.apiKey
+            'Authorization': `Bearer ${session.access_token}`
           },
           body: file
         });

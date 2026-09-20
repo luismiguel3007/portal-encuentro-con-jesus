@@ -62,8 +62,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN CLOUDFLARE R2
+  // =========================================================================
+  // 4. SUBIDA Y ELIMINACIÓN DE ARCHIVOS EN CLOUDFLARE R2 CON JWT DE SUPABASE
+  // =========================================================================
   async function subirArchivo(archivo, carpeta) {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session || !session.access_token) {
+      throw new Error('Sesión caducada o no autorizada. Por favor vuelve a iniciar sesión.');
+    }
+
     const ext = archivo.name.split('.').pop();
     const cleanName = `${carpeta}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
@@ -71,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       method: 'PUT',
       headers: {
         'Content-Type': archivo.type || 'application/octet-stream',
-        'x-api-key': window.R2_CONFIG.apiKey
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: archivo
     });
@@ -87,11 +94,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function borrarArchivoDeStorage(url) {
     if (!url || !url.includes(window.R2_CONFIG.publicUrl)) return;
     try {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session || !session.access_token) return;
+
       const cleanKey = url.replace(`${window.R2_CONFIG.publicUrl}/`, '');
       await fetch(`${window.R2_CONFIG.workerUrl}/delete?key=${encodeURIComponent(cleanKey)}`, {
         method: 'DELETE',
         headers: {
-          'x-api-key': window.R2_CONFIG.apiKey
+          'Authorization': `Bearer ${session.access_token}`
         }
       });
     } catch (e) {
@@ -455,7 +465,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cargarSedes();
         actualizarKPIs();
       } catch (err) {
-        msgMiembro.className = 'alert-box error';
+        msgSede.className = 'alert-box error';
         msgSede.textContent = 'Error: ' + (err.message || err);
       } finally {
         btnGuardarSede.disabled = false;
@@ -853,7 +863,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
- // 1. Renderizado con enlace interactivo en el nombre
+  // Renderizado con enlace interactivo en el nombre
   function renderizarListaMiembros(lista) {
     const contenedor = document.getElementById('listaMiembrosAdmin');
     if (!contenedor) return;
@@ -897,7 +907,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `).join('');
   }
 
-  // 2. Función para abrir y armar la Ficha Completa
+  // Función para abrir y armar la Ficha Completa
   window.verFichaAdmin = function(id) {
     const m = listaMiembrosCache.find(x => x.id === id);
     if (!m) return;
@@ -963,7 +973,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="ficha-item"><strong>Visibilidad en Web</strong><span>${m.es_publico !== false ? '🌐 Miembro Público' : '🔒 Miembro Privado'}</span></div>
     `;
 
-    // Conectar botón para transferir al formulario de edición
     if (btnEditarDesdeFicha) {
       btnEditarDesdeFicha.onclick = () => {
         modal.style.display = 'none';
@@ -1135,7 +1144,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       msgTransmision.textContent = '';
 
       try {
-        // Si se marca como activa, desactivar las demás para evitar conflictos en web
         if (esActiva) {
           await db.from('transmisiones_en_vivo').update({ activa: false }).neq('id', 0);
         }
