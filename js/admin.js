@@ -144,11 +144,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       formArticulo.reset();
       if (artEditId) artEditId.value = '';
       if (artExistingImg) artExistingImg.value = '';
-      btnGuardarArt.textContent = 'Publicar Artículo';
+      if (btnGuardarArt) btnGuardarArt.textContent = 'Publicar Artículo';
       btnCancelarArt.style.display = 'none';
       if (artFotoHelp) artFotoHelp.style.display = 'none';
       if (titleFormArt) titleFormArt.textContent = 'Publicar Nuevo Artículo o Devocional';
-      msgArticulo.textContent = '';
+      if (msgArticulo) msgArticulo.textContent = '';
     });
   }
 
@@ -156,9 +156,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     formArticulo.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = artEditId ? artEditId.value : '';
-      btnGuardarArt.disabled = true;
-      btnGuardarArt.textContent = editId ? 'Actualizando artículo...' : 'Subiendo y guardando...';
-      msgArticulo.textContent = '';
+      if (btnGuardarArt) {
+        btnGuardarArt.disabled = true;
+        btnGuardarArt.textContent = editId ? 'Actualizando artículo...' : 'Subiendo y guardando...';
+      }
+      if (msgArticulo) msgArticulo.textContent = '';
 
       try {
         const file = document.getElementById('artFoto').files[0];
@@ -183,25 +185,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('articulos').update(articuloData).eq('id', editId);
           if (error) throw error;
-          msgArticulo.className = 'alert-box success';
-          msgArticulo.textContent = '✓ Artículo actualizado con éxito.';
+          if (msgArticulo) {
+            msgArticulo.className = 'alert-box success';
+            msgArticulo.textContent = '✓ Artículo actualizado con éxito.';
+          }
           if (btnCancelarArt) btnCancelarArt.click();
         } else {
           const { error } = await db.from('articulos').insert([articuloData]);
           if (error) throw error;
-          msgArticulo.className = 'alert-box success';
-          msgArticulo.textContent = '✓ Artículo publicado con éxito.';
+          if (msgArticulo) {
+            msgArticulo.className = 'alert-box success';
+            msgArticulo.textContent = '✓ Artículo publicado con éxito.';
+          }
           formArticulo.reset();
         }
 
         cargarArticulos();
         actualizarKPIs();
       } catch (err) {
-        msgArticulo.className = 'alert-box error';
-        msgArticulo.textContent = 'Error: ' + (err.message || err);
+        if (msgArticulo) {
+          msgArticulo.className = 'alert-box error';
+          msgArticulo.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarArt.disabled = false;
-        btnGuardarArt.textContent = (artEditId && artEditId.value) ? 'Actualizar Artículo' : 'Publicar Artículo';
+        if (btnGuardarArt) {
+          btnGuardarArt.disabled = false;
+          btnGuardarArt.textContent = (artEditId && artEditId.value) ? 'Actualizar Artículo' : 'Publicar Artículo';
+        }
       }
     });
   }
@@ -252,7 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('artResumen').value = item.resumen || '';
     document.getElementById('artContenido').value = item.contenido || '';
 
-    btnGuardarArt.textContent = 'Actualizar Artículo';
+    if (btnGuardarArt) btnGuardarArt.textContent = 'Actualizar Artículo';
     if (btnCancelarArt) btnCancelarArt.style.display = 'inline-block';
     if (artFotoHelp) artFotoHelp.style.display = 'block';
     if (titleFormArt) titleFormArt.textContent = 'Editar Artículo / Devocional';
@@ -293,12 +305,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (revEditId) revEditId.value = '';
       if (revExistingPortada) revExistingPortada.value = '';
       if (revExistingPdf) revExistingPdf.value = '';
-      btnGuardarRev.textContent = 'Guardar Revista';
+      if (btnGuardarRev) btnGuardarRev.textContent = 'Guardar Revista';
       btnCancelarRev.style.display = 'none';
       if (revPortadaHelp) revPortadaHelp.style.display = 'none';
       if (revPdfHelp) revPdfHelp.style.display = 'none';
       if (titleFormRev) titleFormRev.textContent = 'Registrar Nueva Revista Digital';
-      msgRevista.textContent = '';
+      if (msgRevista) msgRevista.textContent = '';
     });
   }
 
@@ -306,9 +318,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     formRevista.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = revEditId ? revEditId.value : '';
-      btnGuardarRev.disabled = true;
-      btnGuardarRev.textContent = editId ? 'Actualizando revista...' : 'Subiendo archivos...';
-      msgRevista.textContent = '';
+      if (btnGuardarRev) {
+        btnGuardarRev.disabled = true;
+        btnGuardarRev.textContent = editId ? 'Actualizando revista...' : 'Subiendo archivos...';
+      }
+      if (msgRevista) msgRevista.textContent = '';
 
       try {
         const filePortada = document.getElementById('revPortada').files[0];
@@ -338,25 +352,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('revistas').update(revistaData).eq('id', editId);
           if (error) throw error;
-          msgRevista.className = 'alert-box success';
-          msgRevista.textContent = '✓ Revista actualizada con éxito.';
+          if (msgRevista) {
+            msgRevista.className = 'alert-box success';
+            msgRevista.textContent = '✓ Revista actualizada con éxito.';
+          }
           if (btnCancelarRev) btnCancelarRev.click();
         } else {
           const { error } = await db.from('revistas').insert([revistaData]);
           if (error) throw error;
-          msgRevista.className = 'alert-box success';
-          msgRevista.textContent = '✓ Revista publicada con éxito.';
+          if (msgRevista) {
+            msgRevista.className = 'alert-box success';
+            msgRevista.textContent = '✓ Revista publicada con éxito.';
+          }
           formRevista.reset();
         }
 
         cargarRevistas();
         actualizarKPIs();
       } catch (err) {
-        msgRevista.className = 'alert-box error';
-        msgRevista.textContent = 'Error: ' + (err.message || err);
+        if (msgRevista) {
+          msgRevista.className = 'alert-box error';
+          msgRevista.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarRev.disabled = false;
-        btnGuardarRev.textContent = (revEditId && revEditId.value) ? 'Actualizar Revista' : 'Guardar Revista';
+        if (btnGuardarRev) {
+          btnGuardarRev.disabled = false;
+          btnGuardarRev.textContent = (revEditId && revEditId.value) ? 'Actualizar Revista' : 'Guardar Revista';
+        }
       }
     });
   }
@@ -405,7 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('revEdicion').value = item.edicion || '';
     document.getElementById('revFecha').value = item.fecha || '';
 
-    btnGuardarRev.textContent = 'Actualizar Revista';
+    if (btnGuardarRev) btnGuardarRev.textContent = 'Actualizar Revista';
     if (btnCancelarRev) btnCancelarRev.style.display = 'inline-block';
     if (revPortadaHelp) revPortadaHelp.style.display = 'block';
     if (revPdfHelp) revPdfHelp.style.display = 'block';
@@ -442,10 +466,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnCancelarSede.addEventListener('click', () => {
       formSede.reset();
       if (sedeEditId) sedeEditId.value = '';
-      btnGuardarSede.textContent = 'Registrar Sede';
+      if (btnGuardarSede) btnGuardarSede.textContent = 'Registrar Sede';
       btnCancelarSede.style.display = 'none';
       if (titleFormSede) titleFormSede.textContent = 'Agregar Nueva Sede o Filial';
-      msgSede.textContent = '';
+      if (msgSede) msgSede.textContent = '';
     });
   }
 
@@ -453,9 +477,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     formSede.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = sedeEditId ? sedeEditId.value : '';
-      btnGuardarSede.disabled = true;
-      btnGuardarSede.textContent = editId ? 'Actualizando sede...' : 'Guardando sede...';
-      msgSede.textContent = '';
+      if (btnGuardarSede) {
+        btnGuardarSede.disabled = true;
+        btnGuardarSede.textContent = editId ? 'Actualizando sede...' : 'Guardando sede...';
+      }
+      if (msgSede) msgSede.textContent = '';
 
       try {
         const sedeData = {
@@ -468,25 +494,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('sedes').update(sedeData).eq('id', editId);
           if (error) throw error;
-          msgSede.className = 'alert-box success';
-          msgSede.textContent = '✓ Sede actualizada con éxito.';
+          if (msgSede) {
+            msgSede.className = 'alert-box success';
+            msgSede.textContent = '✓ Sede actualizada con éxito.';
+          }
           if (btnCancelarSede) btnCancelarSede.click();
         } else {
           const { error } = await db.from('sedes').insert([sedeData]);
           if (error) throw error;
-          msgSede.className = 'alert-box success';
-          msgSede.textContent = '✓ Sede registrada con éxito.';
+          if (msgSede) {
+            msgSede.className = 'alert-box success';
+            msgSede.textContent = '✓ Sede registrada con éxito.';
+          }
           formSede.reset();
         }
 
         cargarSedes();
         actualizarKPIs();
       } catch (err) {
-        msgSede.className = 'alert-box error';
-        msgSede.textContent = 'Error: ' + (err.message || err);
+        if (msgSede) {
+          msgSede.className = 'alert-box error';
+          msgSede.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarSede.disabled = false;
-        btnGuardarSede.textContent = (sedeEditId && sedeEditId.value) ? 'Actualizar Sede' : 'Registrar Sede';
+        if (btnGuardarSede) {
+          btnGuardarSede.disabled = false;
+          btnGuardarSede.textContent = (sedeEditId && sedeEditId.value) ? 'Actualizar Sede' : 'Registrar Sede';
+        }
       }
     });
   }
@@ -534,7 +570,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('sedeHorarios').value = item.horarios || '';
     document.getElementById('sedeTelefono').value = item.telefono || '';
 
-    btnGuardarSede.textContent = 'Actualizar Sede';
+    if (btnGuardarSede) btnGuardarSede.textContent = 'Actualizar Sede';
     if (btnCancelarSede) btnCancelarSede.style.display = 'inline-block';
     if (titleFormSede) titleFormSede.textContent = 'Editar Sede o Filial';
     formSede.scrollIntoView({ behavior: 'smooth' });
@@ -570,12 +606,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       formLider.reset();
       if (liderEditId) liderEditId.value = '';
       if (liderExistingFoto) liderExistingFoto.value = '';
-      document.getElementById('liderOrden').value = '1';
-      btnGuardarLider.textContent = 'Registrar Líder';
+      const liderOrdenEl = document.getElementById('liderOrden');
+      if (liderOrdenEl) liderOrdenEl.value = '1';
+      if (btnGuardarLider) btnGuardarLider.textContent = 'Registrar Líder';
       btnCancelarLider.style.display = 'none';
       if (liderFotoHelp) liderFotoHelp.style.display = 'none';
       if (titleFormLider) titleFormLider.textContent = 'Registrar Pastor o Líder';
-      msgLider.textContent = '';
+      if (msgLider) msgLider.textContent = '';
     });
   }
 
@@ -583,9 +620,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     formLider.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = liderEditId ? liderEditId.value : '';
-      btnGuardarLider.disabled = true;
-      btnGuardarLider.textContent = editId ? 'Actualizando pastor...' : 'Subiendo fotografía...';
-      msgLider.textContent = '';
+      if (btnGuardarLider) {
+        btnGuardarLider.disabled = true;
+        btnGuardarLider.textContent = editId ? 'Actualizando pastor...' : 'Subiendo fotografía...';
+      }
+      if (msgLider) msgLider.textContent = '';
 
       try {
         const file = document.getElementById('liderFoto').files[0];
@@ -609,26 +648,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('lideres').update(liderData).eq('id', editId);
           if (error) throw error;
-          msgLider.className = 'alert-box success';
-          msgLider.textContent = '✓ Pastor / Líder actualizado con éxito.';
+          if (msgLider) {
+            msgLider.className = 'alert-box success';
+            msgLider.textContent = '✓ Pastor / Líder actualizado con éxito.';
+          }
           if (btnCancelarLider) btnCancelarLider.click();
         } else {
           const { error } = await db.from('lideres').insert([liderData]);
           if (error) throw error;
-          msgLider.className = 'alert-box success';
-          msgLider.textContent = '✓ Pastor / Líder guardado y agregado al carrusel.';
+          if (msgLider) {
+            msgLider.className = 'alert-box success';
+            msgLider.textContent = '✓ Pastor / Líder guardado y agregado al carrusel.';
+          }
           formLider.reset();
-          document.getElementById('liderOrden').value = '1';
+          const liderOrdenEl = document.getElementById('liderOrden');
+          if (liderOrdenEl) liderOrdenEl.value = '1';
         }
 
         cargarLideres();
         actualizarKPIs();
       } catch (err) {
-        msgLider.className = 'alert-box error';
-        msgLider.textContent = 'Error: ' + (err.message || err);
+        if (msgLider) {
+          msgLider.className = 'alert-box error';
+          msgLider.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarLider.disabled = false;
-        btnGuardarLider.textContent = (liderEditId && liderEditId.value) ? 'Actualizar Líder' : 'Registrar Líder';
+        if (btnGuardarLider) {
+          btnGuardarLider.disabled = false;
+          btnGuardarLider.textContent = (liderEditId && liderEditId.value) ? 'Actualizar Líder' : 'Registrar Líder';
+        }
       }
     });
   }
@@ -677,7 +727,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('liderCargo').value = item.cargo || '';
     document.getElementById('liderOrden').value = item.orden || 1;
 
-    btnGuardarLider.textContent = 'Actualizar Líder';
+    if (btnGuardarLider) btnGuardarLider.textContent = 'Actualizar Líder';
     if (btnCancelarLider) btnCancelarLider.style.display = 'inline-block';
     if (liderFotoHelp) liderFotoHelp.style.display = 'block';
     if (titleFormLider) titleFormLider.textContent = 'Editar Pastor o Líder';
@@ -765,7 +815,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnCancelarEditMiembro.addEventListener('click', () => {
       formMiembro.reset();
       if (miembroEditId) miembroEditId.value = '';
-      btnGuardarMiembro.textContent = 'Registrar Miembro';
+      if (btnGuardarMiembro) btnGuardarMiembro.textContent = 'Registrar Miembro';
       btnCancelarEditMiembro.style.display = 'none';
       if (titleFormMiembro) titleFormMiembro.textContent = 'Registro & Ficha de Membresía';
       if (mFechaReg) mFechaReg.value = new Date().toISOString().split('T')[0];
@@ -776,7 +826,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           lblEsPublico.style.color = '#15803d';
         }
       }
-      msgMiembro.textContent = '';
+      if (msgMiembro) msgMiembro.textContent = '';
     });
   }
 
@@ -785,9 +835,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       const editandoId = miembroEditId ? miembroEditId.value : '';
 
-      btnGuardarMiembro.disabled = true;
-      btnGuardarMiembro.textContent = editandoId ? 'Actualizando datos...' : 'Registrando miembro...';
-      msgMiembro.textContent = '';
+      if (btnGuardarMiembro) {
+        btnGuardarMiembro.disabled = true;
+        btnGuardarMiembro.textContent = editandoId ? 'Actualizando datos...' : 'Registrando miembro...';
+      }
+      if (msgMiembro) msgMiembro.textContent = '';
 
       const visibilidad = {
         nombre: document.getElementById('pub_nombre')?.checked ?? true,
@@ -840,14 +892,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editandoId) {
           const { error } = await db.from('miembros').update(datosMiembro).eq('id', editandoId);
           if (error) throw error;
-          msgMiembro.className = 'alert-box success';
-          msgMiembro.textContent = `✓ Miembro "${datosMiembro.nombre}" actualizado con éxito.`;
+          if (msgMiembro) {
+            msgMiembro.className = 'alert-box success';
+            msgMiembro.textContent = `✓ Miembro "${datosMiembro.nombre}" actualizado con éxito.`;
+          }
           if (btnCancelarEditMiembro) btnCancelarEditMiembro.click();
         } else {
           const { error } = await db.from('miembros').insert([datosMiembro]);
           if (error) throw error;
-          msgMiembro.className = 'alert-box success';
-          msgMiembro.textContent = `✓ Miembro registrado con éxito. Código asignado: ${datosMiembro.codigo}`;
+          if (msgMiembro) {
+            msgMiembro.className = 'alert-box success';
+            msgMiembro.textContent = `✓ Miembro registrado con éxito. Código asignado: ${datosMiembro.codigo}`;
+          }
           formMiembro.reset();
           if (mFechaReg) mFechaReg.value = new Date().toISOString().split('T')[0];
         }
@@ -855,11 +911,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         cargarMiembros();
         actualizarKPIs();
       } catch (err) {
-        msgMiembro.className = 'alert-box error';
-        msgMiembro.textContent = 'Error: ' + (err.message || err);
+        if (msgMiembro) {
+          msgMiembro.className = 'alert-box error';
+          msgMiembro.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarMiembro.disabled = false;
-        btnGuardarMiembro.textContent = (miembroEditId && miembroEditId.value) ? 'Actualizar Miembro' : 'Registrar Miembro';
+        if (btnGuardarMiembro) {
+          btnGuardarMiembro.disabled = false;
+          btnGuardarMiembro.textContent = (miembroEditId && miembroEditId.value) ? 'Actualizar Miembro' : 'Registrar Miembro';
+        }
       }
     });
   }
@@ -935,8 +997,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const boxUbicacion = document.getElementById('fAdminUbicacion');
     const btnEditarDesdeFicha = document.getElementById('btnEditarDesdeFicha');
 
-    fCodigo.textContent = m.codigo || 'SIN CÓDIGO';
-    fNombre.textContent = m.nombre || 'Miembro';
+    if (fCodigo) fCodigo.textContent = m.codigo || 'SIN CÓDIGO';
+    if (fNombre) fNombre.textContent = m.nombre || 'Miembro';
 
     let edadCalculada = m.edad;
     if (!edadCalculada && m.fecha_nacimiento) {
@@ -954,42 +1016,50 @@ document.addEventListener('DOMContentLoaded', async () => {
       edadCalculada = 'No registrada';
     }
 
-    boxPersonales.innerHTML = `
-      <div class="ficha-item"><strong>Documento DNI</strong><span>${m.dni || 'N/A'}</span></div>
-      <div class="ficha-item"><strong>Fecha de Nacimiento</strong><span>${m.fecha_nacimiento || 'No registrada'}</span></div>
-      <div class="ficha-item"><strong>Edad</strong><span>${edadCalculada}</span></div>
-      <div class="ficha-item"><strong>Sexo</strong><span>${m.sexo || 'N/A'}</span></div>
-      <div class="ficha-item"><strong>Estado Civil</strong><span>${m.estado_civil || 'N/A'}</span></div>
-    `;
+    if (boxPersonales) {
+      boxPersonales.innerHTML = `
+        <div class="ficha-item"><strong>Documento DNI</strong><span>${m.dni || 'N/A'}</span></div>
+        <div class="ficha-item"><strong>Fecha de Nacimiento</strong><span>${m.fecha_nacimiento || 'No registrada'}</span></div>
+        <div class="ficha-item"><strong>Edad</strong><span>${edadCalculada}</span></div>
+        <div class="ficha-item"><strong>Sexo</strong><span>${m.sexo || 'N/A'}</span></div>
+        <div class="ficha-item"><strong>Estado Civil</strong><span>${m.estado_civil || 'N/A'}</span></div>
+      `;
+    }
 
-    boxEclesiasticos.innerHTML = `
-      <div class="ficha-item"><strong>Estado Congregacional</strong><span>${m.estado || 'Activo'}</span></div>
-      <div class="ficha-item"><strong>Grado Espiritual</strong><span>${m.grado_espiritual || 'Creyente'}</span></div>
-      <div class="ficha-item"><strong>Fecha de Registro</strong><span>${m.fecha_registro || 'No registrada'}</span></div>
-      <div class="ficha-item"><strong>Fecha de Conversión</strong><span>${m.fecha_conversion || 'No registrada'}</span></div>
-    `;
+    if (boxEclesiasticos) {
+      boxEclesiasticos.innerHTML = `
+        <div class="ficha-item"><strong>Estado Congregacional</strong><span>${m.estado || 'Activo'}</span></div>
+        <div class="ficha-item"><strong>Grado Espiritual</strong><span>${m.grado_espiritual || 'Creyente'}</span></div>
+        <div class="ficha-item"><strong>Fecha de Registro</strong><span>${m.fecha_registro || 'No registrada'}</span></div>
+        <div class="ficha-item"><strong>Fecha de Conversión</strong><span>${m.fecha_conversion || 'No registrada'}</span></div>
+      `;
+    }
 
-    boxOrdenanzas.innerHTML = `
-      <div class="ficha-item"><strong>Bautismo en Agua</strong><span>${m.bautismo ? '✅ Conforme' : '❌ No'}</span></div>
-      <div class="ficha-item"><strong>Santa Cena</strong><span>${m.santa_cena ? '✅ Participa' : '❌ No'}</span></div>
-      <div class="ficha-item"><strong>Lavamiento de Pies</strong><span>${m.lavamiento_pies ? '✅ Sí' : '❌ No'}</span></div>
-      <div class="ficha-item"><strong>Matrimonio Eclesiástico</strong><span>${m.matrimonio ? '✅ Conforme' : '❌ No'}</span></div>
-    `;
+    if (boxOrdenanzas) {
+      boxOrdenanzas.innerHTML = `
+        <div class="ficha-item"><strong>Bautismo en Agua</strong><span>${m.bautismo ? '✅ Conforme' : '❌ No'}</span></div>
+        <div class="ficha-item"><strong>Santa Cena</strong><span>${m.santa_cena ? '✅ Participa' : '❌ No'}</span></div>
+        <div class="ficha-item"><strong>Lavamiento de Pies</strong><span>${m.lavamiento_pies ? '✅ Sí' : '❌ No'}</span></div>
+        <div class="ficha-item"><strong>Matrimonio Eclesiástico</strong><span>${m.matrimonio ? '✅ Conforme' : '❌ No'}</span></div>
+      `;
+    }
 
-    boxUbicacion.innerHTML = `
-      <div class="ficha-item"><strong>Sede / Zona</strong><span>${m.zona || 'Sin asignar'}</span></div>
-      <div class="ficha-item" style="grid-column: 1 / -1;"><strong>Dirección Domiciliaria</strong><span>${m.direccion || 'Sin registrar'}</span></div>
-      <div class="ficha-item"><strong>Visibilidad en Web</strong><span>${m.es_publico !== false ? '🌐 Miembro Público' : '🔒 Miembro Privado'}</span></div>
-    `;
+    if (boxUbicacion) {
+      boxUbicacion.innerHTML = `
+        <div class="ficha-item"><strong>Sede / Zona</strong><span>${m.zona || 'Sin asignar'}</span></div>
+        <div class="ficha-item" style="grid-column: 1 / -1;"><strong>Dirección Domiciliaria</strong><span>${m.direccion || 'Sin registrar'}</span></div>
+        <div class="ficha-item"><strong>Visibilidad en Web</strong><span>${m.es_publico !== false ? '🌐 Miembro Público' : '🔒 Miembro Privado'}</span></div>
+      `;
+    }
 
     if (btnEditarDesdeFicha) {
       btnEditarDesdeFicha.onclick = () => {
-        modal.style.display = 'none';
+        if (modal) modal.style.display = 'none';
         editarMiembro(m.id);
       };
     }
 
-    modal.style.display = 'flex';
+    if (modal) modal.style.display = 'flex';
   };
 
   const modalFicha = document.getElementById('modalFichaAdmin');
@@ -1064,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setCheck('pub_zona', vis.zona ?? true);
     setCheck('pub_direccion', vis.direccion ?? false);
 
-    btnGuardarMiembro.textContent = 'Actualizar Miembro';
+    if (btnGuardarMiembro) btnGuardarMiembro.textContent = 'Actualizar Miembro';
     if (btnCancelarEditMiembro) btnCancelarEditMiembro.style.display = 'inline-block';
     if (titleFormMiembro) titleFormMiembro.textContent = 'Editar Registro de Membresía';
     formMiembro.scrollIntoView({ behavior: 'smooth' });
@@ -1133,23 +1203,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnCancelarTrans) {
     btnCancelarTrans.addEventListener('click', () => {
       formTransmision.reset();
-      transmisionEditId.value = '';
-      btnGuardarTrans.textContent = 'Guardar Señal';
+      if (transmisionEditId) transmisionEditId.value = '';
+      if (btnGuardarTrans) btnGuardarTrans.textContent = 'Guardar Señal';
       btnCancelarTrans.style.display = 'none';
       if (titleFormTransmision) titleFormTransmision.textContent = 'Configurar Transmisión en Directo (Facebook / OBS)';
-      msgTransmision.textContent = '';
+      if (msgTransmision) msgTransmision.textContent = '';
     });
   }
 
   if (formTransmision) {
     formTransmision.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const editId = transmisionEditId.value;
+      const editId = transmisionEditId ? transmisionEditId.value : '';
       const esActiva = document.getElementById('transActiva').value === 'true';
 
-      btnGuardarTrans.disabled = true;
-      btnGuardarTrans.textContent = editId ? 'Actualizando señal...' : 'Guardando señal...';
-      msgTransmision.textContent = '';
+      if (btnGuardarTrans) {
+        btnGuardarTrans.disabled = true;
+        btnGuardarTrans.textContent = editId ? 'Actualizando señal...' : 'Guardando señal...';
+      }
+      if (msgTransmision) msgTransmision.textContent = '';
 
       try {
         if (esActiva) {
@@ -1166,25 +1238,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('transmisiones_en_vivo').update(dataTrans).eq('id', editId);
           if (error) throw error;
-          msgTransmision.className = 'alert-box success';
-          msgTransmision.textContent = '✓ Transmisión actualizada con éxito.';
-          btnCancelarTrans.click();
+          if (msgTransmision) {
+            msgTransmision.className = 'alert-box success';
+            msgTransmision.textContent = '✓ Transmisión actualizada con éxito.';
+          }
+          if (btnCancelarTrans) btnCancelarTrans.click();
         } else {
           const { error } = await db.from('transmisiones_en_vivo').insert([dataTrans]);
           if (error) throw error;
-          msgTransmision.className = 'alert-box success';
-          msgTransmision.textContent = '✓ Transmisión guardada con éxito.';
+          if (msgTransmision) {
+            msgTransmision.className = 'alert-box success';
+            msgTransmision.textContent = '✓ Transmisión guardada con éxito.';
+          }
           formTransmision.reset();
         }
 
         cargarTransmisiones();
         actualizarKPIs();
       } catch (err) {
-        msgTransmision.className = 'alert-box error';
-        msgTransmision.textContent = 'Error: ' + (err.message || err);
+        if (msgTransmision) {
+          msgTransmision.className = 'alert-box error';
+          msgTransmision.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarTrans.disabled = false;
-        btnGuardarTrans.textContent = transmisionEditId.value ? 'Actualizar Señal' : 'Guardar Señal';
+        if (btnGuardarTrans) {
+          btnGuardarTrans.disabled = false;
+          btnGuardarTrans.textContent = (transmisionEditId && transmisionEditId.value) ? 'Actualizar Señal' : 'Guardar Señal';
+        }
       }
     });
   }
@@ -1266,14 +1348,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const t = listaTransmisionesCache.find(x => x.id === id);
     if (!t) return;
 
-    transmisionEditId.value = t.id;
+    if (transmisionEditId) transmisionEditId.value = t.id;
     document.getElementById('transTitulo').value = t.titulo || '';
     document.getElementById('transUrl').value = t.url || '';
     document.getElementById('transClaveObs').value = t.clave_obs || '';
     document.getElementById('transActiva').value = t.activa ? 'true' : 'false';
 
-    btnGuardarTrans.textContent = 'Actualizar Señal';
-    btnCancelarTrans.style.display = 'inline-block';
+    if (btnGuardarTrans) btnGuardarTrans.textContent = 'Actualizar Señal';
+    if (btnCancelarTrans) btnCancelarTrans.style.display = 'inline-block';
     if (titleFormTransmision) titleFormTransmision.textContent = 'Editar Transmisión';
     formTransmision.scrollIntoView({ behavior: 'smooth' });
   };
@@ -1291,7 +1373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // =========================================================================
-  // 11. SECCIÓN LITERATURA: REGISTRO Y EDICIÓN COMPLETA
+  // 11. SECCIÓN LITERATURA: REGISTRO Y EDICIÓN COMPLETA (CORREGIDO)
   // =========================================================================
   let listaLiteraturaCache = [];
   const formLit = document.getElementById('formLiteratura');
@@ -1311,12 +1393,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (litEditId) litEditId.value = '';
       if (litExistingPortada) litExistingPortada.value = '';
       if (litExistingPdf) litExistingPdf.value = '';
-      btnGuardarLit.textContent = 'Guardar Literatura';
+      if (btnGuardarLit) btnGuardarLit.textContent = 'Guardar Literatura';
       btnCancelarLit.style.display = 'none';
       if (litPortadaHelp) litPortadaHelp.style.display = 'none';
       if (litPdfHelp) litPdfHelp.style.display = 'none';
       if (titleFormLit) titleFormLit.textContent = 'Publicar Nuevo Libro o Estudio';
-      msgLit.textContent = '';
+      if (msgLit) msgLit.textContent = '';
     });
   }
 
@@ -1324,9 +1406,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     formLit.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = litEditId ? litEditId.value : '';
-      btnGuardarLit.disabled = true;
-      btnGuardarLit.textContent = editId ? 'Actualizando material...' : 'Subiendo a Cloudflare R2...';
-      msgLit.textContent = '';
+      if (btnGuardarLit) {
+        btnGuardarLit.disabled = true;
+        btnGuardarLit.textContent = editId ? 'Actualizando material...' : 'Subiendo a Cloudflare R2...';
+      }
+      if (msgLit) msgLit.textContent = '';
 
       try {
         const filePortada = document.getElementById('litPortada').files[0];
@@ -1358,25 +1442,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('literatura').update(litData).eq('id', editId);
           if (error) throw error;
-          msgLit.className = 'alert-box success';
-          msgLit.textContent = '✓ Material actualizado con éxito.';
+          if (msgLit) {
+            msgLit.className = 'alert-box success';
+            msgLit.textContent = '✓ Material actualizado con éxito.';
+          }
           if (btnCancelarLit) btnCancelarLit.click();
         } else {
           const { error } = await db.from('literatura').insert([litData]);
           if (error) throw error;
-          msgLit.className = 'alert-box success';
-          msgLit.textContent = '✓ Material publicado con éxito.';
+          if (msgLit) {
+            msgLit.className = 'alert-box success';
+            msgLit.textContent = '✓ Material publicado con éxito.';
+          }
           formLit.reset();
         }
 
         cargarLiteraturaAdmin();
         actualizarKPIs();
       } catch (err) {
-        msgLit.className = 'alert-box error';
-        msgLit.textContent = 'Error: ' + (err.message || err);
+        if (msgLit) {
+          msgLit.className = 'alert-box error';
+          msgLit.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarLit.disabled = false;
-        btnGuardarLit.textContent = (litEditId && litEditId.value) ? 'Actualizar Material' : 'Guardar Literatura';
+        if (btnGuardarLit) {
+          btnGuardarLit.disabled = false;
+          btnGuardarLit.textContent = (litEditId && litEditId.value) ? 'Actualizar Material' : 'Guardar Literatura';
+        }
       }
     });
   }
@@ -1429,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('litCategoria').value = item.categoria || '';
     document.getElementById('litDescripcion').value = item.descripcion || '';
 
-    btnGuardarLit.textContent = 'Actualizar Material';
+    if (btnGuardarLit) btnGuardarLit.textContent = 'Actualizar Material';
     if (btnCancelarLit) btnCancelarLit.style.display = 'inline-block';
     if (litPortadaHelp) litPortadaHelp.style.display = 'block';
     if (litPdfHelp) litPdfHelp.style.display = 'block';
@@ -1572,10 +1666,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnCancelarEvento.addEventListener('click', () => {
       formEvento.reset();
       if (eventoEditId) eventoEditId.value = '';
-      btnGuardarEvento.textContent = 'Guardar en Cronograma';
+      if (btnGuardarEvento) btnGuardarEvento.textContent = 'Guardar en Cronograma';
       btnCancelarEvento.style.display = 'none';
       if (titleFormEvento) titleFormEvento.textContent = 'Programar Nuevo Evento o Actividad';
-      msgEvento.textContent = '';
+      if (msgEvento) msgEvento.textContent = '';
     });
   }
 
@@ -1583,9 +1677,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     formEvento.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = eventoEditId ? eventoEditId.value : '';
-      btnGuardarEvento.disabled = true;
-      btnGuardarEvento.textContent = editId ? 'Actualizando...' : 'Guardando...';
-      msgEvento.textContent = '';
+      if (btnGuardarEvento) {
+        btnGuardarEvento.disabled = true;
+        btnGuardarEvento.textContent = editId ? 'Actualizando...' : 'Guardando...';
+      }
+      if (msgEvento) msgEvento.textContent = '';
 
       try {
         const dataEv = {
@@ -1600,25 +1696,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editId) {
           const { error } = await db.from('eventos').update(dataEv).eq('id', editId);
           if (error) throw error;
-          msgEvento.className = 'alert-box success';
-          msgEvento.textContent = '✓ Actividad actualizada con éxito.';
+          if (msgEvento) {
+            msgEvento.className = 'alert-box success';
+            msgEvento.textContent = '✓ Actividad actualizada con éxito.';
+          }
           if (btnCancelarEvento) btnCancelarEvento.click();
         } else {
           const { error } = await db.from('eventos').insert([dataEv]);
           if (error) throw error;
-          msgEvento.className = 'alert-box success';
-          msgEvento.textContent = '✓ Actividad incorporada a la cartelera.';
+          if (msgEvento) {
+            msgEvento.className = 'alert-box success';
+            msgEvento.textContent = '✓ Actividad incorporada a la cartelera.';
+          }
           formEvento.reset();
         }
 
         cargarEventosAdmin();
         actualizarKPIs();
       } catch (err) {
-        msgEvento.className = 'alert-box error';
-        msgEvento.textContent = 'Error: ' + (err.message || err);
+        if (msgEvento) {
+          msgEvento.className = 'alert-box error';
+          msgEvento.textContent = 'Error: ' + (err.message || err);
+        } else {
+          alert('Error: ' + (err.message || err));
+        }
       } finally {
-        btnGuardarEvento.disabled = false;
-        btnGuardarEvento.textContent = (eventoEditId && eventoEditId.value) ? 'Actualizar Actividad' : 'Guardar en Cronograma';
+        if (btnGuardarEvento) {
+          btnGuardarEvento.disabled = false;
+          btnGuardarEvento.textContent = (eventoEditId && eventoEditId.value) ? 'Actualizar Actividad' : 'Guardar en Cronograma';
+        }
       }
     });
   }
@@ -1678,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('evSede').value = ev.sede || '';
     document.getElementById('evDescripcion').value = ev.descripcion || '';
 
-    btnGuardarEvento.textContent = 'Actualizar Actividad';
+    if (btnGuardarEvento) btnGuardarEvento.textContent = 'Actualizar Actividad';
     if (btnCancelarEvento) btnCancelarEvento.style.display = 'inline-block';
     if (titleFormEvento) titleFormEvento.textContent = 'Editar Actividad Programada';
     formEvento.scrollIntoView({ behavior: 'smooth' });
