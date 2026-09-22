@@ -1,24 +1,25 @@
 {
   "name": "Asociación Cristiana Un Encuentro con Jesús",
-  "short_name": "Encuentro Jesús",
-  "description": "Portal oficial de fe, membresía, literatura y transmisiones en vivo",
-  "start_url": "/index.html",
-  "scope": "/",
+  "short_name": "Encuentro con Jesús",
+  "description": "Portal Oficial, Devocionales, Cronograma y Transmisión en Vivo",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0b192c",
   "theme_color": "#0b192c",
-  "orientation": "portrait",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "favicon.ico",
-      "sizes": "192x192 512x512",
-      "type": "image/x-icon",
-      "purpose": "any maskable"
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
