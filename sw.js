@@ -1,5 +1,5 @@
-// sw.js - Service Worker Limpio y Optimizado
-const CACHE_NAME = 'portal-encuentro-v3';
+// sw.js - Service Worker Definitivo
+const CACHE_NAME = 'portal-encuentro-v5';
 const urlsToCache = [
   './index.html',
   './css/style.css',
