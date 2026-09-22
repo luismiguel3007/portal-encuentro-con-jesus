@@ -1,5 +1,5 @@
-// sw.js - Service Worker Optimizado
-const CACHE_NAME = 'portal-encuentro-v2';
+// sw.js - Service Worker Limpio y Optimizado
+const CACHE_NAME = 'portal-encuentro-v3';
 const urlsToCache = [
   './index.html',
   './css/style.css',
@@ -11,7 +11,6 @@ const urlsToCache = [
   './icon-512.png'
 ];
 
-// Instalación del Service Worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -21,25 +20,21 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activación y limpieza de cachés antiguas
 self.addEventListener('activate', (event) => {
-  event.addEventListener('activate', (event) => {
-    event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-    );
-  });
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
   self.clients.claim();
 });
 
-// Interceptación de red con estrategia Cache First
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
