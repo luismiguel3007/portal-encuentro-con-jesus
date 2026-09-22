@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('sedesGrid')) {
     loadSedes();
   }
+  if (document.getElementById('calDaysGrid')) {
+    initCalendar();
+  }
 
   // Inicializar modales
   initArticleModal();
@@ -1196,7 +1199,7 @@ async function loadTransmisionEnVivo() {
 }
 
 /* ==========================================================================
-   11. SISTEMA DE EDICIÓN VISUAL TOTAL, LOGOTIPO, FONDO Y REDES SOCIALES
+   11. SISTEMA DE EDICIÓN VISUAL TOTAL (VALIDACIÓN ESTRICTA MFA / AAL2)
    ========================================================================== */
 let ajustesData = null;
 let isEditingActive = false;
@@ -1304,8 +1307,26 @@ function aplicarRedSocial(topId, footerId, url) {
 async function setupVisualEditor() {
   if (!supabaseClient) return;
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) {
+  try {
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError || !session) return;
+
+    // =========================================================================
+    // CONTROL DE SEGURIDAD MFA (AAL2):
+    // Si el usuario ingresó contraseña pero NO el código de Google Authenticator
+    // (sesión en AAL1 con nextLevel AAL2), se cancela la activación del modo editor.
+    // =========================================================================
+    const { data: aal, error: aalErr } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalErr || !aal) return;
+
+    if (aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      console.warn('Acceso denegado a edición: Sesión parcial AAL1. Falta verificar Google Authenticator.');
+      const visualBar = document.getElementById('adminVisualBar');
+      if (visualBar) visualBar.style.display = 'none';
+      return;
+    }
+
+    // Si la sesión cuenta con nivel AAL2 verificado:
     const topAdminLink = document.getElementById('topbarAdminLink');
     const navAdminBtn = document.getElementById('navAdminBtn');
     const navAdminBtnText = document.getElementById('navAdminBtnText');
@@ -1318,7 +1339,9 @@ async function setupVisualEditor() {
     if (navAdminBtn) navAdminBtn.href = 'admin.html';
     if (navAdminBtnText) navAdminBtnText.textContent = 'Panel Admin';
     if (sidebarAdminBtn) sidebarAdminBtn.href = 'admin.html';
-  } else {
+
+  } catch (err) {
+    console.error('Error al verificar privilegios administrativos:', err);
     return;
   }
 
@@ -1630,4 +1653,145 @@ async function setupVisualEditor() {
       }
     });
   }
+}
+
+/* ==========================================================================
+   12. RENDERIZADO DEL CALENDARIO & CRONOGRAMA MENSUAL INTERACTIVO
+   ========================================================================== */
+let globalEventos = [];
+let calCurrentDate = new Date();
+let calSelectedDateStr = null;
+
+async function initCalendar() {
+  const grid = document.getElementById('calDaysGrid');
+  if (!grid || !supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('eventos')
+      .select('*')
+      .order('fecha', { ascending: true });
+
+    if (!error && data) {
+      globalEventos = data;
+    }
+  } catch (e) {
+    console.warn('Error al obtener eventos de la base de datos:', e);
+  }
+
+  // Controles de cambio de mes
+  document.getElementById('calPrevMonth')?.addEventListener('click', () => {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  document.getElementById('calNextMonth')?.addEventListener('click', () => {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  // Establecer fecha de hoy como seleccionada por defecto
+  const hoyStr = new Date().toISOString().split('T')[0];
+  calSelectedDateStr = hoyStr;
+
+  renderCalendar();
+  mostrarEventosDeFecha(hoyStr);
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('calDaysGrid');
+  const monthTitle = document.getElementById('calMonthTitle');
+  if (!grid || !monthTitle) return;
+
+  const year = calCurrentDate.getFullYear();
+  const month = calCurrentDate.getMonth();
+
+  // Título del mes en español
+  const mesNombre = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(calCurrentDate);
+  monthTitle.textContent = mesNombre;
+
+  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Domingo
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const hoyStr = new Date().toISOString().split('T')[0];
+
+  grid.innerHTML = '';
+
+  // Días vacíos previos al día 1
+  for (let i = 0; i < firstDayIndex; i++) {
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'cal-day-cell empty';
+    grid.appendChild(emptyCell);
+  }
+
+  // Renderizado de días del mes
+  for (let dia = 1; dia <= daysInMonth; dia++) {
+    const mm = String(month + 1).padStart(2, '0');
+    const dd = String(dia).padStart(2, '0');
+    const fechaIso = `${year}-${mm}-${dd}`;
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day-cell';
+    cell.textContent = dia;
+
+    // Verificar si existen eventos en la fecha
+    const tieneEventos = globalEventos.some(ev => ev.fecha === fechaIso);
+    if (tieneEventos) cell.classList.add('has-events');
+
+    if (fechaIso === hoyStr) cell.classList.add('today');
+    if (fechaIso === calSelectedDateStr) cell.classList.add('selected');
+
+    cell.addEventListener('click', () => {
+      document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+      calSelectedDateStr = fechaIso;
+      mostrarEventosDeFecha(fechaIso);
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+function mostrarEventosDeFecha(fechaIso) {
+  const container = document.getElementById('calDayEventsList');
+  const title = document.getElementById('calSelectedDateTitle');
+  const badge = document.getElementById('calEventsCountBadge');
+  if (!container) return;
+
+  const [y, m, d] = fechaIso.split('-');
+  const fObj = new Date(y, m - 1, d);
+  const fFormat = new Intl.DateTimeFormat('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }).format(fObj);
+
+  if (title) title.textContent = fFormat.charAt(0).toUpperCase() + fFormat.slice(1);
+
+  const eventosDelDia = globalEventos.filter(ev => ev.fecha === fechaIso);
+
+  if (badge) {
+    badge.textContent = `${eventosDelDia.length} ${eventosDelDia.length === 1 ? 'actividad' : 'actividades'}`;
+  }
+
+  if (eventosDelDia.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8;">
+        <span style="font-size: 2.2rem; display: block; margin-bottom: 8px;">🕊️</span>
+        <p style="font-size: 0.92rem;">No hay convocatorias ni cultos especiales fijados para esta fecha.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = eventosDelDia.map(ev => `
+    <div class="event-item-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+        <span style="font-size: 0.75rem; font-weight: 800; background: #0b192c; color: #e5a823; padding: 3px 8px; border-radius: 5px;">
+          ${escapeHtml(ev.categoria)}
+        </span>
+        <span style="font-size: 0.8rem; color: #64748b; font-weight: 700;">
+          📍 ${escapeHtml(ev.sede)}
+        </span>
+      </div>
+      <h4 style="color: #0b192c; font-size: 1.05rem; margin: 4px 0 6px 0;">${escapeHtml(ev.titulo)}</h4>
+      ${ev.hora ? `<div style="font-size: 0.84rem; color: #0b192c; font-weight: 700; margin-bottom: 4px;">⏰ Horario: ${escapeHtml(ev.hora)}</div>` : ''}
+      ${ev.descripcion ? `<p style="font-size: 0.86rem; color: #475569; margin: 0; line-height: 1.5;">${escapeHtml(ev.descripcion)}</p>` : ''}
+    </div>
+  `).join('');
 }

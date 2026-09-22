@@ -65,14 +65,14 @@
     .login-card {
       background: #ffffff;
       border-radius: 18px;
-      padding: 2.8rem 2.2rem;
+      padding: 2.5rem 2.2rem;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
       border-top: 4px solid var(--gold-main);
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.8rem;
     }
 
     .brand-badge {
@@ -198,6 +198,24 @@
       transform: none;
     }
 
+    .btn-secondary-link {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: underline;
+    }
+
+    .btn-secondary-link:hover {
+      color: var(--navy-main);
+    }
+
     .alert-box {
       margin-top: 1.2rem;
       padding: 11px 14px;
@@ -229,6 +247,74 @@
       border: 1px solid #86efac;
     }
 
+    /* CONTENEDOR OPTIMIZADO PARA QR */
+    .mfa-box {
+      text-align: center;
+    }
+
+    .mfa-desc {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .qr-wrapper {
+      background: #ffffff !important;
+      padding: 18px !important;
+      border-radius: 14px;
+      display: inline-block;
+      margin: 0.4rem auto 1.2rem;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      line-height: 0;
+    }
+
+    .qr-wrapper svg {
+      display: block !important;
+      width: 220px !important;
+      height: 220px !important;
+      margin: 0 auto !important;
+      shape-rendering: crispEdges !important;
+    }
+
+    .secret-code-block {
+      background: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
+      color: var(--navy-main);
+      font-weight: 700;
+      letter-spacing: 2px;
+      display: inline-block;
+      margin-bottom: 1.2rem;
+      border: 1px solid #e2e8f0;
+      word-break: break-all;
+      user-select: all;
+    }
+
+    .input-totp {
+      width: 100%;
+      letter-spacing: 12px;
+      font-size: 1.7rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 12px;
+      border-radius: 9px;
+      border: 2px solid var(--border-color);
+      background-color: #f8fafc;
+      color: var(--navy-main);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-totp:focus {
+      background-color: #ffffff;
+      border-color: var(--gold-main);
+      box-shadow: 0 0 0 4px rgba(229, 168, 35, 0.16);
+    }
+
     .login-footer {
       text-align: center;
       margin-top: 1.8rem;
@@ -243,6 +329,7 @@
       align-items: center;
       gap: 6px;
       transition: color 0.2s;
+      cursor: pointer;
     }
 
     .btn-back-portal:hover {
@@ -256,10 +343,11 @@
     <div class="login-card">
       <div class="login-header">
         <div class="brand-badge">EJ</div>
-        <h1>Acceso Administrativo</h1>
-        <p>Asociación Cristiana Un Encuentro con Jesús</p>
+        <h1 id="panelTitle">Acceso Administrativo</h1>
+        <p id="panelSub">Asociación Cristiana Un Encuentro con Jesús</p>
       </div>
 
+      <!-- FASE 1: CORREO Y CONTRASEÑA -->
       <form id="loginForm" autocomplete="on">
         <div class="form-group">
           <label for="email">Correo Electrónico Institucional</label>
@@ -290,15 +378,53 @@
         </div>
 
         <button type="submit" id="btnSubmit" class="btn-submit">
-          Ingresar al Panel
+          Continuar
         </button>
-
-        <div id="loginMsg" class="alert-box"></div>
       </form>
+
+      <!-- FASE 2: ENROLAR GOOGLE AUTHENTICATOR (PRIMERA VEZ) -->
+      <div id="mfaEnrollSection" class="mfa-box" style="display: none;">
+        <p class="mfa-desc">
+          Apunta con la cámara de <strong>Google Authenticator</strong> al siguiente recuadro:
+        </p>
+
+        <div class="qr-wrapper" id="qrContainer"></div>
+
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px;">O clave secreta manual:</p>
+        <div class="secret-code-block" id="secretText">Cargando clave...</div>
+
+        <div class="form-group" style="text-align: left;">
+          <label for="enrollCode" style="text-align: center;">Código de 6 dígitos que muestra tu app:</label>
+          <input type="text" id="enrollCode" class="input-totp" maxlength="6" placeholder="000000" inputmode="numeric" autocomplete="one-time-code">
+        </div>
+
+        <button type="button" id="btnVerifyEnroll" class="btn-submit">
+          Vincular y Entrar
+        </button>
+        <button type="button" class="btn-secondary-link btn-back-step">← Volver a ingresar contraseña</button>
+      </div>
+
+      <!-- FASE 3: VERIFICACIÓN EN DOS PASOS (INGRESOS HABITUALES) -->
+      <div id="mfaChallengeSection" class="mfa-box" style="display: none;">
+        <p class="mfa-desc">
+          Abre <strong>Google Authenticator</strong> en tu teléfono e ingresa el código temporal de 6 dígitos:
+        </p>
+
+        <div class="form-group">
+          <input type="text" id="verifyCode" class="input-totp" maxlength="6" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" autofocus>
+        </div>
+
+        <button type="button" id="btnVerifyChallenge" class="btn-submit">
+          Verificar e Ingresar
+        </button>
+        <button type="button" class="btn-secondary-link btn-back-step">← Iniciar con otra cuenta</button>
+      </div>
+
+      <div id="loginMsg" class="alert-box"></div>
     </div>
 
     <div class="login-footer">
-      <a href="index.html" class="btn-back-portal">
+      <a href="index.html" class="btn-back-portal" id="btnBackPortal">
         &larr; Regresar al Portal Principal
       </a>
     </div>
@@ -314,19 +440,33 @@
       const loginMsg = document.getElementById('loginMsg');
       const btnTogglePass = document.getElementById('btnTogglePass');
 
+      const panelTitle = document.getElementById('panelTitle');
+      const panelSub = document.getElementById('panelSub');
+      const mfaEnrollSection = document.getElementById('mfaEnrollSection');
+      const mfaChallengeSection = document.getElementById('mfaChallengeSection');
+      const qrContainer = document.getElementById('qrContainer');
+      const secretText = document.getElementById('secretText');
+      const enrollCodeInput = document.getElementById('enrollCode');
+      const verifyCodeInput = document.getElementById('verifyCode');
+      const btnVerifyEnroll = document.getElementById('btnVerifyEnroll');
+      const btnVerifyChallenge = document.getElementById('btnVerifyChallenge');
+      const btnBackSteps = document.querySelectorAll('.btn-back-step');
+      const btnBackPortal = document.getElementById('btnBackPortal');
+
+      let currentFactorId = null;
+      let currentChallengeId = null;
+
       // -----------------------------------------------------------
-      // CONFIGURACIÓN DE BLOQUEO POR CONTRASEÑAS FALLIDAS
+      // BLOQUEO POR CONTRASEÑAS FALLIDAS
       // -----------------------------------------------------------
       const MAX_INTENTOS_LOGIN = 4;
       const TIEMPO_BLOQUEO_MINUTOS = 3;
       const TIEMPO_BLOQUEO_MS = TIEMPO_BLOQUEO_MINUTOS * 60 * 1000;
-
       let timerBloqueo = null;
 
       function verificarBloqueoAdmin() {
         const bloqueoHasta = parseInt(localStorage.getItem('admin_lockout_until') || '0', 10);
         const ahora = Date.now();
-
         if (bloqueoHasta > ahora) {
           activarModoBloqueo(bloqueoHasta);
           return true;
@@ -367,7 +507,7 @@
         localStorage.removeItem('admin_lockout_until');
         localStorage.removeItem('admin_failed_attempts');
         btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Ingresar al Panel';
+        btnSubmit.textContent = 'Continuar';
         emailInput.disabled = false;
         passwordInput.disabled = false;
       }
@@ -388,21 +528,67 @@
         }
       }
 
-      // 1. Si ya tiene sesión iniciada, enviar directo a admin.html
+      function mostrarError(texto) {
+        loginMsg.className = 'alert-box error';
+        loginMsg.textContent = texto;
+        loginMsg.style.display = 'block';
+      }
+
+      function ocultarMensaje() {
+        loginMsg.style.display = 'none';
+      }
+
+      // Volver al paso anterior de usuario y contraseña
+      btnBackSteps.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await db.auth.signOut();
+          mfaEnrollSection.style.display = 'none';
+          mfaChallengeSection.style.display = 'none';
+          form.style.display = 'block';
+          panelTitle.textContent = 'Acceso Administrativo';
+          panelSub.textContent = 'Asociación Cristiana Un Encuentro con Jesús';
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Continuar';
+          ocultarMensaje();
+        });
+      });
+
+      // Salir al portal principal limpiando cualquier sesión sin segundo factor
+      if (btnBackPortal) {
+        btnBackPortal.addEventListener('click', async (e) => {
+          e.preventDefault();
+          try {
+            const { data: aal } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+            if (aal && aal.currentLevel !== 'aal2') {
+              await db.auth.signOut();
+            }
+          } catch (err) {
+            await db.auth.signOut();
+          }
+          window.location.href = 'index.html';
+        });
+      }
+
+      // 1. Verificación inicial de sesión preexistente
       try {
         const { data: { session } } = await db.auth.getSession();
         if (session) {
-          window.location.replace('admin.html');
-          return;
+          const { data: aal } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (aal && aal.currentLevel === 'aal2') {
+            window.location.replace('admin.html');
+            return;
+          } else {
+            // Si la sesión quedó a medias (AAL1 sin TOTP completado), limpiarla de inmediato
+            await db.auth.signOut();
+          }
         }
       } catch (e) {
-        console.warn('Verificación de sesión omitida');
+        console.warn('Verificación inicial de sesión omitida');
       }
 
-      // Comprobar estado de bloqueo al cargar
       verificarBloqueoAdmin();
 
-      // 2. Alternar visibilidad de contraseña
+      // 2. Alternar visibilidad de la contraseña
       if (btnTogglePass) {
         btnTogglePass.addEventListener('click', () => {
           const isPassword = passwordInput.getAttribute('type') === 'password';
@@ -411,33 +597,146 @@
         });
       }
 
-      // 3. Procesar autenticación en Supabase
+      // 3. Fase 1: Credenciales y evaluación de factores MFA
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (verificarBloqueoAdmin()) return;
 
         btnSubmit.disabled = true;
         btnSubmit.textContent = 'Verificando credenciales...';
-        loginMsg.className = 'alert-box';
-        loginMsg.style.display = 'none';
+        ocultarMensaje();
 
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
         try {
-          const { data, error } = await db.auth.signInWithPassword({
-            email: email,
-            password: password
-          });
-
+          const { data, error } = await db.auth.signInWithPassword({ email, password });
           if (error) throw error;
 
-          // Inicio exitoso: limpiar contadores de fallo
           localStorage.removeItem('admin_failed_attempts');
           localStorage.removeItem('admin_lockout_until');
 
+          const { data: aalData, error: aalErr } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (aalErr) throw aalErr;
+
+          form.style.display = 'none';
+
+          const { data: factors, error: fErr } = await db.auth.mfa.listFactors();
+          if (fErr) throw fErr;
+
+          // CASO A: El usuario ya tiene factor TOTP verificado en Supabase
+          if (aalData.nextLevel === 'aal2' && aalData.currentLevel === 'aal1') {
+            const totp = factors.totp.find(f => f.status === 'verified');
+            if (totp) {
+              currentFactorId = totp.id;
+              const ch = await db.auth.mfa.challenge({ factorId: currentFactorId });
+              if (ch.error) throw ch.error;
+              currentChallengeId = ch.data.id;
+
+              panelTitle.textContent = 'Segundo Factor Requerido';
+              panelSub.textContent = 'Ingresa el código temporal de Google Authenticator';
+              mfaChallengeSection.style.display = 'block';
+              verifyCodeInput.focus();
+              return;
+            }
+          }
+
+          // Limpiar factores pendientes no verificados
+          if (factors && factors.totp && factors.totp.length > 0) {
+            for (const f of factors.totp) {
+              if (f.status === 'unverified') {
+                await db.auth.mfa.unenroll({ factorId: f.id });
+              }
+            }
+          }
+
+          // CASO B: Enrolar nuevo factor TOTP
+          const enroll = await db.auth.mfa.enroll({
+            factorType: 'totp',
+            issuer: 'Un Encuentro con Jesús',
+            friendlyName: email
+          });
+          if (enroll.error) throw enroll.error;
+
+          currentFactorId = enroll.data.id;
+
+          // Renderizado limpio de SVG con viewBox
+          let rawSvg = enroll.data.totp.qr_code || '';
+          if (rawSvg.includes('<svg')) {
+            rawSvg = rawSvg.substring(rawSvg.indexOf('<svg'));
+            if (rawSvg.includes('</svg>')) {
+              rawSvg = rawSvg.substring(0, rawSvg.indexOf('</svg>') + 6);
+            }
+          }
+
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(rawSvg, 'image/svg+xml');
+          const svgEl = doc.querySelector('svg');
+
+          if (svgEl) {
+            let origW = svgEl.getAttribute('width');
+            let origH = svgEl.getAttribute('height');
+
+            if (!svgEl.getAttribute('viewBox')) {
+              const wVal = parseFloat(origW) || 256;
+              const hVal = parseFloat(origH) || 256;
+              svgEl.setAttribute('viewBox', `0 0 ${wVal} ${hVal}`);
+            }
+
+            svgEl.setAttribute('width', '220');
+            svgEl.setAttribute('height', '220');
+            svgEl.style.width = '220px';
+            svgEl.style.height = '220px';
+            svgEl.style.display = 'block';
+            svgEl.style.margin = '0 auto';
+            svgEl.setAttribute('shape-rendering', 'crispEdges');
+
+            qrContainer.innerHTML = '';
+            qrContainer.appendChild(svgEl);
+          } else {
+            qrContainer.innerHTML = rawSvg;
+          }
+
+          secretText.textContent = enroll.data.totp.secret;
+
+          panelTitle.textContent = 'Configurar Doble Factor';
+          panelSub.textContent = 'Vincula tu cuenta con Google Authenticator';
+          mfaEnrollSection.style.display = 'block';
+          enrollCodeInput.focus();
+
+        } catch (err) {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Continuar';
+          registrarFalloLogin();
+        }
+      });
+
+      // 4. Fase 2: Confirmar primer registro (Enrolamiento)
+      btnVerifyEnroll.addEventListener('click', async () => {
+        ocultarMensaje();
+        const code = enrollCodeInput.value.trim();
+
+        if (code.length !== 6) {
+          mostrarError('Por favor ingresa los 6 dígitos que muestra tu app.');
+          return;
+        }
+
+        btnVerifyEnroll.disabled = true;
+        btnVerifyEnroll.textContent = 'Vinculando y comprobando...';
+
+        try {
+          const ch = await db.auth.mfa.challenge({ factorId: currentFactorId });
+          if (ch.error) throw ch.error;
+
+          const ver = await db.auth.mfa.verify({
+            factorId: currentFactorId,
+            challengeId: ch.data.id,
+            code: code
+          });
+          if (ver.error) throw ver.error;
+
           loginMsg.className = 'alert-box success';
-          loginMsg.textContent = '✓ Acceso correcto. Redirigiendo al panel...';
+          loginMsg.textContent = '✓ Segundo factor vinculado correctamente. Ingresando...';
           loginMsg.style.display = 'block';
 
           setTimeout(() => {
@@ -445,10 +744,54 @@
           }, 600);
 
         } catch (err) {
-          btnSubmit.disabled = false;
-          btnSubmit.textContent = 'Ingresar al Panel';
-          registrarFalloLogin();
+          btnVerifyEnroll.disabled = false;
+          btnVerifyEnroll.textContent = 'Vincular y Entrar';
+          mostrarError('Código incorrecto o expirado. Revisa el código actual en tu app.');
         }
+      });
+
+      // 5. Fase 3: Verificación habitual
+      btnVerifyChallenge.addEventListener('click', async () => {
+        ocultarMensaje();
+        const code = verifyCodeInput.value.trim();
+
+        if (code.length !== 6) {
+          mostrarError('Ingresa el código completo de 6 dígitos.');
+          return;
+        }
+
+        btnVerifyChallenge.disabled = true;
+        btnVerifyChallenge.textContent = 'Verificando...';
+
+        try {
+          const ver = await db.auth.mfa.verify({
+            factorId: currentFactorId,
+            challengeId: currentChallengeId,
+            code: code
+          });
+          if (ver.error) throw ver.error;
+
+          loginMsg.className = 'alert-box success';
+          loginMsg.textContent = '✓ Código verificado. Redirigiendo al panel...';
+          loginMsg.style.display = 'block';
+
+          setTimeout(() => {
+            window.location.replace('admin.html');
+          }, 600);
+
+        } catch (err) {
+          btnVerifyChallenge.disabled = false;
+          btnVerifyChallenge.textContent = 'Verificar e Ingresar';
+          mostrarError('Código inválido o desfasado. Espera a que la app genere un nuevo código de 6 dígitos.');
+        }
+      });
+
+      enrollCodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btnVerifyEnroll.click();
+      });
+
+      verifyCodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btnVerifyChallenge.click();
       });
     });
   </script>

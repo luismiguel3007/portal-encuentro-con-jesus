@@ -4,19 +4,293 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asociación Cristiana Un Encuentro con Jesús | Portal Oficial</title>
-  <meta name="description" content="Portal oficial de la Asociación Cristiana Un Encuentro con Jesús. Devocionales, prédicas, transmisión en vivo, catálogo de revistas y directorio de sedes.">
+  <meta name="description" content="Portal oficial de la Asociación Cristiana Un Encuentro con Jesús. Devocionales, prédicas, transmisión en vivo, catálogo de revistas, cronograma de actividades y directorio de sedes.">
   
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b192c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css?v=3">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* ===================================================
+       MEJORAS VISUALES DE NAVEGACIÓN (TABS / MENÚ)
+       =================================================== */
+    .nav-desktop .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      list-style: none;
+    }
+
+    .nav-desktop .nav-link {
+      padding: 6px 11px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-desktop .nav-link:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-desktop .nav-link.active {
+      color: #e5a823;
+      background: rgba(229, 168, 35, 0.12);
+      font-weight: 700;
+    }
+
+    .btn-admin-nav {
+      background: rgba(229, 168, 35, 0.15) !important;
+      color: #e5a823 !important;
+      border: 1px solid rgba(229, 168, 35, 0.4) !important;
+      padding: 6px 13px !important;
+      border-radius: 9px !important;
+      font-weight: 700 !important;
+      font-size: 0.84rem !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .btn-admin-nav:hover {
+      background: #e5a823 !important;
+      color: #0b192c !important;
+      transform: translateY(-1px);
+    }
+
+    /* ===================================================
+       REDISEÑO VISUAL MODERNO DEL CALENDARIO
+       =================================================== */
+    .section-cronograma {
+      padding: 5rem 0;
+      background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
+      border-top: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cronograma-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 28px;
+      max-width: 1100px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .cronograma-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .calendar-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 15px 35px rgba(11, 25, 44, 0.05), 0 1px 3px rgba(0,0,0,0.02);
+      padding: 2rem;
+    }
+
+    .calendar-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.6rem;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 1rem;
+    }
+
+    .calendar-nav-btn {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #0b192c;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .calendar-nav-btn:hover {
+      background: #0b192c;
+      color: #e5a823;
+      border-color: #0b192c;
+      transform: scale(1.05);
+    }
+
+    .calendar-month-title {
+      font-size: 1.25rem;
+      color: #0b192c;
+      font-weight: 800;
+      text-transform: capitalize;
+      letter-spacing: -0.4px;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.74rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .calendar-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .cal-day-cell {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      position: relative;
+      background: #f8fafc;
+      border: 1.5px solid transparent;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .cal-day-cell:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .cal-day-cell.empty {
+      background: transparent;
+      cursor: default;
+      border-color: transparent;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .cal-day-cell.today {
+      border-color: #0b192c;
+      color: #0b192c;
+      font-weight: 900;
+      background: #ffffff;
+    }
+
+    .cal-day-cell.selected {
+      background: #0b192c !important;
+      color: #ffffff !important;
+      border-color: #0b192c !important;
+      box-shadow: 0 8px 20px rgba(11, 25, 44, 0.28) !important;
+      transform: scale(1.04);
+    }
+
+    .cal-day-cell.has-events::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e5a823;
+      position: absolute;
+      bottom: 6px;
+    }
+
+    .cal-day-cell.selected.has-events::after {
+      background: #e5a823;
+      box-shadow: 0 0 6px rgba(229, 168, 35, 0.8);
+    }
+
+    /* Panel de Actividades del Día */
+    .events-panel-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      border-top: 5px solid #e5a823;
+      box-shadow: 0 15px 35px rgba(11, 25, 44, 0.05);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+    }
+
+    .events-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px dashed #e2e8f0;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .events-panel-header h3 {
+      font-size: 1.15rem;
+      color: #0b192c;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .events-count-badge {
+      background: #0b192c;
+      color: #e5a823;
+      font-weight: 800;
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .events-list-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .event-item-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4.5px solid #e5a823;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .event-item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+      background: #ffffff;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Barra Superior Solemne con Redes y Versículo Editable -->
+  <!-- Barra Superior Solemne -->
   <div class="topbar">
     <div class="container topbar-inner">
       <div class="topbar-verse" id="editableVersiculo" data-editable="topbar_verse">
@@ -24,7 +298,6 @@
       </div>
 
       <div class="topbar-right">
-        <!-- Enlaces a Redes Sociales Dinámicas -->
         <div class="social-header-links" id="socialHeaderLinks">
           <a href="#" id="linkFbTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="Facebook" style="display:none;">FB</a>
           <a href="#" id="linkTkTop" target="_blank" rel="noopener noreferrer" class="social-top-link" title="TikTok" style="display:none;">TK</a>
@@ -38,40 +311,40 @@
     </div>
   </div>
 
-  <!-- Cabecera Principal Sticky -->
+  <!-- Cabecera Principal con Menú Organizado -->
   <header class="main-header">
     <div class="container header-container">
       <a href="index.html" class="brand-link" aria-label="Inicio">
-  <div class="logo-badge" id="headerLogoBadge">
-    <span id="logoBadgeText">EJ</span>
-    <img id="headerLogoImg" alt="Logo Editorial" style="display: none;">
-  </div>
-  <div class="brand-text">
-    <span class="brand-title" data-editable="brand_title">EDITORIAL - MISIÓN</span>
-    <span class="brand-subtitle" data-editable="brand_subtitle">UN ENCUENTRO CON JESÚS</span>
-  </div>
-</a>
-</>
+        <div class="logo-badge" id="headerLogoBadge">
+          <span id="logoBadgeText">EJ</span>
+          <img id="headerLogoImg" alt="Logo Editorial" style="display: none;">
+        </div>
+        <div class="brand-text">
+          <span class="brand-title" data-editable="brand_title">EDITORIAL - MISIÓN</span>
+          <span class="brand-subtitle" data-editable="brand_subtitle">UN ENCUENTRO CON JESÚS</span>
+        </div>
+      </a>
 
-      <!-- Navegación de Escritorio -->
+      <!-- Navegación de Escritorio Ordenada según el Flujo Visual -->
       <nav class="nav-desktop" aria-label="Navegación principal">
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link active">Inicio</a></li>
-          <li><a href="#noticias" class="nav-link">Noticias</a></li>
+          <li><a href="#envivo" class="nav-link">En Vivo</a></li>
+          <li><a href="#cronograma" class="nav-link">Cronograma</a></li>
           <li><a href="revistas.html" class="nav-link">Revistas</a></li>
           <li><a href="literatura.html" class="nav-link">Literatura</a></li>
           <li><a href="sedes.html" class="nav-link">Sedes</a></li>
           <li><a href="membresia.html" class="nav-link">Membresía</a></li>
           <li><a href="#liderazgo" class="nav-link">Liderazgo</a></li>
-          <li><a href="#envivo" class="nav-link">En Vivo</a></li>
+          <li><a href="#noticias" class="nav-link">Noticias</a></li>
           <li><a href="biblia.html" class="nav-link">Biblia</a></li>
           <li>
             <a href="login.html" class="btn-admin-nav" id="navAdminBtn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              <span id="navAdminBtnText">Admin</span>
+              <span id="navAdminBtnText">Panel Admin</span>
             </a>
           </li>
         </ul>
@@ -83,7 +356,7 @@
     </div>
   </header>
 
-  <!-- Menú Lateral Móvil (Off-Canvas) -->
+  <!-- Menú Lateral Móvil -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <aside class="sidebar-menu" id="sidebarMenu">
     <div class="sidebar-header">
@@ -100,13 +373,14 @@
     <nav class="sidebar-nav">
       <ul>
         <li><a href="index.html" class="active">Inicio</a></li>
-        <li><a href="#noticias">Noticias y Devocionales</a></li>
+        <li><a href="#envivo">Transmisión En Vivo &amp; Radio</a></li>
+        <li><a href="#cronograma">Cronograma &amp; Boletín</a></li>
         <li><a href="revistas.html">Revistas y Ediciones</a></li>
         <li><a href="literatura.html">Literatura Cristiana</a></li>
         <li><a href="sedes.html">Nuestras Sedes</a></li>
         <li><a href="membresia.html">Consulta de Membresía</a></li>
         <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
-        <li><a href="#envivo">Transmisión En Vivo</a></li>
+        <li><a href="#noticias">Noticias y Devocionales</a></li>
         <li><a href="biblia.html">Santa Biblia &amp; Promesa</a></li>
       </ul>
     </nav>
@@ -118,7 +392,7 @@
     </div>
   </aside>
 
-  <!-- Portada Editorial (Hero) con Imagen de Fondo Dinámica y Textos Editables -->
+  <!-- 1. PORTADA EDITORIAL (HERO) -->
   <section class="hero-editorial" id="heroEditorialSection">
     <div class="hero-overlay"></div>
     <div class="container hero-container-box">
@@ -130,23 +404,24 @@
           Proclamando el Evangelio de Poder y Salvación <span>A Todas las Naciones</span>
         </h1>
         <p class="hero-description" id="editableHeroDesc" data-editable="hero_desc">
-          Bienvenido al portal institucional de la Asociación Cristiana Un Encuentro con Jesús. Descubre devocionales bíblicos, enseñanzas apostólicas, nuestras ediciones de revistas impresas y la señal continua de radio y televisión en vivo.
+          Bienvenido al portal institucional de la Asociación Cristiana Un Encuentro con Jesús. Descubre las transmisiones en vivo, nuestra radio continua, el cronograma de actividades, literatura y devocionales para tu crecimiento espiritual.
         </p>
         <div class="hero-actions">
-          <a href="#noticias" class="btn-primary" data-editable="btn_hero_noticias">Leer Devocionales</a>
-          <a href="#envivo" class="btn-outline" data-editable="btn_hero_envivo">Ver Transmisión en Vivo</a>
+          <a href="#envivo" class="btn-primary" data-editable="btn_hero_envivo">Ver Transmisión en Vivo</a>
+          <a href="#cronograma" class="btn-outline" data-editable="btn_hero_cronograma">Ver Cronograma</a>
+          <a href="#noticias" class="btn-outline" data-editable="btn_hero_noticias">Leer Devocionales</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Sección Multimedia -->
+  <!-- 2. SECCIÓN MULTIMEDIA (TRANSMISIÓN EN VIVO & RADIO ONLINE PRIMERO) -->
   <section class="section-multimedia" id="envivo">
     <div class="container">
       <div class="section-header">
         <span class="section-tag" data-editable="sec_multimedia_tag">Señal Continua</span>
         <h2 class="section-title" data-editable="sec_multimedia_title">Transmisiones Multimedia en Vivo</h2>
-        <p class="section-subtitle" data-editable="sec_multimedia_sub">Conéctate a la señal de video de nuestros cultos dominicales y sintoniza nuestra radio con alabanzas y sermones las 24 horas del día.</p>
+        <p class="section-subtitle" data-editable="sec_multimedia_sub">Conéctate a la señal de video de nuestros cultos diarios y sintoniza ahora nuestra radio con alabanzas y sermones las 24 horas del día.</p>
       </div>
 
       <div class="multimedia-grid">
@@ -187,7 +462,56 @@
     </div>
   </section>
 
-  <!-- Sección Carrusel de Liderazgo -->
+  <!-- 3. SECCIÓN CRONOGRAMA SEMANAL & BOLETÍN DE ANUNCIOS (CALENDARIO MEJORADO) -->
+  <section class="section-cronograma" id="cronograma">
+    <div class="container">
+      <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+        <span class="section-tag" data-editable="sec_crono_tag" style="background: rgba(229,168,35,0.15); color: #b88210; padding: 4px 14px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">
+          Convocatorias &amp; Cultos
+        </span>
+        <h2 class="section-title" data-editable="sec_crono_title" style="font-size: 2.2rem; color: #0b192c; font-weight: 800; margin-top: 8px;">
+          Cronograma Semanal &amp; Boletín de Anuncios
+        </h2>
+        <p class="section-subtitle" data-editable="sec_crono_sub" style="color: #64748b; max-width: 640px; margin: 0 auto; font-size: 0.95rem;">
+          Consulta los días fijados para ayunos, vigilias, ensayos de alabanza, reuniones de jóvenes y cultos especiales en nuestras distintas sedes.
+        </p>
+      </div>
+
+      <div class="cronograma-grid">
+        <!-- COLUMNA 1: CALENDARIO MENSUAL -->
+        <div class="calendar-card">
+          <div class="calendar-nav-bar">
+            <button type="button" id="calPrevMonth" class="calendar-nav-btn" aria-label="Mes anterior">&larr;</button>
+            <h3 id="calMonthTitle" class="calendar-month-title">Mes Año</h3>
+            <button type="button" id="calNextMonth" class="calendar-nav-btn" aria-label="Mes siguiente">&rarr;</button>
+          </div>
+
+          <div class="calendar-weekdays">
+            <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+          </div>
+
+          <div id="calDaysGrid" class="calendar-days-grid"></div>
+        </div>
+
+        <!-- COLUMNA 2: DETALLES DE LA FECHA SELECCIONADA -->
+        <div class="events-panel-card">
+          <div class="events-panel-header">
+            <h3 id="calSelectedDateTitle">Actividades del Día</h3>
+            <span id="calEventsCountBadge" class="events-count-badge">0 actividades</span>
+          </div>
+
+          <div id="calDayEventsList" class="events-list-container">
+            <div style="text-align: center; padding: 3rem 1rem; color: #94a3b8;">
+              <span style="font-size: 2.4rem; display: block; margin-bottom: 8px;">🕊️</span>
+              <p style="font-size: 0.92rem;">Selecciona una fecha marcada con un punto dorado para visualizar los horarios y sedes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. SECCIÓN CARRUSEL DE LIDERAZGO -->
   <section class="section-leadership" id="liderazgo">
     <div class="container">
       <div class="section-header">
@@ -214,7 +538,7 @@
     </div>
   </section>
 
-  <!-- Sección Noticias -->
+  <!-- 5. SECCIÓN NOTICIAS, MENSAJES Y DEVOCIONALES (AL FINAL) -->
   <section class="section-articles" id="noticias">
     <div class="container">
       <div class="section-header">
@@ -255,7 +579,6 @@
           <p data-editable="footer_brand_desc">
             Una congregación fundamentada en la verdad bíblica, dedicada a la proclamación del Evangelio de nuestro Señor Jesucristo y al servicio a la comunidad.
           </p>
-          <!-- Redes Sociales en el pie de página -->
           <div class="footer-social-box" id="footerSocialBox">
             <a href="#" id="linkFbFooter" target="_blank" rel="noopener noreferrer" class="footer-soc-link" style="display:none;">Facebook</a>
             <a href="#" id="linkTkFooter" target="_blank" rel="noopener noreferrer" class="footer-soc-link" style="display:none;">TikTok</a>
@@ -268,12 +591,14 @@
           <h4 data-editable="footer_col1_title">Navegación</h4>
           <ul class="footer-links">
             <li><a href="index.html">Inicio</a></li>
-            <li><a href="#noticias">Noticias &amp; Devocionales</a></li>
+            <li><a href="#envivo">Transmisión En Vivo</a></li>
+            <li><a href="#cronograma">Cronograma de Actividades</a></li>
             <li><a href="revistas.html">Revistas Oficiales</a></li>
             <li><a href="literatura.html">Literatura Cristiana</a></li>
             <li><a href="sedes.html">Directorio de Sedes</a></li>
             <li><a href="membresia.html">Consulta de Membresía</a></li>
             <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
+            <li><a href="#noticias">Noticias &amp; Devocionales</a></li>
             <li><a href="biblia.html">Santa Biblia en Línea</a></li>
           </ul>
         </div>
@@ -368,8 +693,17 @@
     </div>
   </div>
 
- <script src="js/config.js?v=2"></script>
+  <script src="js/config.js?v=2"></script>
   <script src="js/radio-flotante.js"></script>
   <script src="js/app.js?v=2"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('PWA Service Worker registrado con éxito:', reg.scope))
+          .catch(err => console.warn('Fallo al registrar Service Worker:', err));
+      });
+    }
+  </script>
 </body>
 </html>

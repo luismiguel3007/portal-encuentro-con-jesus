@@ -1,7 +1,9 @@
 // js/admin.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. VERIFICAR AUTENTICACIÓN Y EXPULSAR SI NO HAY SESIÓN
+  // =========================================================================
+  // 1. VERIFICAR AUTENTICACIÓN Y EXIGIR SEGUNDO FACTOR ESTRICTO (AAL2)
+  // =========================================================================
   const sessionStatus = document.getElementById('sessionStatus');
   const btnLogout = document.getElementById('btnLogout');
   const adminMain = document.querySelector('.admin-container');
@@ -14,8 +16,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    // Comprobación de seguridad: El nivel de autenticación debe ser AAL2 (Contraseña + TOTP)
+    const { data: aal, error: aalError } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalError || !aal || aal.currentLevel !== 'aal2') {
+      console.warn('Acceso revocado: Sesión no verificada con segundo factor (AAL2).');
+      await db.auth.signOut();
+      window.location.replace('login.html');
+      return;
+    }
+
     if (sessionStatus) {
-      sessionStatus.textContent = `Conectado: ${session.user.email}`;
+      sessionStatus.textContent = `Conectado (MFA Activo 🛡️): ${session.user.email}`;
       sessionStatus.style.backgroundColor = '#dcfce7';
       sessionStatus.style.color = '#15803d';
     }
@@ -25,12 +36,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   } catch (err) {
-    console.error('Error al comprobar sesión:', err);
+    console.error('Error al comprobar sesión o segundo factor:', err);
     window.location.replace('login.html');
     return;
   }
 
+  // =========================================================================
   // 2. CERRAR SESIÓN
+  // =========================================================================
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
       await db.auth.signOut();
@@ -38,7 +51,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // =========================================================================
   // 3. CAMBIO DE PESTAÑAS (TABS)
+  // =========================================================================
   const tabButtons = document.querySelectorAll('.tab-btn');
   const tabPanels = document.querySelectorAll('.tab-panel');
 
@@ -59,6 +74,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (targetId === 'tab-miembros') cargarMiembros();
       if (targetId === 'tab-transmisiones') cargarTransmisiones();
       if (targetId === 'tab-literatura') cargarLiteraturaAdmin();
+      if (targetId === 'tab-mensajes') cargarMensajesAdmin();
+      if (targetId === 'tab-cronograma') cargarEventosAdmin();
     });
   });
 
@@ -109,9 +126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ===================================================
+  // =========================================================================
   // 5. SECCIÓN ARTÍCULOS: REGISTRO Y EDICIÓN COMPLETA
-  // ===================================================
+  // =========================================================================
   let listaArticulosCache = [];
   const formArticulo = document.getElementById('formArticulo');
   const msgArticulo = document.getElementById('msgArticulo');
@@ -255,9 +272,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ===================================================
+  // =========================================================================
   // 6. SECCIÓN REVISTAS: REGISTRO Y EDICIÓN COMPLETA
-  // ===================================================
+  // =========================================================================
   let listaRevistasCache = [];
   const formRevista = document.getElementById('formRevista');
   const msgRevista = document.getElementById('msgRevista');
@@ -410,9 +427,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ===================================================
+  // =========================================================================
   // 7. SECCIÓN SEDES: REGISTRO Y EDICIÓN COMPLETA
-  // ===================================================
+  // =========================================================================
   let listaSedesCache = [];
   const formSede = document.getElementById('formSede');
   const msgSede = document.getElementById('msgSede');
@@ -535,9 +552,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ===================================================
+  // =========================================================================
   // 8. SECCIÓN LÍDERES: REGISTRO Y EDICIÓN COMPLETA
-  // ===================================================
+  // =========================================================================
   let listaLideresCache = [];
   const formLider = document.getElementById('formLider');
   const msgLider = document.getElementById('msgLider');
@@ -680,9 +697,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ===================================================
+  // =========================================================================
   // 9. SECCIÓN MEMBRESÍA: REGISTRO Y EDICIÓN COMPLETA
-  // ===================================================
+  // =========================================================================
   let listaMiembrosCache = [];
   const formMiembro = document.getElementById('formMiembro');
   const msgMiembro = document.getElementById('msgMiembro');
@@ -863,7 +880,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // Renderizado con enlace interactivo en el nombre
   function renderizarListaMiembros(lista) {
     const contenedor = document.getElementById('listaMiembrosAdmin');
     if (!contenedor) return;
@@ -885,7 +901,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             </span>
           </div>
           
-          <!-- NOMBRE CLICABLE -->
           <h4 class="member-name-click" onclick="verFichaAdmin(${m.id})" title="Ver ficha completa de ${m.nombre}">
             ${m.nombre} 
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--admin-gold);"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
@@ -907,7 +922,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     `).join('');
   }
 
-  // Función para abrir y armar la Ficha Completa
   window.verFichaAdmin = function(id) {
     const m = listaMiembrosCache.find(x => x.id === id);
     if (!m) return;
@@ -924,7 +938,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     fCodigo.textContent = m.codigo || 'SIN CÓDIGO';
     fNombre.textContent = m.nombre || 'Miembro';
 
-    // Cálculo de edad exacta
     let edadCalculada = m.edad;
     if (!edadCalculada && m.fecha_nacimiento) {
       const fNac = new Date(m.fecha_nacimiento);
@@ -941,7 +954,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       edadCalculada = 'No registrada';
     }
 
-    // Identificación Personal
     boxPersonales.innerHTML = `
       <div class="ficha-item"><strong>Documento DNI</strong><span>${m.dni || 'N/A'}</span></div>
       <div class="ficha-item"><strong>Fecha de Nacimiento</strong><span>${m.fecha_nacimiento || 'No registrada'}</span></div>
@@ -950,7 +962,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="ficha-item"><strong>Estado Civil</strong><span>${m.estado_civil || 'N/A'}</span></div>
     `;
 
-    // Vida Eclesiástica
     boxEclesiasticos.innerHTML = `
       <div class="ficha-item"><strong>Estado Congregacional</strong><span>${m.estado || 'Activo'}</span></div>
       <div class="ficha-item"><strong>Grado Espiritual</strong><span>${m.grado_espiritual || 'Creyente'}</span></div>
@@ -958,7 +969,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="ficha-item"><strong>Fecha de Conversión</strong><span>${m.fecha_conversion || 'No registrada'}</span></div>
     `;
 
-    // Ordenanzas & Sacramentos
     boxOrdenanzas.innerHTML = `
       <div class="ficha-item"><strong>Bautismo en Agua</strong><span>${m.bautismo ? '✅ Conforme' : '❌ No'}</span></div>
       <div class="ficha-item"><strong>Santa Cena</strong><span>${m.santa_cena ? '✅ Participa' : '❌ No'}</span></div>
@@ -966,7 +976,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="ficha-item"><strong>Matrimonio Eclesiástico</strong><span>${m.matrimonio ? '✅ Conforme' : '❌ No'}</span></div>
     `;
 
-    // Ubicación & Visibilidad
     boxUbicacion.innerHTML = `
       <div class="ficha-item"><strong>Sede / Zona</strong><span>${m.zona || 'Sin asignar'}</span></div>
       <div class="ficha-item" style="grid-column: 1 / -1;"><strong>Dirección Domiciliaria</strong><span>${m.direccion || 'Sin registrar'}</span></div>
@@ -983,7 +992,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     modal.style.display = 'flex';
   };
 
-  // Cierre del modal
   const modalFicha = document.getElementById('modalFichaAdmin');
   const btnCerrarModal = document.getElementById('btnCerrarFichaAdmin');
   const btnCerrarModalFooter = document.getElementById('btnCerrarFichaAdminFooter');
@@ -1097,9 +1105,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ===================================================
+  // =========================================================================
   // 10. SECCIÓN TRANSMISIONES EN VIVO (FACEBOOK / OBS)
-  // ===================================================
+  // =========================================================================
   let listaTransmisionesCache = [];
   const formTransmision = document.getElementById('formTransmision');
   const msgTransmision = document.getElementById('msgTransmision');
@@ -1282,12 +1290,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ===================================================
+  // =========================================================================
   // 11. SECCIÓN LITERATURA: REGISTRO Y EDICIÓN COMPLETA
-  // ===================================================
+  // =========================================================================
   let listaLiteraturaCache = [];
   const formLit = document.getElementById('formLiteratura');
-  const msgLit = document.getElementById('msgLiteratura');
+  const msgLit = document.getElementById('msgLit');
   const btnGuardarLit = document.getElementById('btnGuardarLit');
   const btnCancelarLit = document.getElementById('btnCancelarLit');
   const litEditId = document.getElementById('litEditId');
@@ -1443,19 +1451,266 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ===================================================
-  // 12. CARGA DE CONTADORES (KPIS) Y PRIMERA VISTA
-  // ===================================================
+  // =========================================================================
+  // 12. SECCIÓN MENSAJES Y PETICIONES (BUZÓN CONGREGACIONAL)
+  // =========================================================================
+  let listaMensajesCache = [];
+
+  window.cargarMensajesAdmin = async function() {
+    const contenedor = document.getElementById('listaMensajesAdmin');
+    if (!contenedor) return;
+    contenedor.innerHTML = '<p class="text-muted">Cargando mensajes recibidos...</p>';
+
+    try {
+      const { data, error } = await db
+        .from('mensajes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      listaMensajesCache = data || [];
+      const badge = document.getElementById('kpiMensajesBadge');
+      if (badge) badge.textContent = listaMensajesCache.length;
+      const kpi = document.getElementById('kpiMensajes');
+      if (kpi) kpi.textContent = listaMensajesCache.length;
+
+      renderizarListaMensajes(listaMensajesCache);
+    } catch (err) {
+      console.error('Error al cargar mensajes:', err);
+      contenedor.innerHTML = '<p style="color:red;">Error al cargar mensajes: ' + err.message + '</p>';
+    }
+  };
+
+  function renderizarListaMensajes(lista) {
+    const contenedor = document.getElementById('listaMensajesAdmin');
+    if (!contenedor) return;
+
+    if (!lista || lista.length === 0) {
+      contenedor.innerHTML = '<p class="text-muted">No hay mensajes ni peticiones en la bandeja.</p>';
+      return;
+    }
+
+    contenedor.innerHTML = lista.map(msg => {
+      const esEspiritual = msg.tipo === 'espiritual';
+      const fecha = new Date(msg.created_at).toLocaleString('es-PE', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      return `
+        <div class="admin-item-row" id="msg-${msg.id}" style="border-left: 5px solid ${esEspiritual ? '#e5a823' : '#0b192c'}; flex-direction: column; align-items: stretch; gap: 8px; padding: 1.2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <span class="badge-cat-sm" style="background:${esEspiritual ? '#fffbeb; color:#92400e; border:1px solid #fde68a;' : '#f1f5f9; color:#0b192c; border:1px solid #cbd5e1;'}">
+                ${esEspiritual ? '🙏 Asunto Espiritual' : '📋 Secretaría / Consultas'}
+              </span>
+              <span class="badge-cat-sm" style="background:#0b192c; color:#e5a823; font-weight:700;">
+                ${msg.motivo}
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 10px;">
+              <small style="color: #64748b;">📅 ${fecha}</small>
+              <button type="button" class="btn-delete" onclick="eliminarMensajeAdmin(${msg.id})">🗑️ Borrar</button>
+            </div>
+          </div>
+
+          <h3 style="margin: 4px 0 2px 0; color: #0b192c; font-size: 1.05rem;">${msg.nombre}</h3>
+
+          <div style="font-size: 0.84rem; color: #475569; display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 6px;">
+            <span>📞 <strong>Teléfono:</strong> <a href="tel:${msg.telefono}" style="color:#0b192c; font-weight:700;">${msg.telefono}</a></span>
+            ${msg.correo ? `<span>✉️ <strong>Correo:</strong> <a href="mailto:${msg.correo}" style="color:#0b192c;">${msg.correo}</a></span>` : ''}
+            ${msg.direccion ? `<span>📍 <strong>Dirección:</strong> ${msg.direccion}</span>` : ''}
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 0.92rem; color: #1e293b; line-height: 1.5; white-space: pre-wrap;">
+            ${msg.mensaje}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.filtrarMensajesAdmin = function(tipo) {
+    if (tipo === 'todos') {
+      renderizarListaMensajes(listaMensajesCache);
+    } else {
+      const filtrados = listaMensajesCache.filter(m => m.tipo === tipo);
+      renderizarListaMensajes(filtrados);
+    }
+  };
+
+  window.eliminarMensajeAdmin = async function(id) {
+    if (!confirm('¿Deseas eliminar este mensaje de la bandeja permanentemente?')) return;
+    try {
+      const { error } = await db.from('mensajes').delete().eq('id', id);
+      if (error) throw error;
+
+      document.getElementById(`msg-${id}`)?.remove();
+      listaMensajesCache = listaMensajesCache.filter(m => m.id !== id);
+
+      const badge = document.getElementById('kpiMensajesBadge');
+      if (badge) badge.textContent = listaMensajesCache.length;
+      const kpi = document.getElementById('kpiMensajes');
+      if (kpi) kpi.textContent = listaMensajesCache.length;
+    } catch (err) {
+      alert('Error al borrar mensaje: ' + err.message);
+    }
+  };
+
+  // =========================================================================
+  // 13. SECCIÓN CRONOGRAMA & CARTELERA DE ACTIVIDADES
+  // =========================================================================
+  let listaEventosCache = [];
+  const formEvento = document.getElementById('formEvento');
+  const msgEvento = document.getElementById('msgEvento');
+  const btnGuardarEvento = document.getElementById('btnGuardarEvento');
+  const btnCancelarEvento = document.getElementById('btnCancelarEvento');
+  const eventoEditId = document.getElementById('eventoEditId');
+  const titleFormEvento = document.getElementById('titleFormEvento');
+
+  if (btnCancelarEvento) {
+    btnCancelarEvento.addEventListener('click', () => {
+      formEvento.reset();
+      if (eventoEditId) eventoEditId.value = '';
+      btnGuardarEvento.textContent = 'Guardar en Cronograma';
+      btnCancelarEvento.style.display = 'none';
+      if (titleFormEvento) titleFormEvento.textContent = 'Programar Nuevo Evento o Actividad';
+      msgEvento.textContent = '';
+    });
+  }
+
+  if (formEvento) {
+    formEvento.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = eventoEditId ? eventoEditId.value : '';
+      btnGuardarEvento.disabled = true;
+      btnGuardarEvento.textContent = editId ? 'Actualizando...' : 'Guardando...';
+      msgEvento.textContent = '';
+
+      try {
+        const dataEv = {
+          titulo: document.getElementById('evTitulo').value.trim(),
+          categoria: document.getElementById('evCategoria').value,
+          fecha: document.getElementById('evFecha').value,
+          hora: document.getElementById('evHora').value.trim(),
+          sede: document.getElementById('evSede').value.trim(),
+          descripcion: document.getElementById('evDescripcion').value.trim()
+        };
+
+        if (editId) {
+          const { error } = await db.from('eventos').update(dataEv).eq('id', editId);
+          if (error) throw error;
+          msgEvento.className = 'alert-box success';
+          msgEvento.textContent = '✓ Actividad actualizada con éxito.';
+          if (btnCancelarEvento) btnCancelarEvento.click();
+        } else {
+          const { error } = await db.from('eventos').insert([dataEv]);
+          if (error) throw error;
+          msgEvento.className = 'alert-box success';
+          msgEvento.textContent = '✓ Actividad incorporada a la cartelera.';
+          formEvento.reset();
+        }
+
+        cargarEventosAdmin();
+        actualizarKPIs();
+      } catch (err) {
+        msgEvento.className = 'alert-box error';
+        msgEvento.textContent = 'Error: ' + (err.message || err);
+      } finally {
+        btnGuardarEvento.disabled = false;
+        btnGuardarEvento.textContent = (eventoEditId && eventoEditId.value) ? 'Actualizar Actividad' : 'Guardar en Cronograma';
+      }
+    });
+  }
+
+  window.cargarEventosAdmin = async function() {
+    const contenedor = document.getElementById('listaEventosAdmin');
+    if (!contenedor) return;
+    contenedor.innerHTML = '<p class="text-muted">Cargando actividades...</p>';
+
+    try {
+      const { data, error } = await db
+        .from('eventos')
+        .select('*')
+        .order('fecha', { ascending: true });
+
+      if (error) throw error;
+      listaEventosCache = data || [];
+
+      if (listaEventosCache.length === 0) {
+        contenedor.innerHTML = '<p class="text-muted">No hay actividades programadas en la cartelera.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = listaEventosCache.map(ev => `
+        <div class="admin-item-row" id="ev-${ev.id}">
+          <div class="admin-item-info" style="flex: 1;">
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:4px; flex-wrap:wrap;">
+              <span class="badge-cat-sm" style="background:#0b192c; color:#e5a823; font-weight:bold;">${ev.categoria}</span>
+              <span class="badge-cat-sm" style="background:#f1f5f9; color:#334155;">📍 ${ev.sede}</span>
+            </div>
+            <h4>${ev.titulo}</h4>
+            <small style="color:#64748b;">
+              📅 <strong>Fecha:</strong> ${ev.fecha} ${ev.hora ? `&bull; ⏰ <strong>Hora:</strong> ${ev.hora}` : ''}
+              ${ev.descripcion ? `<br>${ev.descripcion}` : ''}
+            </small>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-secondary btn-sm" onclick="editarEventoAdmin(${ev.id})">✏️ Editar</button>
+            <button type="button" class="btn-delete" onclick="eliminarEventoAdmin(${ev.id})">🗑️ Eliminar</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      contenedor.innerHTML = '<p style="color:red;">Error al cargar cronograma: ' + err.message + '</p>';
+    }
+  };
+
+  window.editarEventoAdmin = function(id) {
+    const ev = listaEventosCache.find(x => x.id === id);
+    if (!ev) return;
+
+    if (eventoEditId) eventoEditId.value = ev.id;
+    document.getElementById('evTitulo').value = ev.titulo || '';
+    document.getElementById('evCategoria').value = ev.categoria || '';
+    document.getElementById('evFecha').value = ev.fecha || '';
+    document.getElementById('evHora').value = ev.hora || '';
+    document.getElementById('evSede').value = ev.sede || '';
+    document.getElementById('evDescripcion').value = ev.descripcion || '';
+
+    btnGuardarEvento.textContent = 'Actualizar Actividad';
+    if (btnCancelarEvento) btnCancelarEvento.style.display = 'inline-block';
+    if (titleFormEvento) titleFormEvento.textContent = 'Editar Actividad Programada';
+    formEvento.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.eliminarEventoAdmin = async function(id) {
+    if (!confirm('¿Deseas eliminar este evento del cronograma?')) return;
+    try {
+      const { error } = await db.from('eventos').delete().eq('id', id);
+      if (error) throw error;
+      document.getElementById(`ev-${id}`)?.remove();
+      actualizarKPIs();
+    } catch (err) {
+      alert('Error al eliminar evento: ' + err.message);
+    }
+  };
+
+  // =========================================================================
+  // 14. CARGA DE CONTADORES (KPIS) Y PRIMERA VISTA
+  // =========================================================================
   async function actualizarKPIs() {
     try {
-      const [art, rev, sed, lid, mie, tra, lit] = await Promise.all([
+      const [art, rev, sed, lid, mie, tra, lit, msg, ev] = await Promise.all([
         db.from('articulos').select('*', { count: 'exact', head: true }),
         db.from('revistas').select('*', { count: 'exact', head: true }),
         db.from('sedes').select('*', { count: 'exact', head: true }),
         db.from('lideres').select('*', { count: 'exact', head: true }),
         db.from('miembros').select('*', { count: 'exact', head: true }),
         db.from('transmisiones_en_vivo').select('*', { count: 'exact', head: true }),
-        db.from('literatura').select('*', { count: 'exact', head: true })
+        db.from('literatura').select('*', { count: 'exact', head: true }),
+        db.from('mensajes').select('*', { count: 'exact', head: true }),
+        db.from('eventos').select('*', { count: 'exact', head: true })
       ]);
 
       const setVal = (id, count) => {
@@ -1470,12 +1725,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       setVal('kpiMiembros', mie.count);
       setVal('kpiTransmisiones', tra ? tra.count : 0);
       setVal('kpiLiteratura', lit ? lit.count : 0);
+      setVal('kpiMensajes', msg ? msg.count : 0);
+      setVal('kpiEventos', ev ? ev.count : 0);
+
+      const badgeMsg = document.getElementById('kpiMensajesBadge');
+      if (badgeMsg) badgeMsg.textContent = msg ? (msg.count ?? 0) : 0;
     } catch (e) {
       console.warn('Error calculando KPIs:', e);
     }
   }
 
-  // Inicialización
+  // Inicialización de la vista
   actualizarKPIs();
   cargarArticulos();
 });

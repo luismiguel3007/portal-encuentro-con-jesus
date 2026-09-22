@@ -75,7 +75,7 @@
     }
 
     /* ===================================================
-       FORMULARIO DE CONSULTA SEGURA
+       FORMULARIO DE CONSULTA SEGURA Y BUZÓN
        =================================================== */
     .secure-query-box {
       max-width: 580px;
@@ -132,7 +132,9 @@
       margin-bottom: 6px;
     }
 
-    .query-form-group input {
+    .query-form-group input,
+    .query-form-group select,
+    .query-form-group textarea {
       width: 100%;
       box-sizing: border-box;
       padding: 12px 14px;
@@ -143,9 +145,12 @@
       outline: none;
       transition: all 0.2s;
       background: #f8fafc;
+      font-family: inherit;
     }
 
-    .query-form-group input:focus {
+    .query-form-group input:focus,
+    .query-form-group select:focus,
+    .query-form-group textarea:focus {
       background: #ffffff;
       border-color: #e5a823;
       box-shadow: 0 0 0 3px rgba(229, 168, 35, 0.16);
@@ -202,6 +207,50 @@
       background: #fef3c7;
       color: #92400e;
       border: 1px solid #fcd34d;
+    }
+
+    .privacy-caption {
+      margin-top: 1.4rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .privacy-caption a {
+      color: #b88210;
+      text-decoration: underline;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .privacy-caption a:hover {
+      color: #0b192c;
+    }
+
+    /* Pestañas selectoras del buzón */
+    .tab-buzon-btn {
+      flex: 1;
+      padding: 12px 10px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 2px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+    }
+
+    .tab-buzon-btn.active {
+      border-color: #0b192c;
+      background: #0b192c;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(11, 25, 44, 0.15);
     }
 
     /* ===================================================
@@ -335,6 +384,7 @@
       gap: 6px;
       cursor: pointer;
       transition: all 0.2s;
+      border: none;
     }
 
     .btn-carnet-copy:hover {
@@ -376,6 +426,123 @@
       gap: 8px;
     }
 
+    /* ===================================================
+       MODAL DE POLÍTICA DE PRIVACIDAD (LEY N° 29733)
+       =================================================== */
+    .modal-privacy-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(7, 16, 28, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-privacy-card {
+      background: #ffffff;
+      color: #1e293b;
+      max-width: 680px;
+      width: 100%;
+      max-height: 88vh;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border-top: 4px solid #e5a823;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .modal-privacy-header {
+      padding: 1.3rem 1.6rem;
+      background: #0b192c;
+      color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-privacy-header h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-modal-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.7rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .btn-modal-close:hover {
+      color: #ffffff;
+    }
+
+    .modal-privacy-body {
+      padding: 1.6rem;
+      overflow-y: auto;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #334155;
+    }
+
+    .modal-privacy-body h4 {
+      color: #0b192c;
+      margin-top: 1.1rem;
+      margin-bottom: 0.35rem;
+      font-size: 0.96rem;
+      font-weight: 800;
+    }
+
+    .privacy-callout {
+      background: #f8fafc;
+      border-left: 4px solid #e5a823;
+      padding: 0.9rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.83rem;
+      margin-top: 1.2rem;
+      color: #1e293b;
+      font-style: italic;
+    }
+
+    .modal-privacy-footer {
+      padding: 1rem 1.6rem;
+      background: #f8fafc;
+      text-align: right;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-modal-accept {
+      background: #0b192c;
+      color: #ffffff;
+      border: none;
+      padding: 0.75rem 1.6rem;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.2s;
+    }
+
+    .btn-modal-accept:hover {
+      background: #1e3e62;
+    }
+
     /* Reglas para imprimir únicamente el Carnet Digital */
     @media print {
       body * {
@@ -392,7 +559,7 @@
         border: 2px solid #0b192c !important;
         box-shadow: none !important;
       }
-      .carnet-actions {
+      .carnet-actions, .modal-privacy-overlay, .demographics-container, #formContainer, #buzonContainer {
         display: none !important;
       }
     }
@@ -567,6 +734,15 @@
         </button>
 
         <div id="queryMsg" class="query-alert"></div>
+
+        <!-- AVISO DE POLÍTICA DE PRIVACIDAD Y CONSENTIMIENTO -->
+        <p class="privacy-caption">
+          Al consultar tu credencial aceptas nuestra 
+          <a href="javascript:void(0)" onclick="abrirModalPrivacidad()">
+            Política de Privacidad y Consentimiento de Membresía
+          </a> 
+          conforme a la Ley N° 29733 de la República del Perú.
+        </p>
       </form>
     </section>
 
@@ -583,13 +759,8 @@
         <span class="query-header-badge" style="margin: 0;">Activo</span>
       </div>
 
-      <div class="carnet-salute" id="carnetSaludo">
-        <!-- Saludo dinámico -->
-      </div>
-
-      <div class="carnet-details-grid" id="carnetDetalles">
-        <!-- Detalles adicionales configurados -->
-      </div>
+      <div class="carnet-salute" id="carnetSaludo"></div>
+      <div class="carnet-details-grid" id="carnetDetalles"></div>
 
       <div class="carnet-actions">
         <button type="button" class="btn-carnet-copy" id="btnCopiarCodigo">
@@ -603,18 +774,135 @@
       <div class="carnet-pastoral-help">
         <span>ℹ️</span>
         <div>
-          Si detectas algún error en tus datos o requieres una constancia oficial, comunícate con la casa pastoral.
+          Si detectas algún error en tus datos o requieres una constancia oficial, comunícate con la secretaría pastoral.
         </div>
       </div>
     </section>
 
+    <!-- SECCIÓN DE ATENCIÓN CONGREGACIONAL: BUZÓN DUAL (ESPIRITUAL Y ADMINISTRATIVO) -->
+    <section class="secure-query-box" id="buzonContainer" style="max-width: 680px; margin-top: 1rem;">
+      <div class="query-header">
+        <div class="query-header-badge">✉️ Atención Congregacional</div>
+        <h2>Buzón Pastoral & Secretaría</h2>
+        <p>Selecciona el área de tu requerimiento para comunicarte con nosotros:</p>
+      </div>
+
+      <!-- Selector de Tipo de Trámite / Petición -->
+      <div style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <button type="button" id="btnTipoEspiritual" class="tab-buzon-btn active" onclick="cambiarTipoBuzon('espiritual')">
+          🙏 Asuntos Espirituales / Pastoral
+        </button>
+        <button type="button" id="btnTipoAdmin" class="tab-buzon-btn" onclick="cambiarTipoBuzon('administrativo')">
+          📋 Secretaría / Consultas / Membresía
+        </button>
+      </div>
+
+      <form id="formBuzonContacto" autocomplete="off">
+        <input type="hidden" id="buzonTipo" value="espiritual">
+
+        <div class="query-form-group">
+          <label for="buzonMotivo">Motivo de la solicitud *</label>
+          <select id="buzonMotivo" required>
+            <option value="Petición de Oración">🙏 Petición de Oración / Intercesión</option>
+            <option value="Petición de Visita Pastoral">🏠 Solicitud de Visita Pastoral al Hogar</option>
+            <option value="Consejería Espiritual">📖 Consejería Bíblica y Pastoral</option>
+            <option value="Oración por Salud / Duelo">🕊️ Oración por Salud o Duelo Familiar</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+          <div class="query-form-group">
+            <label for="buzonNombre">Nombres y Apellidos *</label>
+            <input type="text" id="buzonNombre" placeholder="Tu nombre completo" required>
+          </div>
+          <div class="query-form-group">
+            <label for="buzonTelefono">Teléfono o WhatsApp *</label>
+            <input type="tel" id="buzonTelefono" placeholder="Ej. 987654321" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+          <div class="query-form-group">
+            <label for="buzonCorreo">Correo Electrónico (Opcional)</label>
+            <input type="email" id="buzonCorreo" placeholder="hermano@ejemplo.com">
+          </div>
+          <div class="query-form-group">
+            <label for="buzonDireccion">Dirección / Sector (Para visitas o referencia)</label>
+            <input type="text" id="buzonDireccion" placeholder="Talara Alta, Sector...">
+          </div>
+        </div>
+
+        <div class="query-form-group">
+          <label for="buzonMensaje">Detalle del mensaje o petición *</label>
+          <textarea id="buzonMensaje" rows="4" required placeholder="Escribe aquí tu petición o mensaje con el mayor detalle posible..." style="resize: vertical;"></textarea>
+        </div>
+
+        <button type="submit" id="btnEnviarBuzon" class="btn-query-submit">
+          📤 Enviar al Buzón Oficial
+        </button>
+
+        <div id="buzonMsg" class="query-alert"></div>
+      </form>
+    </section>
+
   </main>
+
+  <!-- MODAL DE POLÍTICA DE PRIVACIDAD Y CONSENTIMIENTO (LEY N° 29733) -->
+  <div class="modal-privacy-overlay" id="modalPrivacidad">
+    <div class="modal-privacy-card">
+      <div class="modal-privacy-header">
+        <h3>🛡️ Política de Privacidad y Consentimiento</h3>
+        <button type="button" class="btn-modal-close" onclick="cerrarModalPrivacidad()">&times;</button>
+      </div>
+
+      <div class="modal-privacy-body">
+        <p>
+          La <strong>Asociación Cristiana Un Encuentro con Jesús</strong> (Sede Central Talara, Piura, Perú), en estricto apego a la <strong>Ley N° 29733</strong> (Ley de Protección de Datos Personales del Perú) y su Reglamento (D.S. 003-2013-JUS), informa a sus miembros y congregantes que los datos personales y eclesiásticos almacenados en su padrón son tratados con absoluta reserva y seguridad.
+        </p>
+
+        <h4>1. Responsable del Banco de Datos</h4>
+        <p>
+          El tratamiento de la información es administrado por la Secretaría General y Pastoral de la Asociación Cristiana Un Encuentro con Jesús, con domicilio en la ciudad de Talara, Piura.
+        </p>
+
+        <h4>2. Tratamiento Legítimo de Datos Religiosos (Datos Sensibles)</h4>
+        <p>
+          Conforme al Artículo 13.2 de la Ley N° 29733, la congregación está expresamente facultada para tratar información que revele convicciones religiosas, sacramentales y de membresía exclusivamente en el marco de sus actividades eclesiásticas legítimas y respecto de sus propios miembros y congregantes regulares.
+        </p>
+
+        <h4>3. Finalidad Eclesiástica y No Comercialización</h4>
+        <p>
+          Los datos personales se procesan con el fin exclusivo de mantener el orden congregacional (1 Corintios 14:40), planificar la atención pastoral personalizada, verificar el cumplimiento de sacramentos y ordenanzas bíblicas (Bautismo en Agua, Santa Cena) y emitir el carnet oficial de identificación ministerial. <strong>La asociación no vende, alquila ni comparte datos con empresas publicitarias, comerciales ni financieras.</strong>
+        </p>
+
+        <h4>4. Consulta Protegida con Doble Factor de Conocimiento</h4>
+        <p>
+          El padrón congregacional no es público ni descargable en listas abiertas. Para visualizar la credencial digital, la plataforma exige la verificación concurrente de dos datos privados en poder exclusivo del titular: su <strong>DNI</strong> y su <strong>Fecha de Nacimiento</strong>, salvaguardando la confidencialidad de la ficha personal frente a terceros.
+        </p>
+
+        <h4>5. Ejercicio de Derechos ARCO</h4>
+        <p>
+          Todo miembro tiene el derecho de solicitar el Acceso, Rectificación, Cancelación u Oposición respecto de sus datos personales. Para ejercer estos derechos o comunicar una actualización domiciliaria o sacremental, el titular puede utilizar el buzón de secretaría o contactar directamente a la congregación.
+        </p>
+
+        <div class="privacy-callout">
+          «Declaro que la información proporcionada para mi registro en el Padrón Eclesiástico de la Asociación Cristiana Un Encuentro con Jesús es veraz. Otorgo mi consentimiento libre, informado y expreso para su tratamiento con fines netamente espirituales y congregacionales.»
+        </div>
+      </div>
+
+      <div class="modal-privacy-footer">
+        <button type="button" class="btn-modal-accept" onclick="cerrarModalPrivacidad()">
+          Entendido y Conforme
+        </button>
+      </div>
+    </div>
+  </div>
 
   <footer class="main-footer">
     <div class="container">
       <div class="footer-bottom">
         <p>&copy; 2026 Asociación Cristiana Un Encuentro con Jesús. Todos los derechos reservados.</p>
-        <p>Padrón oficial de membresía protegido bajo estrictos controles de privacidad.</p>
+        <p>Padrón oficial de membresía protegido bajo la Ley N° 29733 de Protección de Datos Personales del Perú.</p>
       </div>
     </div>
   </footer>
@@ -652,7 +940,32 @@
     }
 
     // =========================================================================
-    // 2. CONTEO DEMOGRÁFICO RESISTENTE A FALLOS
+    // 2. CONTROL DEL MODAL DE POLÍTICA DE PRIVACIDAD
+    // =========================================================================
+    const modalPrivacidad = document.getElementById('modalPrivacidad');
+
+    function abrirModalPrivacidad() {
+      if (modalPrivacidad) modalPrivacidad.style.display = 'flex';
+    }
+
+    function cerrarModalPrivacidad() {
+      if (modalPrivacidad) modalPrivacidad.style.display = 'none';
+    }
+
+    if (modalPrivacidad) {
+      modalPrivacidad.addEventListener('click', (e) => {
+        if (e.target === modalPrivacidad) cerrarModalPrivacidad();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalPrivacidad && modalPrivacidad.style.display === 'flex') {
+        cerrarModalPrivacidad();
+      }
+    });
+
+    // =========================================================================
+    // 3. CONTEO DEMOGRÁFICO RESISTENTE A FALLOS
     // =========================================================================
     function calcularEdad(m) {
       if (m.edad !== null && m.edad !== undefined && !isNaN(parseInt(m.edad, 10))) {
@@ -677,7 +990,6 @@
       if (!supabaseClient) return;
 
       try {
-        // Intento 1: Función RPC en el servidor (si la creaste en Supabase)
         const { data: rpcData, error: rpcError } = await supabaseClient.rpc('conteo_demografico_miembros');
 
         if (!rpcError && rpcData && rpcData.length > 0) {
@@ -690,7 +1002,6 @@
           return;
         }
 
-        // Intento 2: Consulta directa tradicional (fallback automático si no hay RPC)
         const { data, error } = await supabaseClient
           .from('miembros')
           .select('edad, fecha_nacimiento');
@@ -721,7 +1032,7 @@
     }
 
     // =========================================================================
-    // 3. SEGURIDAD Y RATE LIMITING
+    // 4. SEGURIDAD Y RATE LIMITING
     // =========================================================================
     const MAX_INTENTOS = 5;
     const VENTANA_MS = 60 * 1000;
@@ -772,7 +1083,7 @@
     }
 
     // =========================================================================
-    // 4. ENVÍO Y CONSULTA CONTROLADA
+    // 5. CONSULTA DE CARNET CONTROLADA
     // =========================================================================
     const form = document.getElementById('formConsultaMembresia');
     const inputDni = document.getElementById('inputDni');
@@ -788,7 +1099,6 @@
 
     if (form) {
       form.addEventListener('submit', async (e) => {
-        // Evita el refresco de página que causaba el signo '?' en la URL
         e.preventDefault();
         ocultarMensajeAlerta();
         if (resultBox) resultBox.style.display = 'none';
@@ -811,7 +1121,6 @@
         btnConsultar.textContent = 'Verificando datos...';
 
         try {
-          // 1. Intento por función RPC segura
           let miembro = null;
           const { data: rpcMiembro, error: errRpc } = await supabaseClient.rpc('consultar_miembro_seguro', {
             p_dni: dni,
@@ -821,7 +1130,6 @@
           if (!errRpc && rpcMiembro && rpcMiembro.length > 0) {
             miembro = rpcMiembro[0];
           } else {
-            // 2. Fallback a consulta directa
             const { data: directData, error: errDirect } = await supabaseClient
               .from('miembros')
               .select('*')
@@ -842,7 +1150,6 @@
             return;
           }
 
-          // Éxito: Limpiar intentos
           localStorage.removeItem('mb_attempts');
           localStorage.removeItem('mb_lockout_until');
 
@@ -893,6 +1200,118 @@
 
     if (btnImprimirCarnet) {
       btnImprimirCarnet.addEventListener('click', () => window.print());
+    }
+
+    // =========================================================================
+    // 6. LÓGICA DEL BUZÓN CONGREGACIONAL (ESPIRITUAL Y ADMINISTRATIVO)
+    // =========================================================================
+    const btnTipoEspiritual = document.getElementById('btnTipoEspiritual');
+    const btnTipoAdmin = document.getElementById('btnTipoAdmin');
+    const buzonTipo = document.getElementById('buzonTipo');
+    const buzonMotivo = document.getElementById('buzonMotivo');
+    const formBuzon = document.getElementById('formBuzonContacto');
+    const btnEnviarBuzon = document.getElementById('btnEnviarBuzon');
+    const buzonMsg = document.getElementById('buzonMsg');
+
+    const opcionesEspirituales = `
+      <option value="Petición de Oración">🙏 Petición de Oración / Intercesión</option>
+      <option value="Petición de Visita Pastoral">🏠 Solicitud de Visita Pastoral al Hogar</option>
+      <option value="Consejería Espiritual">📖 Consejería Bíblica y Pastoral</option>
+      <option value="Oración por Salud / Duelo">🕊️ Oración por Salud o Duelo Familiar</option>
+    `;
+
+    const opcionesAdministrativas = `
+      <option value="Consulta General">ℹ️ Consulta General sobre la Congregación</option>
+      <option value="Recomendación / Sugerencia">💡 Recomendación o Sugerencia</option>
+      <option value="Queja / Reclamo">📝 Queja o Inquietud Administrativa</option>
+      <option value="Solicitud de Baja / Retiro de Datos (ARCO)">🔒 Solicitud de Retiro de Datos / Baja de Membresía</option>
+      <option value="Actualización de Datos de Membresía">✏️ Actualización de Datos de Carnet</option>
+    `;
+
+    window.cambiarTipoBuzon = function(tipo) {
+      buzonTipo.value = tipo;
+      if (tipo === 'espiritual') {
+        btnTipoEspiritual.classList.add('active');
+        btnTipoAdmin.classList.remove('active');
+        buzonMotivo.innerHTML = opcionesEspirituales;
+      } else {
+        btnTipoAdmin.classList.add('active');
+        btnTipoEspiritual.classList.remove('active');
+        buzonMotivo.innerHTML = opcionesAdministrativas;
+      }
+    };
+
+    if (formBuzon) {
+      formBuzon.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        buzonMsg.style.display = 'none';
+
+        btnEnviarBuzon.disabled = true;
+        btnEnviarBuzon.textContent = 'Enviando requerimiento...';
+
+        const tipo = buzonTipo.value;
+        const motivo = buzonMotivo.value;
+        const nombre = document.getElementById('buzonNombre').value.trim();
+        const telefono = document.getElementById('buzonTelefono').value.trim();
+        const correo = document.getElementById('buzonCorreo').value.trim();
+        const direccion = document.getElementById('buzonDireccion').value.trim();
+        const mensaje = document.getElementById('buzonMensaje').value.trim();
+
+        try {
+          // 1. Guardar en Supabase para el panel administrativo
+          const { error: dbErr } = await supabaseClient.from('mensajes').insert([{
+            tipo: tipo,
+            motivo: motivo,
+            nombre: nombre,
+            telefono: telefono,
+            correo: correo || null,
+            direccion: direccion || null,
+            mensaje: mensaje
+          }]);
+
+          if (dbErr) throw dbErr;
+
+          // 2. Enviar por correo electrónico oficial vía FormSubmit
+          fetch('https://formsubmit.co/ajax/contacto@unencuentroconjesusperu.com', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              _subject: `[BUZÓN ${tipo.toUpperCase()}] ${motivo} - ${nombre}`,
+              Area: tipo === 'espiritual' ? 'Pastoral & Vida Espiritual' : 'Secretaría & Administración',
+              Motivo: motivo,
+              Hermano: nombre,
+              Telefono: telefono,
+              Correo: correo || 'No registrado',
+              Direccion: direccion || 'No indicada',
+              Detalle_Peticion: mensaje,
+              _template: 'table'
+            })
+          }).catch(err => console.warn('Aviso de envío por correo:', err));
+
+          // 3. Confirmación visual
+          buzonMsg.className = 'query-alert';
+          buzonMsg.style.background = '#dcfce7';
+          buzonMsg.style.color = '#15803d';
+          buzonMsg.style.border = '1px solid #86efac';
+          buzonMsg.style.display = 'block';
+          buzonMsg.textContent = '✓ Tu mensaje ha sido enviado exitosamente al equipo pastoral y administrativo. ¡Dios te bendiga!';
+
+          formBuzon.reset();
+          cambiarTipoBuzon(tipo);
+
+        } catch (err) {
+          console.error(err);
+          buzonMsg.className = 'query-alert error';
+          buzonMsg.textContent = 'Error al registrar: ' + (err.message || 'Comprueba tu conexión e intenta de nuevo.');
+          buzonMsg.style.display = 'block';
+        } finally {
+          btnEnviarBuzon.disabled = false;
+          btnEnviarBuzon.textContent = '📤 Enviar al Buzón Oficial';
+        }
+      });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
