@@ -15,7 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <!-- Versión 4 para invalidar caché en navegadores móviles -->
+  <link rel="stylesheet" href="css/style.css?v=4">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -69,6 +70,30 @@
       background: #e5a823 !important;
       color: #0b192c !important;
       transform: translateY(-1px);
+    }
+
+    /* Estilo del botón nativo de Compartir */
+    .btn-share-radio {
+      background: rgba(229, 168, 35, 0.12);
+      color: #e5a823;
+      border: 1px solid rgba(229, 168, 35, 0.35);
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      transition: all 0.2s ease;
+    }
+
+    .btn-share-radio:hover {
+      background: #e5a823;
+      color: #0b192c;
+      box-shadow: 0 2px 8px rgba(229, 168, 35, 0.35);
     }
 
     /* ===================================================
@@ -225,7 +250,6 @@
       box-shadow: 0 0 6px rgba(229, 168, 35, 0.8);
     }
 
-    /* Panel de Actividades del Día */
     .events-panel-card {
       background: #ffffff;
       border-radius: 20px;
@@ -325,7 +349,6 @@
         </div>
       </a>
 
-      <!-- Navegación de Escritorio Ordenada según el Flujo Visual -->
       <nav class="nav-desktop" aria-label="Navegación principal">
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link active">Inicio</a></li>
@@ -415,7 +438,7 @@
     </div>
   </section>
 
-  <!-- 2. SECCIÓN MULTIMEDIA (TRANSMISIÓN EN VIVO & RADIO ONLINE PRIMERO) -->
+  <!-- 2. SECCIÓN MULTIMEDIA (TRANSMISIÓN EN VIVO & RADIO ONLINE CON AZURACAST) -->
   <section class="section-multimedia" id="envivo">
     <div class="container">
       <div class="section-header">
@@ -442,20 +465,55 @@
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
               </div>
               <div class="radio-info">
-                <span class="badge-live"><span class="live-dot"></span> Radio 24/7</span>
+                <!-- Cabecera de estado, compartir y selector de calidad -->
+                <div class="radio-header-line">
+                  <span class="badge-live"><span class="live-dot"></span> Radio 24/7</span>
+                  
+                  <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <!-- Botón Nativo de Compartir Señal (Web Share API) -->
+                    <button type="button" class="btn-share-radio" id="btnShareRadio" title="Compartir señal en vivo" aria-label="Compartir transmisión" style="display: none;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                      </svg>
+                      <span>Compartir</span>
+                    </button>
+
+                    <!-- Selector de Calidad Manual -->
+                    <div class="radio-quality-selector" id="radioQualitySelector" role="group" aria-label="Calidad de audio">
+                      <button type="button" class="btn-quality" id="btnQualityAac" data-quality="aac" title="AAC+ 64 kbps (Recomendado para datos móviles)">Móvil 64k</button>
+                      <button type="button" class="btn-quality" id="btnQualityMp3" data-quality="mp3" title="MP3 128 kbps (Alta fidelidad)">HD 128k</button>
+                    </div>
+                  </div>
+                </div>
+
                 <h3 data-editable="radio_title">Radio Encuentro de Vida</h3>
                 <p data-editable="radio_desc">Música de adoración y palabra de bendición continua.</p>
+
+                <!-- "Sonando Ahora" en Vivo vía AzuraCast -->
+                <div class="radio-now-playing" id="radioNowPlaying">
+                  <div class="now-playing-icon">🎵</div>
+                  <div class="now-playing-content">
+                    <span class="now-playing-label">Sonando ahora:</span>
+                    <span class="now-playing-title" id="nowPlayingTitle">Conectando señal en vivo...</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- Animación de barras de frecuencia -->
             <div class="radio-visualizer" id="radioVisualizer">
               <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
               <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
             </div>
           </div>
+
           <div class="radio-player-container">
-            <audio id="audioRadio" controls preload="none">
-              <source id="liveRadioSource" src="" type="audio/mpeg">
-            </audio>
+            <!-- preload="none" estricto: cero descarga anticipada de datos -->
+            <audio id="audioRadio" controls preload="none"></audio>
           </div>
         </div>
       </div>
@@ -478,7 +536,6 @@
       </div>
 
       <div class="cronograma-grid">
-        <!-- COLUMNA 1: CALENDARIO MENSUAL -->
         <div class="calendar-card">
           <div class="calendar-nav-bar">
             <button type="button" id="calPrevMonth" class="calendar-nav-btn" aria-label="Mes anterior">&larr;</button>
@@ -493,7 +550,6 @@
           <div id="calDaysGrid" class="calendar-days-grid"></div>
         </div>
 
-        <!-- COLUMNA 2: DETALLES DE LA FECHA SELECCIONADA -->
         <div class="events-panel-card">
           <div class="events-panel-header">
             <h3 id="calSelectedDateTitle">Actividades del Día</h3>

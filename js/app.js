@@ -96,16 +96,110 @@ function initNavigation() {
 }
 
 /* ==========================================================================
-   2. REPRODUCTOR DE RADIO CONTINUA CON ANIMACIÓN DE SEÑAL
+   2. REPRODUCTOR DE RADIO CONTINUA (AZURACAST: AAC 64K / MP3 128K & NOW PLAYING)
    ========================================================================== */
+const RADIO_CONFIG = {
+  streamHQ: 'https://radio.unencuentroconjesusperu.com/listen/senal2/radio.mp3',      // 128k MP3
+  streamMobile: 'https://radio.unencuentroconjesusperu.com/listen/senal2/movil.aac',   // 64k AAC+
+  apiUrl: 'https://radio.unencuentroconjesusperu.com/api/nowplaying/senal2'
+};
+
+let currentQuality = 'aac'; // Prioridad para celulares
+let nowPlayingInterval = null;
+
+function esDispositivoMovil() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  const esMovilUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+  const pantallaChica = window.innerWidth <= 768;
+  const ahorroDatos = Boolean(navigator.connection && navigator.connection.saveData);
+  const redLenta = Boolean(navigator.connection && (navigator.connection.effectiveType === '2g' || navigator.connection.effectiveType === '3g'));
+
+  return esMovilUA || pantallaChica || ahorroDatos || redLenta;
+}
+
 function initRadioAudio() {
   const audioRadio = document.getElementById('audioRadio');
   const radioCard = document.getElementById('radioCard');
+  const btnAac = document.getElementById('btnQualityAac');
+  const btnMp3 = document.getElementById('btnQualityMp3');
+  const btnShare = document.getElementById('btnShareRadio');
 
   if (!audioRadio || !radioCard) return;
 
+  // 1. Determinar calidad por preferencia guardada o detección automática
+  const preferenciaGuardada = localStorage.getItem('radio_calidad_pref');
+  if (preferenciaGuardada) {
+    currentQuality = preferenciaGuardada;
+  } else {
+    currentQuality = esDispositivoMovil() ? 'aac' : 'mp3';
+  }
+
+  // 2. Inyección estricta con preload="none"
+  actualizarUIBotonesCalidad(currentQuality);
+  audioRadio.preload = "none";
+  audioRadio.src = currentQuality === 'aac' ? RADIO_CONFIG.streamMobile : RADIO_CONFIG.streamHQ;
+
+  // 3. Conmutador manual de calidad (HD / Móvil)
+  function cambiarCalidad(nuevaCalidad) {
+    if (currentQuality === nuevaCalidad) return;
+
+    currentQuality = nuevaCalidad;
+    localStorage.setItem('radio_calidad_pref', nuevaCalidad);
+    actualizarUIBotonesCalidad(nuevaCalidad);
+
+    const estabaReproduciendo = !audioRadio.paused;
+    const nuevaUrl = currentQuality === 'aac' ? RADIO_CONFIG.streamMobile : RADIO_CONFIG.streamHQ;
+
+    audioRadio.src = nuevaUrl;
+    audioRadio.preload = "none";
+
+    if (estabaReproduciendo) {
+      audioRadio.play().catch(e => console.warn('Reanudando señal tras cambio de calidad:', e));
+    }
+  }
+
+  if (btnAac) btnAac.addEventListener('click', () => cambiarCalidad('aac'));
+  if (btnMp3) btnMp3.addEventListener('click', () => cambiarCalidad('mp3'));
+
+  // 4. Botón Nativo de Compartir Señal (Web Share API para WhatsApp / Redes)
+  if (btnShare && navigator.share) {
+    btnShare.style.display = 'inline-flex';
+    btnShare.addEventListener('click', async () => {
+      try {
+        const pistaActual = document.getElementById('nowPlayingTitle')?.textContent || 'Música de Adoración Continua';
+        await navigator.share({
+          title: 'Radio La Voz del Encuentro',
+          text: `Escucha en vivo: "${pistaActual}" por Radio La Voz del Encuentro 24/7`,
+          url: window.location.href
+        });
+      } catch (err) {
+        // Cancelación habitual por el usuario
+      }
+    });
+  }
+
+  // 5. Control desde audífonos Bluetooth y barra de notificaciones (MediaSession API)
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => {
+      audioRadio.play().catch(e => console.warn('Play desde audífonos:', e));
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      audioRadio.pause();
+    });
+    navigator.mediaSession.setActionHandler('stop', () => {
+      audioRadio.pause();
+      audioRadio.removeAttribute('src');
+      audioRadio.load();
+    });
+  }
+
+  // 6. Sincronización de eventos y evitar audio duplicado con el reproductor flotante
   audioRadio.addEventListener('play', () => {
     radioCard.classList.add('playing');
+    const globalAudio = document.getElementById('globalRadioAudio');
+    if (globalAudio && !globalAudio.paused) {
+      globalAudio.pause();
+    }
   });
 
   audioRadio.addEventListener('pause', () => {
@@ -118,7 +212,89 @@ function initRadioAudio() {
 
   audioRadio.addEventListener('error', () => {
     radioCard.classList.remove('playing');
-    console.warn('Transmisión de radio temporalmente no disponible o reconectando.');
+    console.warn('Transmisión de radio reconectando búfer...');
+  });
+
+  // 7. Monitoreo en vivo de AzuraCast
+  iniciarNowPlayingAzuraCast();
+}
+
+function actualizarUIBotonesCalidad(calidad) {
+  const btnAac = document.getElementById('btnQualityAac');
+  const btnMp3 = document.getElementById('btnQualityMp3');
+
+  if (btnAac) btnAac.classList.toggle('active', calidad === 'aac');
+  if (btnMp3) btnMp3.classList.toggle('active', calidad === 'mp3');
+}
+
+function iniciarNowPlayingAzuraCast() {
+  const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+  if (!nowPlayingTitle) return;
+
+  async function actualizarPistaEnVivo() {
+    try {
+      const res = await fetch(RADIO_CONFIG.apiUrl, { cache: 'no-store' });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (!data) return;
+
+      let textoTema = '';
+
+      if (data.live && data.live.is_live && data.live.streamer_name) {
+        textoTema = `En Vivo: ${data.live.streamer_name}`;
+      } else if (data.now_playing && data.now_playing.song) {
+        const song = data.now_playing.song;
+        if (song.title && song.artist) {
+          textoTema = `${song.title} — ${song.artist}`;
+        } else {
+          textoTema = song.text || song.title || 'Música de Alabanza Continua';
+        }
+      }
+
+      if (textoTema && nowPlayingTitle.textContent !== textoTema) {
+        nowPlayingTitle.textContent = textoTema;
+
+        // Metadatos para pantalla de bloqueo en teléfonos (Android / iOS)
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: textoTema,
+            artist: 'Radio Un Encuentro con Jesús',
+            album: 'Señal 2 (En Vivo)'
+          });
+        }
+      }
+    } catch (err) {
+      // Ignorar fallos de red sin interrumpir al usuario
+    }
+  }
+
+  // Primera consulta inmediata
+  actualizarPistaEnVivo();
+
+  // Actualización periódica cada 15 segundos
+  function startPolling() {
+    stopPolling();
+    nowPlayingInterval = setInterval(actualizarPistaEnVivo, 15000);
+  }
+
+  function stopPolling() {
+    if (nowPlayingInterval) {
+      clearInterval(nowPlayingInterval);
+      nowPlayingInterval = null;
+    }
+  }
+
+  startPolling();
+
+  // Optimización de batería: suspender peticiones si la pestaña está en segundo plano
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      stopPolling();
+    } else {
+      actualizarPistaEnVivo();
+      startPolling();
+    }
   });
 }
 
@@ -1213,7 +1389,7 @@ async function loadAjustes() {
     if (data) {
       ajustesData = data;
 
-      // Sincronizar URL para el reproductor de radio flotante
+      // Sincronizar URL para el reproductor de radio flotante si estuviera configurada
       if (data.radio_url && data.radio_url.trim() !== '') {
         localStorage.setItem('radio_live_url', data.radio_url.trim());
       }
@@ -1265,13 +1441,6 @@ async function loadAjustes() {
       if (elTitulo && data.hero_titulo && !data.textos_custom?.hero_titulo) elTitulo.innerHTML = data.hero_titulo;
       if (elDesc && data.hero_descripcion && !data.textos_custom?.hero_desc) elDesc.textContent = data.hero_descripcion;
 
-      const audioRadio = document.getElementById('audioRadio');
-      const sourceRadio = document.getElementById('liveRadioSource');
-      if (audioRadio && sourceRadio && data.radio_url) {
-        sourceRadio.src = data.radio_url;
-        audioRadio.load();
-      }
-
       aplicarRedSocial('linkFbTop', 'linkFbFooter', data.facebook_url);
       aplicarRedSocial('linkTkTop', 'linkTkFooter', data.tiktok_url);
       aplicarRedSocial('linkIgTop', 'linkIgFooter', data.instagram_url);
@@ -1311,11 +1480,7 @@ async function setupVisualEditor() {
     const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
     if (sessionError || !session) return;
 
-    // =========================================================================
-    // CONTROL DE SEGURIDAD MFA (AAL2):
-    // Si el usuario ingresó contraseña pero NO el código de Google Authenticator
-    // (sesión en AAL1 con nextLevel AAL2), se cancela la activación del modo editor.
-    // =========================================================================
+    // Control de seguridad MFA (AAL2)
     const { data: aal, error: aalErr } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aalErr || !aal) return;
 
@@ -1326,7 +1491,6 @@ async function setupVisualEditor() {
       return;
     }
 
-    // Si la sesión cuenta con nivel AAL2 verificado:
     const topAdminLink = document.getElementById('topbarAdminLink');
     const navAdminBtn = document.getElementById('navAdminBtn');
     const navAdminBtnText = document.getElementById('navAdminBtnText');
@@ -1420,7 +1584,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // Subir y actualizar Logotipo Editorial en Cloudflare R2 usando Bearer Token de Supabase
+  // Subir y actualizar Logotipo Editorial en Cloudflare R2
   if (btnChangeLogo && inputLogoFile) {
     btnChangeLogo.addEventListener('click', () => {
       inputLogoFile.click();
@@ -1474,7 +1638,6 @@ async function setupVisualEditor() {
 
         if (dbErr) throw dbErr;
 
-        // Actualización inmediata del DOM con validación onLoad
         const badgeText = document.getElementById('logoBadgeText');
         const badgeImg = document.getElementById('headerLogoImg');
 
@@ -1502,7 +1665,7 @@ async function setupVisualEditor() {
     });
   }
 
-  // Cambiar fondo de la portada Hero usando Bearer Token de Supabase
+  // Cambiar fondo de la portada Hero
   if (btnChangeHeroBg && inputHeroBgFile) {
     btnChangeHeroBg.addEventListener('click', () => {
       inputHeroBgFile.click();
@@ -1690,7 +1853,7 @@ async function initCalendar() {
     renderCalendar();
   });
 
-  // Establecer fecha de hoy como seleccionada por defecto
+  // Fecha de hoy como seleccionada por defecto
   const hoyStr = new Date().toISOString().split('T')[0];
   calSelectedDateStr = hoyStr;
 
@@ -1706,7 +1869,6 @@ function renderCalendar() {
   const year = calCurrentDate.getFullYear();
   const month = calCurrentDate.getMonth();
 
-  // Título del mes en español
   const mesNombre = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(calCurrentDate);
   monthTitle.textContent = mesNombre;
 
@@ -1716,14 +1878,12 @@ function renderCalendar() {
 
   grid.innerHTML = '';
 
-  // Días vacíos previos al día 1
   for (let i = 0; i < firstDayIndex; i++) {
     const emptyCell = document.createElement('div');
     emptyCell.className = 'cal-day-cell empty';
     grid.appendChild(emptyCell);
   }
 
-  // Renderizado de días del mes
   for (let dia = 1; dia <= daysInMonth; dia++) {
     const mm = String(month + 1).padStart(2, '0');
     const dd = String(dia).padStart(2, '0');
@@ -1733,7 +1893,6 @@ function renderCalendar() {
     cell.className = 'cal-day-cell';
     cell.textContent = dia;
 
-    // Verificar si existen eventos en la fecha
     const tieneEventos = globalEventos.some(ev => ev.fecha === fechaIso);
     if (tieneEventos) cell.classList.add('has-events');
 
@@ -1794,4 +1953,21 @@ function mostrarEventosDeFecha(fechaIso) {
       ${ev.descripcion ? `<p style="font-size: 0.86rem; color: #475569; margin: 0; line-height: 1.5;">${escapeHtml(ev.descripcion)}</p>` : ''}
     </div>
   `).join('');
+}
+
+// Ocultar minirreproductor flotante cuando el reproductor principal está visible en pantalla[cite: 19]
+const mainRadioCard = document.getElementById('radioCard');
+const floatWidget = document.getElementById('floatingRadioWidget');
+
+if (mainRadioCard && 'IntersectionObserver' in window) {
+  const radioObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const widget = document.getElementById('floatingRadioWidget');
+      if (!widget) return;
+      // Si la tarjeta principal está visible en más del 20%, ocultar la flotante[cite: 19]
+      widget.style.display = entry.isIntersecting ? 'none' : '';
+    });
+  }, { threshold: 0.2 });
+
+  radioObserver.observe(mainRadioCard);
 }

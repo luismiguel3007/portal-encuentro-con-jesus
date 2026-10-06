@@ -2,30 +2,27 @@
 // Minirreproductor flotante universal y persistente para todas las páginas
 
 (function () {
+  const RADIO_STREAMS = {
+    hq: 'https://radio.unencuentroconjesusperu.com/listen/senal2/radio.mp3',      // 128 kbps MP3
+    mobile: 'https://radio.unencuentroconjesusperu.com/listen/senal2/movil.aac'  // 64 kbps AAC+
+  };
+
   let audioPlayer = null;
   let isPlaying = false;
-  let radioStreamUrl = localStorage.getItem('radio_live_url') || '';
 
-  // 1. Obtener la URL real de la radio desde Supabase
-  async function obtenerUrlStream() {
-    const supabaseClient = window.db || (typeof db !== 'undefined' ? db : null);
-    if (!supabaseClient) return radioStreamUrl;
+  // 1. Determinar la URL óptima según dispositivo o preferencia manual guardada
+  function obtenerUrlOptima() {
+    const pref = localStorage.getItem('radio_calidad_pref');
+    if (pref === 'aac') return RADIO_STREAMS.mobile;
+    if (pref === 'mp3') return RADIO_STREAMS.hq;
 
-    try {
-      const { data, error } = await supabaseClient
-        .from('ajustes')
-        .select('radio_url')
-        .eq('id', 1)
-        .single();
+    // Detección automática para móviles o redes con ahorro de datos
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || window.innerWidth <= 768;
+    const ahorroDatos = Boolean(navigator.connection && navigator.connection.saveData);
+    const redLenta = Boolean(navigator.connection && (navigator.connection.effectiveType === '2g' || navigator.connection.effectiveType === '3g'));
 
-      if (!error && data && data.radio_url && data.radio_url.trim() !== '') {
-        radioStreamUrl = data.radio_url.trim();
-        localStorage.setItem('radio_live_url', radioStreamUrl);
-      }
-    } catch (e) {
-      console.warn('No se pudo verificar la URL de radio en tiempo real:', e);
-    }
-    return radioStreamUrl;
+    return (esMovil || ahorroDatos || redLenta) ? RADIO_STREAMS.mobile : RADIO_STREAMS.hq;
   }
 
   // 2. Inyectar la interfaz flotante en el HTML
@@ -81,8 +78,8 @@
     conectarEventosRadio();
   }
 
-  // 3. Conexión de eventos y reproducción
-  async function conectarEventosRadio() {
+  // 3. Conexión de eventos y control de audio
+  function conectarEventosRadio() {
     audioPlayer = document.getElementById('globalRadioAudio');
     const btnPlayPause = document.getElementById('btnPlayPauseRadio');
     const btnBubble = document.getElementById('btnRadioBubble');
@@ -92,9 +89,7 @@
     const iconPause = document.getElementById('iconPauseRadio');
     const statusTag = document.getElementById('radioStatusTag');
     const eqBars = document.getElementById('radioPillEq');
-
-    // Recuperar stream inicial
-    await obtenerUrlStream();
+    const audioPrincipal = document.getElementById('audioRadio');
 
     function setEstadoReproduciendo(activo) {
       isPlaying = activo;
@@ -116,35 +111,44 @@
     }
 
     async function toggleRadio() {
-      if (!radioStreamUrl) {
-        await obtenerUrlStream();
-      }
-
-      if (!radioStreamUrl) {
-        statusTag.textContent = 'Sin señal';
-        alert('No hay una señal de radio activa configurada en el panel administrativo.');
-        return;
-      }
-
       if (!isPlaying) {
+        // Pausar el reproductor principal si está sonando en la misma página
+        if (audioPrincipal && !audioPrincipal.paused) {
+          audioPrincipal.pause();
+        }
+
         statusTag.textContent = 'Conectando...';
-        audioPlayer.src = radioStreamUrl;
+        audioPlayer.src = obtenerUrlOptima();
+        audioPlayer.preload = 'none';
 
         audioPlayer.play().then(() => {
           setEstadoReproduciendo(true);
         }).catch((err) => {
-          console.error('Error al reproducir audio:', err);
+          console.warn('Error al iniciar stream de radio:', err);
           setEstadoReproduciendo(false);
           statusTag.textContent = 'Reconectando...';
         });
       } else {
         audioPlayer.pause();
-        audioPlayer.src = ''; // Libera el stream de red
+        audioPlayer.removeAttribute('src'); // Libera la conexión de red
+        audioPlayer.load();
         setEstadoReproduciendo(false);
       }
     }
 
     if (btnPlayPause) btnPlayPause.addEventListener('click', toggleRadio);
+
+    // Si el usuario le da play al reproductor principal de la página, pausar este flotante
+    if (audioPrincipal) {
+      audioPrincipal.addEventListener('play', () => {
+        if (isPlaying && audioPlayer) {
+          audioPlayer.pause();
+          audioPlayer.removeAttribute('src');
+          audioPlayer.load();
+          setEstadoReproduciendo(false);
+        }
+      });
+    }
 
     // Alternar entre minimizado y expandido
     if (btnMinimize) {
@@ -159,7 +163,7 @@
       });
     }
 
-    // Sincronizar si se pausa por sistema o error
+    // Eventos de estado nativo
     audioPlayer.addEventListener('pause', () => setEstadoReproduciendo(false));
     audioPlayer.addEventListener('playing', () => setEstadoReproduciendo(true));
     audioPlayer.addEventListener('error', () => {
