@@ -210,10 +210,19 @@ function initRadioAudio() {
     radioCard.classList.remove('playing');
   });
 
-  audioRadio.addEventListener('error', () => {
+ audioRadio.addEventListener('error', (e) => {
+  console.warn('Error con el códec AAC en este móvil. Conmutando automáticamente a señal MP3 HQ...');
+  // Si el stream AAC falla en el celular, conmuta automáticamente a MP3 128k
+  if (currentQuality === 'aac') {
+    currentQuality = 'mp3';
+    actualizarUIBotonesCalidad('mp3');
+    audioRadio.src = RADIO_CONFIG.streamHQ;
+    audioRadio.load();
+    audioRadio.play().catch(() => {});
+  } else {
     radioCard.classList.remove('playing');
-    console.warn('Transmisión de radio reconectando búfer...');
-  });
+  }
+});
 
   // 7. Monitoreo en vivo de AzuraCast
   iniciarNowPlayingAzuraCast();

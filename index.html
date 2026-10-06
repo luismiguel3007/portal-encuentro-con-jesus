@@ -513,7 +513,7 @@
 
           <div class="radio-player-container">
             <!-- preload="none" estricto: cero descarga anticipada de datos -->
-            <audio id="audioRadio" controls preload="none"></audio>
+            <audio id="audioRadio" controls preload="none" src="https://radio.unencuentroconjesusperu.com/listen/senal2/movil.aac"></audio>
           </div>
         </div>
       </div>
@@ -749,15 +749,41 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=2"></script>
-  <script src="js/radio-flotante.js"></script>
-  <script src="js/app.js?v=2"></script>
-  <script>
+  <script src="js/config.js?v=5"></script>
+<script src="js/radio-flotante.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
+ <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('PWA Service Worker registrado con éxito:', reg.scope))
+        // Se añade ?v=2 para que el navegador detecte cambio inmediato en el propio worker
+        navigator.serviceWorker.register('/sw.js?v=2')
+          .then(reg => {
+            // Comprobar activamente si hay una nueva versión en el servidor
+            reg.update();
+
+            // Si detecta un nuevo Service Worker, escuchar su instalación
+            reg.addEventListener('updatefound', () => {
+              const nuevoWorker = reg.installing;
+              if (nuevoWorker) {
+                nuevoWorker.addEventListener('statechange', () => {
+                  if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Hay nueva versión lista: forzar recarga limpia
+                    window.location.reload();
+                  }
+                });
+              }
+            });
+          })
           .catch(err => console.warn('Fallo al registrar Service Worker:', err));
+
+        // Cuando el nuevo worker asuma el mando, refrescar la pantalla una sola vez
+        let recargando = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!recargando) {
+            recargando = true;
+            window.location.reload();
+          }
+        });
       });
     }
   </script>
