@@ -603,7 +603,7 @@
 
   </main>
 
-  <script>
+<script>
     /* =====================================================
        CONFIGURACIÓN Y ENDPOINTS
        ===================================================== */
@@ -617,6 +617,7 @@
     let currentQuality = localStorage.getItem('radio_quality_pref') || 'mobile';
     let isPlaying      = false;
     let nowPlayingInterval = null;
+    let connectTimeout = null;
 
     /* REFERENCIAS AL DOM */
     const audio            = document.getElementById('radioAudio');
@@ -634,7 +635,7 @@
     const btnShare         = document.getElementById('btnShare');
 
     /* =====================================================
-       NAVEGACIÓN SEGURA (PREVIENE DESCARGA DEL AUDIO)
+       NAVEGACIÓN SEGURA AL PORTAL
        ===================================================== */
     document.querySelectorAll('a[href="index.html"]').forEach(link => {
       link.addEventListener('click', (e) => {
@@ -644,7 +645,7 @@
     });
 
     /* =====================================================
-       CONTROL DE CALIDAD (64K MÓVIL POR DEFECTO)
+       CONTROL DE CALIDAD (64K POR DEFECTO)
        ===================================================== */
     function setQuality(q) {
       if (currentQuality === q) return;
@@ -667,33 +668,49 @@
     pillHD.addEventListener('click',     () => setQuality('hd'));
 
     /* =====================================================
-       MOTOR DE REPRODUCCIÓN
+       MOTOR DE REPRODUCCIÓN ULTRA-RÁPIDO (ESTILO BETHEL)
        ===================================================== */
-    function getStreamUrl() {
-      return currentQuality === 'hd' ? RADIO.streamHD : RADIO.streamMobile;
+    function getFreshStreamUrl() {
+      const base = currentQuality === 'hd' ? RADIO.streamHD : RADIO.streamMobile;
+      // Parámetro dinámico para evitar sockets en caché
+      return `${base}?t=${Date.now()}`;
     }
 
     function playAudio() {
+      clearTimeout(connectTimeout);
       btnPlay.classList.add('loading');
-      audio.src = getStreamUrl();
-      audio.preload = 'none';
-      audio.play()
-        .then(() => {
-          isPlaying = true;
-          btnPlay.classList.remove('loading');
-          btnPlay.classList.add('playing');
-          playerCard.classList.add('is-playing');
-          albumWrap.classList.add('is-playing');
-          btnPlay.setAttribute('aria-label', 'Pausar Transmisión');
-          updateMediaSession();
-        })
-        .catch(err => {
-          console.warn('Error al iniciar audio:', err);
-          btnPlay.classList.remove('loading');
-        });
+
+      // Limpieza de estados residuales
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+
+      audio.src = getFreshStreamUrl();
+      audio.load();
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Reproducción exitosa
+          })
+          .catch(err => {
+            console.warn('Reintento de conexión:', err);
+            btnPlay.classList.remove('loading');
+          });
+      }
+
+      // Tiempo límite de 4.5 segundos para forzar reconexión si la red se cuelga
+      connectTimeout = setTimeout(() => {
+        if (!isPlaying && btnPlay.classList.contains('loading')) {
+          console.warn('Conexión lenta: reintentando...');
+          playAudio();
+        }
+      }, 4500);
     }
 
     function stopAudio() {
+      clearTimeout(connectTimeout);
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
@@ -704,8 +721,23 @@
       btnPlay.setAttribute('aria-label', 'Iniciar Transmisión');
     }
 
+    // Eventos de estado de audio
+    audio.addEventListener('playing', () => {
+      clearTimeout(connectTimeout);
+      isPlaying = true;
+      btnPlay.classList.remove('loading');
+      btnPlay.classList.add('playing');
+      playerCard.classList.add('is-playing');
+      albumWrap.classList.add('is-playing');
+      btnPlay.setAttribute('aria-label', 'Pausar Transmisión');
+      updateMediaSession();
+    });
+
+    audio.addEventListener('waiting', () => {
+      if (isPlaying) btnPlay.classList.add('loading');
+    });
+
     btnPlay.addEventListener('click', () => {
-      if (btnPlay.classList.contains('loading')) return;
       if (isPlaying) {
         stopAudio();
       } else {
@@ -716,7 +748,7 @@
     audio.addEventListener('error', () => {
       if (isPlaying) {
         stopAudio();
-        setTimeout(playAudio, 1500);
+        setTimeout(playAudio, 1000);
       }
     });
 
@@ -743,7 +775,7 @@
     }
 
     /* =====================================================
-       CONSULTA EN VIVO DE METADATOS AZURACAST
+       CONSULTA DE METADATOS AZURACAST
        ===================================================== */
     function formatTime(ts) {
       if (!ts) return '';
@@ -761,7 +793,7 @@
 
     async function fetchNowPlaying() {
       try {
-        const res = await fetch(RADIO.apiUrl, { cache: 'no-store' });
+        const res = await fetch(`${RADIO.apiUrl}?t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         if (!data) return;
@@ -774,16 +806,22 @@
           trackTitle  = `En Vivo: ${data.live.streamer_name}`;
           trackArtist = 'Culto en Directo';
         } else if (data.now_playing && data.now_playing.song) {
-          const song = data.now_playing.song;
-          trackTitle  = song.title  || song.text || 'Música Cristiana';
-          trackArtist = song.artist || 'Radio La Voz del Encuentro';
-          artworkUrl  = song.art    || '';
+          const rawTitle = data.now_playing.song.title || data.now_playing.song.text || '';
+          
+          // Filtrado de textos temporales de desconexión
+          if (rawTitle.toLowerCase().includes('station offline')) {
+            trackTitle = isPlaying ? 'Transmisión en Vivo' : 'Sintonizando Señal…';
+          } else {
+            trackTitle = rawTitle;
+          }
+          
+          trackArtist = data.now_playing.song.artist || 'Radio La Voz del Encuentro';
+          artworkUrl  = data.now_playing.song.art    || '';
         }
 
         if (nowTrackEl.textContent  !== trackTitle)  nowTrackEl.textContent  = trackTitle;
         if (nowArtistEl.textContent !== trackArtist) nowArtistEl.textContent = trackArtist;
 
-        // Gestión ligera de la imagen de portada
         if (artworkUrl && artworkUrl.trim() !== '') {
           albumArtImg.src = artworkUrl;
           albumArtImg.style.display = 'block';
@@ -830,7 +868,7 @@
     function startPolling() {
       stopPolling();
       fetchNowPlaying();
-      nowPlayingInterval = setInterval(fetchNowPlaying, 15000);
+      nowPlayingInterval = setInterval(fetchNowPlaying, 10000);
     }
 
     function stopPolling() {
@@ -840,7 +878,6 @@
       }
     }
 
-    // Ahorro de batería y datos en segundo plano
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) stopPolling();
       else startPolling();
