@@ -1,5 +1,5 @@
-// sw.js - Service Worker Optimizado con Auto-Actualización y Bypass de Streaming
-const CACHE_NAME = 'portal-encuentro-v7';
+// sw.js - Service Worker Optimizado con Auto-Actualización y Bypass Total de Streaming
+const CACHE_NAME = 'portal-encuentro-v8';
 
 const urlsToCache = [
   './',
@@ -17,7 +17,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Descarga cada archivo de forma segura sin abortar si alguno no existe
       return Promise.allSettled(
         urlsToCache.map((url) =>
           fetch(url, { cache: 'no-cache' }).then((res) => {
@@ -29,7 +28,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. Activación: borrar cachés antiguas de inmediato y tomar el control de las ventanas abiertas
+// 2. Activación: borrar cachés antiguas de inmediato y tomar el control de las ventanas
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -45,26 +44,29 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Gestión de peticiones (Network-First para código y Exclusión Total de Streaming)
+// 3. Gestión de peticiones (Exclusión Total de Streaming y Network-First para archivos)
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = request.url;
 
-  // EXCLUSIÓN CRÍTICA: Nunca interceptar streams, API en vivo ni base de datos
+  // BYPASS CRÍTICO: El Service Worker NUNCA debe tocar el audio ni los servicios de streaming
   if (
     request.method !== 'GET' ||
+    request.headers.has('range') ||
+    request.destination === 'audio' ||
+    request.destination === 'video' ||
+    url.includes('radio.unencuentroconjesusperu.com') ||
     url.includes('/listen/') ||
     url.includes('.mp3') ||
     url.includes('.aac') ||
-    url.includes('/api/nowplaying') ||
     url.includes('supabase.co') ||
     url.includes('workers.dev') ||
     url.includes('r2.dev')
   ) {
-    return; // Pasa directo por la red del dispositivo
+    return; // Permite que el navegador gestione la conexión directamente por la red
   }
 
-  // Estrategia Network-First: Descarga siempre la versión más nueva del servidor
+  // Estrategia Network-First para archivos del portal
   event.respondWith(
     fetch(request)
       .then((networkResponse) => {
@@ -77,7 +79,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // Modo sin conexión: responder desde la caché local
+        // Fallback sin conexión desde la caché local
         return caches.match(request).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
           if (request.mode === 'navigate') {
