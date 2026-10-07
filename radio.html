@@ -616,8 +616,8 @@
     /* ESTADO DEL CLIENTE */
     let currentQuality = localStorage.getItem('radio_quality_pref') || 'mobile';
     let isPlaying      = false;
+    let isConnecting   = false;
     let nowPlayingInterval = null;
-    let connectTimeout = null;
 
     /* REFERENCIAS AL DOM */
     const audio            = document.getElementById('radioAudio');
@@ -645,7 +645,7 @@
     });
 
     /* =====================================================
-       CONTROL DE CALIDAD (64K POR DEFECTO)
+       CONTROL DE CALIDAD (64K MÓVIL POR DEFECTO)
        ===================================================== */
     function setQuality(q) {
       if (currentQuality === q) return;
@@ -653,7 +653,7 @@
       localStorage.setItem('radio_quality_pref', q);
       updateQualityUI();
 
-      if (isPlaying) {
+      if (isPlaying || isConnecting) {
         stopAudio();
         playAudio();
       }
@@ -668,62 +668,53 @@
     pillHD.addEventListener('click',     () => setQuality('hd'));
 
     /* =====================================================
-       MOTOR DE REPRODUCCIÓN ULTRA-RÁPIDO (ESTILO BETHEL)
+       MOTOR DE AUDIO OPTIMIZADO (SIN CONGELAMIENTO DE SOCKETS)
        ===================================================== */
-    function getFreshStreamUrl() {
+    function getStreamUrl(forceBuster = false) {
       const base = currentQuality === 'hd' ? RADIO.streamHD : RADIO.streamMobile;
-      // Parámetro dinámico para evitar sockets en caché
-      return `${base}?t=${Date.now()}`;
+      return forceBuster ? `${base}?t=${Date.now()}` : base;
     }
 
-    function playAudio() {
-      clearTimeout(connectTimeout);
+    function playAudio(forceBuster = false) {
+      if (isConnecting) return; // Evita peticiones simultáneas si el usuario pulsa repetidamente
+      isConnecting = true;
       btnPlay.classList.add('loading');
 
-      // Limpieza de estados residuales
+      // Cierre preventivo de cualquier conexión residual previa
       audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-
-      audio.src = getFreshStreamUrl();
-      audio.load();
+      audio.src = getStreamUrl(forceBuster);
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            // Reproducción exitosa
+            isConnecting = false;
           })
           .catch(err => {
-            console.warn('Reintento de conexión:', err);
+            isConnecting = false;
             btnPlay.classList.remove('loading');
+            console.warn('Reproducción cancelada o postergada:', err.message);
           });
       }
-
-      // Tiempo límite de 4.5 segundos para forzar reconexión si la red se cuelga
-      connectTimeout = setTimeout(() => {
-        if (!isPlaying && btnPlay.classList.contains('loading')) {
-          console.warn('Conexión lenta: reintentando...');
-          playAudio();
-        }
-      }, 4500);
     }
 
     function stopAudio() {
-      clearTimeout(connectTimeout);
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
+      isConnecting = false;
       isPlaying = false;
+
+      audio.pause();
+      // Asignar cadena vacía libera el socket TCP en Chrome de inmediato
+      audio.src = '';
+
       btnPlay.classList.remove('playing', 'loading');
       playerCard.classList.remove('is-playing');
       albumWrap.classList.remove('is-playing');
       btnPlay.setAttribute('aria-label', 'Iniciar Transmisión');
     }
 
-    // Eventos de estado de audio
+    /* Eventos nativos de audio */
     audio.addEventListener('playing', () => {
-      clearTimeout(connectTimeout);
+      isConnecting = false;
       isPlaying = true;
       btnPlay.classList.remove('loading');
       btnPlay.classList.add('playing');
@@ -733,23 +724,26 @@
       updateMediaSession();
     });
 
-    audio.addEventListener('waiting', () => {
-      if (isPlaying) btnPlay.classList.add('loading');
+    audio.addEventListener('error', () => {
+      console.warn('Error en el flujo de audio. Reintentando con nueva conexión...');
+      if (isPlaying || isConnecting) {
+        stopAudio();
+        setTimeout(() => playAudio(true), 1200);
+      }
     });
 
     btnPlay.addEventListener('click', () => {
       if (isPlaying) {
         stopAudio();
-      } else {
-        playAudio();
+      } else if (!isConnecting) {
+        playAudio(false);
       }
     });
 
-    audio.addEventListener('error', () => {
-      if (isPlaying) {
-        stopAudio();
-        setTimeout(playAudio, 1000);
-      }
+    // Liberar socket al cerrar o recargar la pestaña para no dejar conexiones zombi
+    window.addEventListener('beforeunload', () => {
+      audio.pause();
+      audio.src = '';
     });
 
     /* =====================================================
@@ -769,13 +763,13 @@
         ]
       });
 
-      navigator.mediaSession.setActionHandler('play',  () => { if (!isPlaying) playAudio(); });
+      navigator.mediaSession.setActionHandler('play',  () => { if (!isPlaying && !isConnecting) playAudio(); });
       navigator.mediaSession.setActionHandler('pause', () => { if (isPlaying)  stopAudio(); });
       navigator.mediaSession.setActionHandler('stop',  () => stopAudio());
     }
 
     /* =====================================================
-       CONSULTA DE METADATOS AZURACAST
+       CONSULTA EN VIVO DE METADATOS AZURACAST
        ===================================================== */
     function formatTime(ts) {
       if (!ts) return '';
@@ -793,7 +787,7 @@
 
     async function fetchNowPlaying() {
       try {
-        const res = await fetch(`${RADIO.apiUrl}?t=${Date.now()}`, { cache: 'no-store' });
+        const res = await fetch(RADIO.apiUrl, { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         if (!data) return;
@@ -808,8 +802,7 @@
         } else if (data.now_playing && data.now_playing.song) {
           const rawTitle = data.now_playing.song.title || data.now_playing.song.text || '';
           
-          // Filtrado de textos temporales de desconexión
-          if (rawTitle.toLowerCase().includes('station offline')) {
+          if (rawTitle.toLowerCase().includes('estación apagada') || rawTitle.toLowerCase().includes('station offline')) {
             trackTitle = isPlaying ? 'Transmisión en Vivo' : 'Sintonizando Señal…';
           } else {
             trackTitle = rawTitle;
@@ -868,7 +861,7 @@
     function startPolling() {
       stopPolling();
       fetchNowPlaying();
-      nowPlayingInterval = setInterval(fetchNowPlaying, 10000);
+      nowPlayingInterval = setInterval(fetchNowPlaying, 12000);
     }
 
     function stopPolling() {
