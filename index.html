@@ -72,29 +72,6 @@
       transform: translateY(-1px);
     }
 
-    /* Estilo del botón nativo de Compartir */
-    .btn-share-radio {
-      background: rgba(229, 168, 35, 0.12);
-      color: #e5a823;
-      border: 1px solid rgba(229, 168, 35, 0.35);
-      border-radius: 20px;
-      padding: 4px 11px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      transition: all 0.2s ease;
-    }
-
-    .btn-share-radio:hover {
-      background: #e5a823;
-      color: #0b192c;
-      box-shadow: 0 2px 8px rgba(229, 168, 35, 0.35);
-    }
 
     /* ===================================================
        REDISEÑO VISUAL MODERNO DEL CALENDARIO
@@ -361,6 +338,7 @@
           <li><a href="#liderazgo" class="nav-link">Liderazgo</a></li>
           <li><a href="#noticias" class="nav-link">Noticias</a></li>
           <li><a href="biblia.html" class="nav-link">Biblia</a></li>
+          <li><a href="radio.html" target="_blank" rel="noopener noreferrer" class="nav-link">Radio Online</a></li>
           <li>
             <a href="login.html" class="btn-admin-nav" id="navAdminBtn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -405,6 +383,7 @@
         <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
         <li><a href="#noticias">Noticias y Devocionales</a></li>
         <li><a href="biblia.html">Santa Biblia &amp; Promesa</a></li>
+        <li><a href="radio.html" target="_blank" rel="noopener noreferrer">📻 Radio Online</a></li>
       </ul>
     </nav>
 
@@ -447,8 +426,8 @@
         <p class="section-subtitle" data-editable="sec_multimedia_sub">Conéctate a la señal de video de nuestros cultos diarios y sintoniza ahora nuestra radio con alabanzas y sermones las 24 horas del día.</p>
       </div>
 
-      <div class="multimedia-grid">
-        <div class="video-card">
+      <div class="multimedia-grid" style="max-width: 850px; margin: 0 auto;">
+        <div class="video-card" style="width: 100%;">
           <div class="video-header">
             <h3 data-editable="card_video_title">Culto en Directo</h3>
             <span class="badge-live"><span class="live-dot"></span> En Vivo</span>
@@ -456,64 +435,10 @@
           <div class="video-player-wrapper">
             <iframe id="liveVideoIframe" src="" title="Transmisión en Vivo" allowfullscreen></iframe>
           </div>
-        </div>
-
-        <div class="radio-card" id="radioCard">
-          <div>
-            <div class="radio-top">
-              <div class="radio-icon-box">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
-              </div>
-              <div class="radio-info">
-                <!-- Cabecera de estado, compartir y selector de calidad -->
-                <div class="radio-header-line">
-                  <span class="badge-live"><span class="live-dot"></span> Radio 24/7</span>
-                  
-                  <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <!-- Botón Nativo de Compartir Señal (Web Share API) -->
-                    <button type="button" class="btn-share-radio" id="btnShareRadio" title="Compartir señal en vivo" aria-label="Compartir transmisión" style="display: none;">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                      </svg>
-                      <span>Compartir</span>
-                    </button>
-
-                    <!-- Selector de Calidad Manual -->
-                    <div class="radio-quality-selector" id="radioQualitySelector" role="group" aria-label="Calidad de audio">
-                      <button type="button" class="btn-quality" id="btnQualityAac" data-quality="aac" title="AAC+ 64 kbps (Recomendado para datos móviles)">Móvil 64k</button>
-                      <button type="button" class="btn-quality" id="btnQualityMp3" data-quality="mp3" title="MP3 128 kbps (Alta fidelidad)">HD 128k</button>
-                    </div>
-                  </div>
-                </div>
-
-                <h3 data-editable="radio_title">Radio Encuentro de Vida</h3>
-                <p data-editable="radio_desc">Música de adoración y palabra de bendición continua.</p>
-
-                <!-- "Sonando Ahora" en Vivo vía AzuraCast -->
-                <div class="radio-now-playing" id="radioNowPlaying">
-                  <div class="now-playing-icon">🎵</div>
-                  <div class="now-playing-content">
-                    <span class="now-playing-label">Sonando ahora:</span>
-                    <span class="now-playing-title" id="nowPlayingTitle">Conectando señal en vivo...</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Animación de barras de frecuencia -->
-            <div class="radio-visualizer" id="radioVisualizer">
-              <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
-              <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
-            </div>
-          </div>
-
-          <div class="radio-player-container">
-            <!-- preload="none" estricto: cero descarga anticipada de datos -->
-            <audio id="audioRadio" controls preload="none" src="https://radio.unencuentroconjesusperu.com/listen/senal2/movil.aac"></audio>
+          <div style="text-align: center; margin-top: 1.5rem;">
+            <a href="radio.html" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 700;">
+              📻 Sintonizar Radio La Voz del Encuentro 24/7 &rarr;
+            </a>
           </div>
         </div>
       </div>
@@ -740,8 +665,6 @@
       <div class="vis-modal-body">
         <label for="inputYoutubeUrl">Enlace de Transmisión de YouTube (En Vivo o Video):</label>
         <input type="text" id="inputYoutubeUrl" placeholder="https://www.youtube.com/watch?v=...">
-        <label for="inputRadioUrl" style="margin-top: 1rem; display: block;">Enlace Streaming de Radio (MP3 / Icecast):</label>
-        <input type="text" id="inputRadioUrl" placeholder="https://stream.zeno.fm/...">
       </div>
       <div class="vis-modal-footer">
         <button id="btnSaveStreams" type="button" class="btn-vis-save">Guardar Señales</button>
@@ -750,7 +673,6 @@
   </div>
 
   <script src="js/config.js?v=5"></script>
-<script src="js/radio-flotante.js?v=5"></script>
 <script src="js/app.js?v=5"></script>
  <script>
     if ('serviceWorker' in navigator) {

@@ -695,89 +695,6 @@ h1, h2, h3, h4, h5, h6 {
   border: 0;
 }
 
-.radio-card {
-  background: linear-gradient(145deg, #0F223A 0%, #152E4D 100%);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(229, 168, 35, 0.3);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.radio-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.radio-icon-box {
-  width: 60px;
-  height: 60px;
-  background: rgba(229, 168, 35, 0.15);
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  flex-shrink: 0;
-}
-
-.radio-info h3 {
-  color: #FFFFFF;
-  font-size: 1.3rem;
-  margin-bottom: 0.3rem;
-}
-
-.radio-info p {
-  color: #CBD5E1;
-  font-size: 0.9rem;
-}
-
-.radio-visualizer {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 28px;
-  margin: 1.5rem 0;
-  padding: 0 0.5rem;
-}
-
-.vis-bar {
-  flex: 1;
-  background-color: var(--accent);
-  border-radius: 2px;
-  height: 20%;
-  transition: height 0.2s ease;
-}
-
-.radio-card.playing .vis-bar:nth-child(1) { animation: visPulse 0.9s infinite alternate; }
-.radio-card.playing .vis-bar:nth-child(2) { animation: visPulse 1.2s infinite alternate 0.2s; }
-.radio-card.playing .vis-bar:nth-child(3) { animation: visPulse 0.7s infinite alternate 0.4s; }
-.radio-card.playing .vis-bar:nth-child(4) { animation: visPulse 1.4s infinite alternate 0.1s; }
-.radio-card.playing .vis-bar:nth-child(5) { animation: visPulse 1.0s infinite alternate 0.3s; }
-.radio-card.playing .vis-bar:nth-child(6) { animation: visPulse 0.8s infinite alternate 0.5s; }
-.radio-card.playing .vis-bar:nth-child(7) { animation: visPulse 1.3s infinite alternate 0.2s; }
-.radio-card.playing .vis-bar:nth-child(8) { animation: visPulse 0.6s infinite alternate 0.4s; }
-
-@keyframes visPulse {
-  0% { height: 15%; }
-  100% { height: 100%; }
-}
-
-.radio-player-container {
-  width: 100%;
-}
-
-.radio-player-container audio {
-  width: 100%;
-  border-radius: var(--radius-sm);
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-}
 
 /* --------------------------------------------------------------------------
    7. SECCIÓN CARRUSEL DE LIDERAZGO
@@ -1566,7 +1483,9 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 3.4rem;
   }
   .multimedia-grid {
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1fr;
+    max-width: 850px;
+    margin: 0 auto;
   }
   .articles-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -2250,21 +2169,6 @@ img, video, canvas, iframe, embed, object {
   .multimedia-grid {
     gap: 1.5rem;
   }
-  .radio-card {
-    padding: 1.25rem;
-  }
-  .radio-top {
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .radio-icon-box {
-    width: 48px;
-    height: 48px;
-    font-size: 1.5rem;
-  }
-  .radio-info h3 {
-    font-size: 1.1rem;
-  }
 }
 
 @media (max-width: 599px) {
@@ -2807,138 +2711,23 @@ img, video, canvas, iframe, embed, object {
   }
 }
 
-/* ===================================================
-   SELECTOR DE CALIDAD Y "SONANDO AHORA" (AZURACAST)
-   =================================================== */
-.radio-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.radio-header-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-
-/* Selector Móvil 64k vs HD 128k */
-.radio-quality-selector {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(11, 25, 44, 0.75);
-  border: 1px solid rgba(229, 168, 35, 0.35);
-  border-radius: 20px;
-  padding: 2px;
-  gap: 3px;
-}
-
-.btn-quality {
-  background: transparent;
-  color: #94a3b8;
-  font-size: 0.72rem;
-  font-weight: 700;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.btn-quality:hover {
-  color: #ffffff;
-}
-
-.btn-quality.active {
-  background: #e5a823;
-  color: #0b192c;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(229, 168, 35, 0.35);
-}
-
-/* Tarjeta "Sonando Ahora" */
-.radio-now-playing {
-  margin-top: 10px;
-  background: rgba(11, 25, 44, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 3.5px solid #e5a823;
-  border-radius: 8px;
-  padding: 7px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.now-playing-icon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  animation: pulseMusic 2s infinite ease-in-out;
-}
-
-@keyframes pulseMusic {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.15); opacity: 1; }
-}
-
-.now-playing-content {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.now-playing-label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  font-weight: 800;
-  color: #e5a823;
-  letter-spacing: 0.05em;
-  line-height: 1.2;
-}
-
-.now-playing-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #f8fafc;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.35;
-}
-
-@media (max-width: 480px) {
-  .radio-header-line {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-  .btn-quality {
-    font-size: 0.68rem;
-    padding: 3px 8px;
-  }
-  .now-playing-title {
-    font-size: 0.82rem;
-  }
-}
 
 /* ===================================================
-   DISTRIBUCIÓN VERTICAL MULTIMEDIA (VIDEO ARRIBA / RADIO ABAJO)
+   DISTRIBUCIÓN MULTIMEDIA (VIDEO CENTRADO)
    =================================================== */
 .multimedia-grid {
   display: flex !important;
   flex-direction: column !important;
   gap: 2rem !important;
-  max-width: 920px !important; /* Ancho óptimo para proporción 16:9 centrada */
+  max-width: 850px !important;
   margin: 0 auto !important;
   width: 100% !important;
 }
 
-.video-card,
-.radio-card {
+.video-card {
   width: 100% !important;
+  max-width: 850px;
+  margin: 0 auto;
 }
 
 /* Optimización de altura para el reproductor de video */

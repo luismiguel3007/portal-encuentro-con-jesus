@@ -10,7 +10,6 @@ const supabaseClient = window.db || (typeof db !== 'undefined' ? db : null);
 document.addEventListener('DOMContentLoaded', () => {
   // Inicialización de componentes comunes
   initNavigation();
-  initRadioAudio();
   initPdfWorker();
 
   // Detección y carga de vistas específicas
@@ -95,217 +94,7 @@ function initNavigation() {
   });
 }
 
-/* ==========================================================================
-   2. REPRODUCTOR DE RADIO CONTINUA (AZURACAST: AAC 64K / MP3 128K & NOW PLAYING)
-   ========================================================================== */
-const RADIO_CONFIG = {
-  streamHQ: 'https://radio.unencuentroconjesusperu.com/listen/senal2/radio.mp3',      // 128k MP3
-  streamMobile: 'https://radio.unencuentroconjesusperu.com/listen/senal2/movil.aac',   // 64k AAC+
-  apiUrl: 'https://radio.unencuentroconjesusperu.com/api/nowplaying/senal2'
-};
 
-let currentQuality = 'aac'; // Prioridad para celulares
-let nowPlayingInterval = null;
-
-function esDispositivoMovil() {
-  const ua = navigator.userAgent || navigator.vendor || window.opera;
-  const esMovilUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-  const pantallaChica = window.innerWidth <= 768;
-  const ahorroDatos = Boolean(navigator.connection && navigator.connection.saveData);
-  const redLenta = Boolean(navigator.connection && (navigator.connection.effectiveType === '2g' || navigator.connection.effectiveType === '3g'));
-
-  return esMovilUA || pantallaChica || ahorroDatos || redLenta;
-}
-
-function initRadioAudio() {
-  const audioRadio = document.getElementById('audioRadio');
-  const radioCard = document.getElementById('radioCard');
-  const btnAac = document.getElementById('btnQualityAac');
-  const btnMp3 = document.getElementById('btnQualityMp3');
-  const btnShare = document.getElementById('btnShareRadio');
-
-  if (!audioRadio || !radioCard) return;
-
-  // 1. Determinar calidad por preferencia guardada o detección automática
-  const preferenciaGuardada = localStorage.getItem('radio_calidad_pref');
-  if (preferenciaGuardada) {
-    currentQuality = preferenciaGuardada;
-  } else {
-    currentQuality = esDispositivoMovil() ? 'aac' : 'mp3';
-  }
-
-  // 2. Inyección estricta con preload="none"
-  actualizarUIBotonesCalidad(currentQuality);
-  audioRadio.preload = "none";
-  audioRadio.src = currentQuality === 'aac' ? RADIO_CONFIG.streamMobile : RADIO_CONFIG.streamHQ;
-
-  // 3. Conmutador manual de calidad (HD / Móvil)
-  function cambiarCalidad(nuevaCalidad) {
-    if (currentQuality === nuevaCalidad) return;
-
-    currentQuality = nuevaCalidad;
-    localStorage.setItem('radio_calidad_pref', nuevaCalidad);
-    actualizarUIBotonesCalidad(nuevaCalidad);
-
-    const estabaReproduciendo = !audioRadio.paused;
-    const nuevaUrl = currentQuality === 'aac' ? RADIO_CONFIG.streamMobile : RADIO_CONFIG.streamHQ;
-
-    audioRadio.src = nuevaUrl;
-    audioRadio.preload = "none";
-
-    if (estabaReproduciendo) {
-      audioRadio.play().catch(e => console.warn('Reanudando señal tras cambio de calidad:', e));
-    }
-  }
-
-  if (btnAac) btnAac.addEventListener('click', () => cambiarCalidad('aac'));
-  if (btnMp3) btnMp3.addEventListener('click', () => cambiarCalidad('mp3'));
-
-  // 4. Botón Nativo de Compartir Señal (Web Share API para WhatsApp / Redes)
-  if (btnShare && navigator.share) {
-    btnShare.style.display = 'inline-flex';
-    btnShare.addEventListener('click', async () => {
-      try {
-        const pistaActual = document.getElementById('nowPlayingTitle')?.textContent || 'Música de Adoración Continua';
-        await navigator.share({
-          title: 'Radio La Voz del Encuentro',
-          text: `Escucha en vivo: "${pistaActual}" por Radio La Voz del Encuentro 24/7`,
-          url: window.location.href
-        });
-      } catch (err) {
-        // Cancelación habitual por el usuario
-      }
-    });
-  }
-
-  // 5. Control desde audífonos Bluetooth y barra de notificaciones (MediaSession API)
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => {
-      audioRadio.play().catch(e => console.warn('Play desde audífonos:', e));
-    });
-    navigator.mediaSession.setActionHandler('pause', () => {
-      audioRadio.pause();
-    });
-    navigator.mediaSession.setActionHandler('stop', () => {
-      audioRadio.pause();
-      audioRadio.removeAttribute('src');
-      audioRadio.load();
-    });
-  }
-
-  // 6. Sincronización de eventos y evitar audio duplicado con el reproductor flotante
-  audioRadio.addEventListener('play', () => {
-    radioCard.classList.add('playing');
-    const globalAudio = document.getElementById('globalRadioAudio');
-    if (globalAudio && !globalAudio.paused) {
-      globalAudio.pause();
-    }
-  });
-
-  audioRadio.addEventListener('pause', () => {
-    radioCard.classList.remove('playing');
-  });
-
-  audioRadio.addEventListener('ended', () => {
-    radioCard.classList.remove('playing');
-  });
-
- audioRadio.addEventListener('error', (e) => {
-  console.warn('Error con el códec AAC en este móvil. Conmutando automáticamente a señal MP3 HQ...');
-  // Si el stream AAC falla en el celular, conmuta automáticamente a MP3 128k
-  if (currentQuality === 'aac') {
-    currentQuality = 'mp3';
-    actualizarUIBotonesCalidad('mp3');
-    audioRadio.src = RADIO_CONFIG.streamHQ;
-    audioRadio.load();
-    audioRadio.play().catch(() => {});
-  } else {
-    radioCard.classList.remove('playing');
-  }
-});
-
-  // 7. Monitoreo en vivo de AzuraCast
-  iniciarNowPlayingAzuraCast();
-}
-
-function actualizarUIBotonesCalidad(calidad) {
-  const btnAac = document.getElementById('btnQualityAac');
-  const btnMp3 = document.getElementById('btnQualityMp3');
-
-  if (btnAac) btnAac.classList.toggle('active', calidad === 'aac');
-  if (btnMp3) btnMp3.classList.toggle('active', calidad === 'mp3');
-}
-
-function iniciarNowPlayingAzuraCast() {
-  const nowPlayingTitle = document.getElementById('nowPlayingTitle');
-  if (!nowPlayingTitle) return;
-
-  async function actualizarPistaEnVivo() {
-    try {
-      const res = await fetch(RADIO_CONFIG.apiUrl, { cache: 'no-store' });
-      if (!res.ok) return;
-
-      const data = await res.json();
-      if (!data) return;
-
-      let textoTema = '';
-
-      if (data.live && data.live.is_live && data.live.streamer_name) {
-        textoTema = `En Vivo: ${data.live.streamer_name}`;
-      } else if (data.now_playing && data.now_playing.song) {
-        const song = data.now_playing.song;
-        if (song.title && song.artist) {
-          textoTema = `${song.title} — ${song.artist}`;
-        } else {
-          textoTema = song.text || song.title || 'Música de Alabanza Continua';
-        }
-      }
-
-      if (textoTema && nowPlayingTitle.textContent !== textoTema) {
-        nowPlayingTitle.textContent = textoTema;
-
-        // Metadatos para pantalla de bloqueo en teléfonos (Android / iOS)
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: textoTema,
-            artist: 'Radio Un Encuentro con Jesús',
-            album: 'Señal 2 (En Vivo)'
-          });
-        }
-      }
-    } catch (err) {
-      // Ignorar fallos de red sin interrumpir al usuario
-    }
-  }
-
-  // Primera consulta inmediata
-  actualizarPistaEnVivo();
-
-  // Actualización periódica cada 15 segundos
-  function startPolling() {
-    stopPolling();
-    nowPlayingInterval = setInterval(actualizarPistaEnVivo, 15000);
-  }
-
-  function stopPolling() {
-    if (nowPlayingInterval) {
-      clearInterval(nowPlayingInterval);
-      nowPlayingInterval = null;
-    }
-  }
-
-  startPolling();
-
-  // Optimización de batería: suspender peticiones si la pestaña está en segundo plano
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      stopPolling();
-    } else {
-      actualizarPistaEnVivo();
-      startPolling();
-    }
-  });
-}
 
 /* ==========================================================================
    3. FORMATEO DE FECHAS EN ESPAÑOL
@@ -1398,11 +1187,6 @@ async function loadAjustes() {
     if (data) {
       ajustesData = data;
 
-      // Sincronizar URL para el reproductor de radio flotante si estuviera configurada
-      if (data.radio_url && data.radio_url.trim() !== '') {
-        localStorage.setItem('radio_live_url', data.radio_url.trim());
-      }
-
       // Carga Segura del Logotipo Editorial con verificación onLoad y onError
       const badge = document.getElementById('headerLogoBadge');
       const badgeText = document.getElementById('logoBadgeText');
@@ -1787,7 +1571,6 @@ async function setupVisualEditor() {
     btnOpenStreamModal.addEventListener('click', () => {
       if (ajustesData) {
         document.getElementById('inputYoutubeUrl').value = ajustesData.youtube_url || '';
-        document.getElementById('inputRadioUrl').value = ajustesData.radio_url || '';
       }
       modalStreams.style.display = 'flex';
     });
@@ -1803,13 +1586,11 @@ async function setupVisualEditor() {
       btnSaveStreams.textContent = 'Guardando...';
 
       const nuevaYoutube = document.getElementById('inputYoutubeUrl').value.trim();
-      const nuevaRadio = document.getElementById('inputRadioUrl').value.trim();
 
       try {
         const { error } = await supabaseClient.from('ajustes').upsert({
           id: 1,
-          youtube_url: nuevaYoutube,
-          radio_url: nuevaRadio
+          youtube_url: nuevaYoutube
         });
 
         if (error) throw error;
@@ -1963,20 +1744,4 @@ function mostrarEventosDeFecha(fechaIso) {
     </div>
   `).join('');
 }
-
-// Ocultar minirreproductor flotante cuando el reproductor principal está visible en pantalla[cite: 19]
-const mainRadioCard = document.getElementById('radioCard');
-const floatWidget = document.getElementById('floatingRadioWidget');
-
-if (mainRadioCard && 'IntersectionObserver' in window) {
-  const radioObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const widget = document.getElementById('floatingRadioWidget');
-      if (!widget) return;
-      // Si la tarjeta principal está visible en más del 20%, ocultar la flotante[cite: 19]
-      widget.style.display = entry.isIntersecting ? 'none' : '';
-    });
-  }, { threshold: 0.2 });
-
-  radioObserver.observe(mainRadioCard);
-}
+

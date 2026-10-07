@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio La Voz del Encuentro | Escucha en Vivo 24/7</title>
+  <meta name="description" content="Sintoniza Radio La Voz del Encuentro en línea. Prédicas, alabanzas y culto en vivo las 24 horas del día, los 7 días de la semana.">
+  <meta name="theme-color" content="#0a0f18">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* =====================================================
+       RESET & BASE
+       ===================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0a0f18;
+      --bg-card:    #0e1625;
+      --bg-surface: #131d2e;
+      --border:     rgba(255,255,255,0.08);
+      --gold:       #e5a823;
+      --gold-dim:   rgba(229,168,35,0.15);
+      --gold-mid:   rgba(229,168,35,0.35);
+      --green:      #22c55e;
+      --green-dim:  rgba(34,197,94,0.15);
+      --text-1:     #f8fafc;
+      --text-2:     #cbd5e1;
+      --text-3:     #64748b;
+      --radius-sm:  10px;
+      --radius-md:  16px;
+      --radius-lg:  24px;
+      --shadow-glow: 0 0 40px rgba(229,168,35,0.12);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-1);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =====================================================
+       BACKGROUND ORBS
+       ===================================================== */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(229,168,35,0.08) 0%, transparent 70%);
+      top: -150px; left: 50%;
+      transform: translateX(-50%);
+    }
+    .bg-orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%);
+      bottom: 0; right: -100px;
+    }
+
+    /* =====================================================
+       LAYOUT WRAPPER
+       ===================================================== */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.25rem 1rem 3rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* =====================================================
+       TOP BAR
+       ===================================================== */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      gap: 8px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-back:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-1);
+    }
+
+    .btn-share {
+      display: none; /* shown via JS if Web Share API available */
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-mid);
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-share:hover {
+      background: var(--gold);
+      color: #0b192c;
+    }
+
+    /* =====================================================
+       HERO CARD
+       ===================================================== */
+    .hero-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem 1.75rem 1.75rem;
+      box-shadow: var(--shadow-glow), 0 20px 60px rgba(0,0,0,0.4);
+      margin-bottom: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.6;
+    }
+
+    /* Live badge */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #ef4444;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 1.25rem;
+    }
+
+    .live-pulse {
+      width: 7px;
+      height: 7px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulseLive 1.3s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseLive {
+      0%  { transform: scale(0.85); opacity: 0.7; box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+      50% { transform: scale(1.2);  opacity: 1;   box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+      100%{ transform: scale(0.85); opacity: 0.7; box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    }
+
+    /* Now playing info */
+    .now-playing-artist {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+      opacity: 0.85;
+    }
+
+    .now-playing-track {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-1);
+      line-height: 1.3;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      min-height: 2.6rem;
+    }
+
+    /* =====================================================
+       QUALITY SELECTOR
+       ===================================================== */
+    .quality-selector {
+      display: inline-flex;
+      background: rgba(11,25,44,0.8);
+      border: 1px solid var(--gold-mid);
+      border-radius: 20px;
+      padding: 3px;
+      gap: 3px;
+      margin-bottom: 1.75rem;
+    }
+
+    .quality-pill {
+      background: transparent;
+      color: var(--text-3);
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: none;
+      padding: 5px 13px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .quality-pill:hover { color: var(--text-1); }
+    .quality-pill.active {
+      background: var(--gold);
+      color: #0b192c;
+      font-weight: 800;
+      box-shadow: 0 2px 10px rgba(229,168,35,0.4);
+    }
+
+    /* =====================================================
+       PLAY BUTTON
+       ===================================================== */
+    .play-btn-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #btnPlayStop {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold) 0%, #c98a0e 100%);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 0 rgba(229,168,35,0.5), 0 10px 30px rgba(229,168,35,0.3);
+      transition: transform 0.15s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    #btnPlayStop:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 8px rgba(229,168,35,0.15), 0 14px 36px rgba(229,168,35,0.35);
+    }
+
+    #btnPlayStop:active { transform: scale(0.97); }
+
+    #btnPlayStop.playing {
+      animation: playGlow 2.5s infinite;
+    }
+
+    @keyframes playGlow {
+      0%, 100% { box-shadow: 0 0 0 0   rgba(229,168,35,0.5), 0 10px 30px rgba(229,168,35,0.3); }
+      50%       { box-shadow: 0 0 0 16px rgba(229,168,35,0),  0 14px 36px rgba(229,168,35,0.4); }
+    }
+
+    .btn-icon { pointer-events: none; }
+
+    /* Loading spinner on button */
+    #btnPlayStop.loading .icon-play,
+    #btnPlayStop.loading .icon-stop { display: none; }
+    #btnPlayStop.loading .icon-loading { display: block; }
+    #btnPlayStop .icon-loading {
+      display: none;
+      width: 36px; height: 36px;
+      border: 3px solid rgba(11,25,44,0.4);
+      border-top-color: #0b192c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #btnPlayStop.playing .icon-play { display: none; }
+    #btnPlayStop.playing .icon-stop { display: block; }
+    #btnPlayStop:not(.playing):not(.loading) .icon-stop { display: none; }
+
+    /* =====================================================
+       STATION INFO CARD
+       ===================================================== */
+    .station-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .station-icon {
+      width: 52px;
+      height: 52px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-mid);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.6rem;
+    }
+
+    .station-info { min-width: 0; }
+    .station-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-1);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+    .station-desc {
+      font-size: 0.78rem;
+      color: var(--text-3);
+      line-height: 1.4;
+    }
+
+    .station-live-tag {
+      margin-left: auto;
+      flex-shrink: 0;
+      background: var(--green-dim);
+      border: 1px solid rgba(34,197,94,0.35);
+      color: var(--green);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    /* =====================================================
+       SONG HISTORY CARD
+       ===================================================== */
+    .history-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .history-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .history-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .history-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-3);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .history-list { list-style: none; }
+
+    .history-item {
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      transition: background 0.15s;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item:hover { background: rgba(255,255,255,0.03); }
+
+    .history-num {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-3);
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .history-note {
+      font-size: 1rem;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .history-info { min-width: 0; flex: 1; }
+    .history-track {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-artist {
+      font-size: 0.72rem;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-time {
+      font-size: 0.68rem;
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+
+    .history-empty {
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 0.85rem;
+    }
+
+    /* =====================================================
+       FOOTER NOTE
+       ===================================================== */
+    .radio-footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+    .radio-footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .radio-footer a:hover { text-decoration: underline; }
+
+    /* =====================================================
+       RESPONSIVE TWEAKS
+       ===================================================== */
+    @media (min-width: 480px) {
+      .page-wrapper { padding-top: 2rem; }
+      .now-playing-track { font-size: 1.35rem; }
+      #btnPlayStop { width: 100px; height: 100px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background ambiance -->
+  <div class="bg-orb bg-orb-1" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb-2" aria-hidden="true"></div>
+
+  <!-- Hidden audio element -->
+  <audio id="radioAudio" preload="none"></audio>
+
+  <div class="page-wrapper">
+
+    <!-- Top navigation bar -->
+    <div class="top-bar">
+      <a href="index.html" target="_blank" rel="noopener noreferrer" class="btn-back" title="Abrir portal principal en nueva pestaña">
+        ↗ Abrir Portal Principal
+      </a>
+
+      <button type="button" class="btn-share" id="btnShare" aria-label="Compartir esta radio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        Compartir
+      </button>
+    </div>
+
+    <!-- Hero player card -->
+    <div class="hero-card">
+
+      <!-- Live badge -->
+      <div class="live-badge">
+        <span class="live-pulse" aria-hidden="true"></span>
+        EN VIVO · 24/7
+      </div>
+
+      <!-- Now playing info -->
+      <p class="now-playing-artist" id="nowArtist">Radio La Voz del Encuentro</p>
+      <p class="now-playing-track" id="nowTrack">Conectando señal en vivo…</p>
+
+      <!-- Quality selector -->
+      <div class="quality-selector" role="group" aria-label="Calidad de audio">
+        <button type="button" class="quality-pill active" id="pillMobile" data-quality="mobile" title="Stream 64 kbps — ideal para datos móviles">
+          64K Móvil
+        </button>
+        <button type="button" class="quality-pill" id="pillHD" data-quality="hd" title="Stream 128 kbps — alta fidelidad">
+          128K HD
+        </button>
+      </div>
+
+      <!-- Giant play/stop button -->
+      <div class="play-btn-wrap">
+        <button type="button" id="btnPlayStop" aria-label="Reproducir / Detener radio" title="Reproducir / Detener">
+          <!-- Play icon -->
+          <svg class="btn-icon icon-play" width="36" height="36" viewBox="0 0 24 24" fill="#0b192c" aria-hidden="true">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          <!-- Stop icon -->
+          <svg class="btn-icon icon-stop" width="34" height="34" viewBox="0 0 24 24" fill="#0b192c" aria-hidden="true" style="display:none;">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+          </svg>
+          <!-- Loading spinner -->
+          <div class="icon-loading" aria-hidden="true"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Station info -->
+    <div class="station-card">
+      <div class="station-icon" aria-hidden="true">📻</div>
+      <div class="station-info">
+        <p class="station-name">Radio La Voz del Encuentro</p>
+        <p class="station-desc">Prédicas, alabanzas y culto en vivo</p>
+      </div>
+      <span class="station-live-tag">24/7</span>
+    </div>
+
+    <!-- Song history -->
+    <div class="history-card">
+      <div class="history-header">
+        <span class="history-title">Últimas Canciones</span>
+        <span class="history-badge" id="historyCount">—</span>
+      </div>
+      <ul class="history-list" id="historyList">
+        <li class="history-empty">Cargando historial…</li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer class="radio-footer">
+      <p>Radio La Voz del Encuentro &mdash; Señal 2</p>
+      <p>Transmisión continua vía <a href="https://radio.unencuentroconjesusperu.com" target="_blank" rel="noopener noreferrer">AzuraCast</a></p>
+      <p style="margin-top:6px;"><a href="index.html" target="_blank" rel="noopener noreferrer">↗ Abrir Portal Principal</a></p>
+    </footer>
+
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    /* =====================================================
+       RADIO CONFIG
+       ===================================================== */
+    const RADIO = {
+      streamMobile: 'https://radio.unencuentroconjesusperu.com/listen/senal2/movil.mp3',
+      streamHD:     'https://radio.unencuentroconjesusperu.com/listen/senal2/radio.mp3',
+      apiUrl:       'https://radio.unencuentroconjesusperu.com/api/nowplaying/senal2'
+    };
+
+    /* =====================================================
+       STATE
+       ===================================================== */
+    let currentQuality = localStorage.getItem('radio_quality_pref') || 'mobile';
+    let isPlaying      = false;
+    let nowPlayingInterval = null;
+    let currentArtwork = '';
+
+    /* =====================================================
+       DOM REFS
+       ===================================================== */
+    const audio         = document.getElementById('radioAudio');
+    const btnPlay       = document.getElementById('btnPlayStop');
+    const pillMobile    = document.getElementById('pillMobile');
+    const pillHD        = document.getElementById('pillHD');
+    const nowTrackEl    = document.getElementById('nowTrack');
+    const nowArtistEl   = document.getElementById('nowArtist');
+    const historyList   = document.getElementById('historyList');
+    const historyCount  = document.getElementById('historyCount');
+    const btnShare      = document.getElementById('btnShare');
+
+    /* =====================================================
+       QUALITY CONTROL
+       ===================================================== */
+    function setQuality(q) {
+      if (currentQuality === q) return;
+      currentQuality = q;
+      localStorage.setItem('radio_quality_pref', q);
+      updateQualityUI();
+
+      if (isPlaying) {
+        const wasPlaying = true;
+        stopAudio();
+        if (wasPlaying) playAudio();
+      }
+    }
+
+    function updateQualityUI() {
+      pillMobile.classList.toggle('active', currentQuality === 'mobile');
+      pillHD.classList.toggle('active', currentQuality === 'hd');
+    }
+
+    pillMobile.addEventListener('click', () => setQuality('mobile'));
+    pillHD.addEventListener('click',     () => setQuality('hd'));
+
+    /* =====================================================
+       AUDIO CONTROL
+       ===================================================== */
+    function getStreamUrl() {
+      return currentQuality === 'hd' ? RADIO.streamHD : RADIO.streamMobile;
+    }
+
+    function playAudio() {
+      btnPlay.classList.add('loading');
+      audio.src = getStreamUrl();
+      audio.preload = 'none';
+      audio.play()
+        .then(() => {
+          isPlaying = true;
+          btnPlay.classList.remove('loading');
+          btnPlay.classList.add('playing');
+          btnPlay.setAttribute('aria-label', 'Detener radio');
+          updateMediaSession();
+        })
+        .catch(err => {
+          console.warn('Error al iniciar audio:', err);
+          btnPlay.classList.remove('loading');
+        });
+    }
+
+    function stopAudio() {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      isPlaying = false;
+      btnPlay.classList.remove('playing', 'loading');
+      btnPlay.setAttribute('aria-label', 'Reproducir radio');
+    }
+
+    btnPlay.addEventListener('click', () => {
+      if (btnPlay.classList.contains('loading')) return;
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        playAudio();
+      }
+    });
+
+    audio.addEventListener('error', () => {
+      console.warn('Error de stream. Intentando reconectar…');
+      if (isPlaying) {
+        stopAudio();
+        setTimeout(playAudio, 1500);
+      }
+    });
+
+    /* =====================================================
+       MEDIASESSION API (Bluetooth headset / lock screen)
+       ===================================================== */
+    function updateMediaSession(title, artist, artwork) {
+      if (!('mediaSession' in navigator)) return;
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title:  title  || nowTrackEl.textContent  || 'Radio La Voz del Encuentro',
+        artist: artist || nowArtistEl.textContent || 'Radio La Voz del Encuentro',
+        album:  'Señal 2 — En Vivo',
+        artwork: artwork ? [
+          { src: artwork, sizes: '512x512', type: 'image/jpeg' }
+        ] : [
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play',  () => { if (!isPlaying) playAudio(); });
+      navigator.mediaSession.setActionHandler('pause', () => { if (isPlaying)  stopAudio(); });
+      navigator.mediaSession.setActionHandler('stop',  () => stopAudio());
+    }
+
+    /* =====================================================
+       AZURACAST NOW PLAYING POLLING
+       ===================================================== */
+    function formatTime(ts) {
+      if (!ts) return '';
+      const d = new Date(ts * 1000);
+      return d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function fetchNowPlaying() {
+      try {
+        const res = await fetch(RADIO.apiUrl, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data) return;
+
+        // Now playing track
+        let trackTitle  = 'Radio La Voz del Encuentro';
+        let trackArtist = '';
+        let artworkUrl  = '';
+
+        if (data.live && data.live.is_live && data.live.streamer_name) {
+          trackTitle  = `En Vivo: ${data.live.streamer_name}`;
+          trackArtist = 'Transmisión en vivo';
+        } else if (data.now_playing && data.now_playing.song) {
+          const song = data.now_playing.song;
+          trackTitle  = song.title  || song.text || 'Música de Alabanza';
+          trackArtist = song.artist || '';
+          artworkUrl  = song.art    || '';
+        }
+
+        // Update UI if changed
+        if (nowTrackEl.textContent  !== trackTitle)  nowTrackEl.textContent  = trackTitle;
+        if (nowArtistEl.textContent !== trackArtist) nowArtistEl.textContent = trackArtist;
+
+        // Update MediaSession
+        if (isPlaying) {
+          updateMediaSession(trackTitle, trackArtist || 'Radio La Voz del Encuentro', artworkUrl || undefined);
+        }
+
+        // Song history (last 5)
+        const history = data.song_history || [];
+        const recent  = history.slice(0, 5);
+        historyCount.textContent = recent.length ? `${recent.length} canciones` : '—';
+
+        if (recent.length === 0) {
+          historyList.innerHTML = '<li class="history-empty">Historial no disponible.</li>';
+        } else {
+          historyList.innerHTML = recent.map((item, i) => {
+            const song    = item.song   || {};
+            const title   = escHtml(song.title  || song.text || 'Desconocido');
+            const artist  = escHtml(song.artist || '');
+            const playedAt = item.played_at ? formatTime(item.played_at) : '';
+
+            return `
+              <li class="history-item">
+                <span class="history-num">${i + 1}</span>
+                <span class="history-note" aria-hidden="true">🎵</span>
+                <div class="history-info">
+                  <p class="history-track">${title}</p>
+                  ${artist ? `<p class="history-artist">${artist}</p>` : ''}
+                </div>
+                ${playedAt ? `<span class="history-time">${playedAt}</span>` : ''}
+              </li>`;
+          }).join('');
+        }
+
+      } catch (err) {
+        // Silently fail — don't interrupt user experience
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      fetchNowPlaying();
+      nowPlayingInterval = setInterval(fetchNowPlaying, 15000);
+    }
+
+    function stopPolling() {
+      if (nowPlayingInterval) {
+        clearInterval(nowPlayingInterval);
+        nowPlayingInterval = null;
+      }
+    }
+
+    // Pause polling when tab is hidden (battery optimization)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        startPolling();
+      }
+    });
+
+    /* =====================================================
+       WEB SHARE API
+       ===================================================== */
+    if (navigator.share) {
+      btnShare.style.display = 'inline-flex';
+      btnShare.addEventListener('click', async () => {
+        try {
+          await navigator.share({
+            title: 'Radio La Voz del Encuentro',
+            text:  `Escucha en vivo: "${nowTrackEl.textContent}" — Radio La Voz del Encuentro 24/7`,
+            url:   window.location.href
+          });
+        } catch (e) {
+          // User cancelled — ignore
+        }
+      });
+    }
+
+    /* =====================================================
+       INIT
+       ===================================================== */
+    updateQualityUI();
+    startPolling();
+  </script>
+</body>
+</html>
+

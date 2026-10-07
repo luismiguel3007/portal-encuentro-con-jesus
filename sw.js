@@ -1,12 +1,12 @@
 // sw.js - Service Worker Optimizado con Auto-Actualización y Bypass de Streaming
-const CACHE_NAME = 'portal-encuentro-v6';
+const CACHE_NAME = 'portal-encuentro-v7';
 
 const urlsToCache = [
   './',
   './index.html',
+  './radio.html',
   './css/style.css',
   './js/config.js',
-  './js/radio-flotante.js',
   './js/app.js',
   './manifest.json',
   './favicon.ico'
