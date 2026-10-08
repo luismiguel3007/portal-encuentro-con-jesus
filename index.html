@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asociación Cristiana Un Encuentro con Jesús | Portal Oficial</title>
-  <meta name="description" content="Portal oficial de la Asociación Cristiana Un Encuentro con Jesús. Devocionales, prédicas, transmisión en vivo, catálogo de revistas, cronograma de actividades y directorio de sedes.">
+  <meta name="description" content="Portal oficial de la Asociación Cristiana Un Encuentro con Jesús. Radio cristiana en línea 24/7, devocionales, prédicas, revistas, cronograma de actividades y directorio de sedes.">
   
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="manifest.json">
@@ -287,6 +287,281 @@
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
       background: #ffffff;
     }
+
+    /* =========================================================
+       RADIO LA VOZ DEL ENCUENTRO: AVISO RADIAL TIPO PORTAL
+       Inspiración editorial de radio, diseño institucional propio
+       ========================================================= */
+    .radio-showcase-section {
+      background: #07111f;
+      color: #fff;
+      padding: clamp(3.5rem, 7vw, 6rem) 0;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .radio-showcase-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse at 18% 35%, rgba(229,168,35,.17), transparent 44%),
+        radial-gradient(ellipse at 87% 25%, rgba(47,91,150,.3), transparent 50%);
+      pointer-events: none;
+    }
+    .radio-showcase-head {
+      text-align: center;
+      max-width: 740px;
+      margin: 0 auto 2rem;
+    }
+    .radio-showcase-kicker {
+      color: #efbc4c;
+      font-size: .75rem;
+      letter-spacing: .2em;
+      font-weight: 800;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      margin-bottom: .85rem;
+    }
+    .radio-showcase-kicker::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #efb229;
+      box-shadow: 0 0 0 5px rgba(239,178,41,.13);
+    }
+    .radio-showcase-head h2 {
+      color: #fff;
+      font-size: clamp(1.8rem, 4.4vw, 3.2rem);
+      letter-spacing: -.04em;
+      line-height: 1.13;
+      margin: 0 0 1rem;
+      font-weight: 900;
+    }
+    .radio-showcase-head h2 span { color: #f0b62f; }
+    .radio-showcase-head p {
+      color: #b9c9dd;
+      line-height: 1.7;
+      margin: 0 auto;
+      max-width: 620px;
+      font-size: 1rem;
+    }
+    .radio-promo-card {
+      display: grid;
+      grid-template-columns: minmax(245px, .85fr) minmax(0, 1.15fr);
+      gap: clamp(1.5rem, 4vw, 3.4rem);
+      align-items: center;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: clamp(1.2rem, 3.5vw, 2.75rem);
+      border-radius: 26px;
+      background:
+        linear-gradient(115deg, rgba(20,39,65,.94), rgba(8,21,38,.95)),
+        #10243d;
+      border: 1px solid rgba(242,194,83,.21);
+      box-shadow: 0 30px 85px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.045);
+      position: relative;
+      overflow: hidden;
+    }
+    .radio-promo-card::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      right: -130px;
+      bottom: -180px;
+      border-radius: 50%;
+      background: rgba(229,168,35,.065);
+      pointer-events: none;
+    }
+    .radio-promo-cover-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 375px;
+      margin: 0 auto;
+      aspect-ratio: 1;
+      padding: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(239,182,47,.28);
+      border-radius: 20px;
+      box-shadow: 0 16px 55px rgba(0,0,0,.22);
+    }
+    .radio-promo-cover {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #14243a;
+    }
+    .radio-promo-cover-tag {
+      position: absolute;
+      left: 25px;
+      bottom: 25px;
+      color: #fff;
+      border-radius: 999px;
+      background: rgba(4,12,24,.86);
+      border: 1px solid rgba(255,255,255,.14);
+      font-size: .68rem;
+      letter-spacing: .11em;
+      font-weight: 800;
+      padding: 9px 13px;
+      backdrop-filter: blur(10px);
+    }
+    .radio-promo-main { position: relative; min-width: 0; z-index: 1; }
+    .radio-promo-main-label {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: .7rem;
+      color: #edbb54;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .radio-promo-live-dot {
+      width: 8px; height: 8px;
+      background: #efb229;
+      border-radius: 50%;
+      box-shadow: 0 0 0 5px rgba(239,178,41,.12);
+      flex: 0 0 auto;
+    }
+    .radio-promo-main h3 {
+      color: #fff;
+      font-size: clamp(1.6rem, 3.4vw, 2.55rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -.035em;
+      margin: 0 0 .8rem;
+    }
+    .radio-promo-description {
+      color: #adbed3;
+      line-height: 1.65;
+      margin: 0 0 1.55rem;
+      max-width: 510px;
+    }
+    .radio-now-playing {
+      border-top: 1px solid rgba(255,255,255,.14);
+      padding: 1.25rem 0 1.45rem;
+      min-width: 0;
+    }
+    .radio-now-playing-label {
+      display: block;
+      color: #efbb48;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin-bottom: .65rem;
+    }
+    .radio-now-playing-title {
+      font-weight: 850;
+      font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+      line-height: 1.25;
+      color: #fff;
+      letter-spacing: -.01em;
+      overflow-wrap: anywhere;
+      margin: 0 0 .4rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .radio-now-playing-artist {
+      color: #b5c4d7;
+      font-size: .97rem;
+      line-height: 1.5;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .radio-promo-bottom {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      color: #adc0d6;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .radio-promo-equalizer {
+      display: flex;
+      align-items: end;
+      gap: 4px;
+      height: 17px;
+    }
+    .radio-promo-equalizer span {
+      width: 4px;
+      height: 6px;
+      border-radius: 3px;
+      background: #eeb63a;
+      animation: radioWave 1.05s ease-in-out infinite alternate;
+    }
+    .radio-promo-equalizer span:nth-child(2) { animation-delay: -.55s; }
+    .radio-promo-equalizer span:nth-child(3) { animation-delay: -.2s; }
+    .radio-promo-equalizer span:nth-child(4) { animation-delay: -.75s; }
+    .radio-promo-equalizer span:nth-child(5) { animation-delay: -.4s; }
+    @keyframes radioWave { from { height: 5px; } to { height: 17px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .radio-promo-equalizer span { animation: none; height: 10px; }
+    }
+    .radio-promo-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      max-width: 100%;
+      min-height: 60px;
+      padding: 10px 18px 10px 10px;
+      border-radius: 999px;
+      color: #101c2b;
+      background: #edb32d;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: .95rem;
+      box-shadow: 0 8px 25px rgba(229,168,35,.18);
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .radio-promo-action:hover,
+    .radio-promo-action:focus-visible {
+      color: #07111f;
+      background: #ffd05a;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(229,168,35,.27);
+    }
+    .radio-promo-action:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    .radio-promo-play-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      color: #15243a;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+    .radio-promo-play-icon svg { width: 20px; height: 20px; margin-left: 2px; }
+    .radio-promo-action svg.radio-promo-arrow { width: 20px; height: 20px; flex: 0 0 auto; }
+    .radio-promo-note { text-align: center; color: #8fa4bf; font-size: .78rem; margin: 1rem 0 0; }
+    @media (max-width: 780px) {
+      .radio-promo-card { grid-template-columns: 1fr; gap: 1.4rem; padding: 1.25rem; border-radius: 20px; }
+      .radio-promo-cover-wrap { max-width: 275px; }
+      .radio-promo-main { text-align: center; }
+      .radio-promo-description { margin-left: auto; margin-right: auto; }
+      .radio-promo-bottom { justify-content: center; }
+      .radio-promo-action { margin-inline: auto; }
+      .radio-now-playing { text-align: center; }
+    }
+    @media (max-width: 420px) {
+      .radio-promo-action { width: 100%; font-size: .83rem; gap: 10px; padding-right: 12px; }
+      .radio-promo-play-icon { width: 36px; height: 36px; }
+    }
   </style>
 </head>
 <body>
@@ -329,7 +604,7 @@
       <nav class="nav-desktop" aria-label="Navegación principal">
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link active">Inicio</a></li>
-          <li><a href="#envivo" class="nav-link">En Vivo</a></li>
+          <li><a href="#envivo" class="nav-link">Radio 24/7</a></li>
           <li><a href="#cronograma" class="nav-link">Cronograma</a></li>
           <li><a href="revistas.html" class="nav-link">Revistas</a></li>
           <li><a href="literatura.html" class="nav-link">Literatura</a></li>
@@ -338,7 +613,7 @@
           <li><a href="#liderazgo" class="nav-link">Liderazgo</a></li>
           <li><a href="#noticias" class="nav-link">Noticias</a></li>
           <li><a href="biblia.html" class="nav-link">Biblia</a></li>
-          <li><a href="radio.html" target="_blank" rel="noopener noreferrer" class="nav-link">Radio Online</a></li>
+          <li><a href="radio/" target="_blank" rel="noopener noreferrer" class="nav-link">Radio Online</a></li>
           <li>
             <a href="login.html" class="btn-admin-nav" id="navAdminBtn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -374,7 +649,7 @@
     <nav class="sidebar-nav">
       <ul>
         <li><a href="index.html" class="active">Inicio</a></li>
-        <li><a href="#envivo">Transmisión En Vivo &amp; Radio</a></li>
+        <li><a href="#envivo">Radio Online 24/7</a></li>
         <li><a href="#cronograma">Cronograma &amp; Boletín</a></li>
         <li><a href="revistas.html">Revistas y Ediciones</a></li>
         <li><a href="literatura.html">Literatura Cristiana</a></li>
@@ -383,7 +658,7 @@
         <li><a href="#liderazgo">Cuerpo Pastoral</a></li>
         <li><a href="#noticias">Noticias y Devocionales</a></li>
         <li><a href="biblia.html">Santa Biblia &amp; Promesa</a></li>
-        <li><a href="radio.html" target="_blank" rel="noopener noreferrer">📻 Radio Online</a></li>
+        <li><a href="radio/" target="_blank" rel="noopener noreferrer">📻 Radio Online</a></li>
       </ul>
     </nav>
 
@@ -406,10 +681,10 @@
           Proclamando el Evangelio de Poder y Salvación <span>A Todas las Naciones</span>
         </h1>
         <p class="hero-description" id="editableHeroDesc" data-editable="hero_desc">
-          Bienvenido al portal institucional de la Asociación Cristiana Un Encuentro con Jesús. Descubre las transmisiones en vivo, nuestra radio continua, el cronograma de actividades, literatura y devocionales para tu crecimiento espiritual.
+          Bienvenido al portal institucional de la Asociación Cristiana Un Encuentro con Jesús. Disfruta nuestra radio cristiana las 24 horas, consulta el cronograma de actividades y descubre literatura y devocionales para tu crecimiento espiritual.
         </p>
         <div class="hero-actions">
-          <a href="#envivo" class="btn-primary" data-editable="btn_hero_envivo">Ver Transmisión en Vivo</a>
+          <a href="#envivo" class="btn-primary">Escuchar Radio Online</a>
           <a href="#cronograma" class="btn-outline" data-editable="btn_hero_cronograma">Ver Cronograma</a>
           <a href="#noticias" class="btn-outline" data-editable="btn_hero_noticias">Leer Devocionales</a>
         </div>
@@ -417,31 +692,45 @@
     </div>
   </section>
 
-  <!-- 2. SECCIÓN MULTIMEDIA (TRANSMISIÓN EN VIVO & RADIO ONLINE CON AZURACAST) -->
-  <section class="section-multimedia" id="envivo">
+  <!-- 2. RADIO ONLINE 24/7: AVISO EDITORIAL CON METADATOS AZURACAST -->
+  <section class="section-multimedia radio-showcase-section" id="envivo" aria-labelledby="radioPromoHeading">
     <div class="container">
-      <div class="section-header">
-        <span class="section-tag" data-editable="sec_multimedia_tag">Señal Continua</span>
-        <h2 class="section-title" data-editable="sec_multimedia_title">Transmisiones Multimedia en Vivo</h2>
-        <p class="section-subtitle" data-editable="sec_multimedia_sub">Conéctate a la señal de video de nuestros cultos diarios y sintoniza ahora nuestra radio con alabanzas y sermones las 24 horas del día.</p>
+      <div class="radio-showcase-head">
+        <span class="radio-showcase-kicker">Tu emisora cristiana en línea</span>
+        <h2 id="radioPromoHeading" data-editable="sec_radio_titulo">Una voz de fe que te <span>acompaña siempre</span></h2>
+        <p data-editable="sec_radio_subtitulo">Alabanzas, prédicas y mensajes que edifican tu vida, las 24 horas del día. Escucha Radio La Voz del Encuentro desde cualquier lugar.</p>
       </div>
 
-      <div class="multimedia-grid" style="max-width: 850px; margin: 0 auto;">
-        <div class="video-card" style="width: 100%;">
-          <div class="video-header">
-            <h3 data-editable="card_video_title">Culto en Directo</h3>
-            <span class="badge-live"><span class="live-dot"></span> En Vivo</span>
+      <div class="radio-promo-card">
+        <div class="radio-promo-cover-wrap">
+          <img id="radioPromoArtwork" class="radio-promo-cover" src="icon-512.png" alt="Imagen de Radio La Voz del Encuentro" decoding="async">
+          <span class="radio-promo-cover-tag">RADIO CRISTIANA · 24/7</span>
+        </div>
+
+        <div class="radio-promo-main">
+          <span class="radio-promo-main-label"><span class="radio-promo-live-dot" aria-hidden="true"></span><span id="radioPromoStatus">RADIO ONLINE · 24/7</span></span>
+          <h3 data-editable="sec_radio_emisora">Radio La Voz del Encuentro</h3>
+          <p class="radio-promo-description" data-editable="sec_radio_descripcion">Sintoniza nuestra programación y comparte una señal de esperanza con toda tu familia.</p>
+
+          <div class="radio-now-playing" aria-label="Programa actual de la emisora">
+            <span class="radio-now-playing-label">♪ Sonando ahora</span>
+            <p id="radioPromoSong" class="radio-now-playing-title" aria-live="polite" aria-atomic="true">Consultando la programación…</p>
+            <p id="radioPromoArtist" class="radio-now-playing-artist">Radio La Voz del Encuentro</p>
           </div>
-          <div class="video-player-wrapper">
-            <iframe id="liveVideoIframe" src="" title="Transmisión en Vivo" allowfullscreen></iframe>
+
+          <div class="radio-promo-bottom">
+            <div class="radio-promo-equalizer" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+            <span>TRANSMISIÓN CONTINUA · MP3 64 KBPS</span>
           </div>
-          <div style="text-align: center; margin-top: 1.5rem;">
-            <a href="radio.html" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 700;">
-              📻 Sintonizar Radio La Voz del Encuentro 24/7 &rarr;
-            </a>
-          </div>
+
+          <a href="radio/" target="_blank" rel="noopener noreferrer" class="radio-promo-action" aria-label="Abrir Radio La Voz del Encuentro en una nueva pestaña y escuchar en vivo">
+            <span class="radio-promo-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.25c0-.8.87-1.29 1.55-.88l10.17 6.75a1.05 1.05 0 0 1 0 1.76L9.55 19.63A1 1 0 0 1 8 18.75V5.25Z"/></svg></span>
+            <span>ESCUCHAR RADIO EN VIVO</span>
+            <svg class="radio-promo-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+          </a>
         </div>
       </div>
+      <p class="radio-promo-note">Al presionar escuchar, se abrirá el reproductor de radio en otra pestaña.</p>
     </div>
   </section>
 
@@ -572,7 +861,7 @@
           <h4 data-editable="footer_col1_title">Navegación</h4>
           <ul class="footer-links">
             <li><a href="index.html">Inicio</a></li>
-            <li><a href="#envivo">Transmisión En Vivo</a></li>
+            <li><a href="#envivo">Radio La Voz del Encuentro</a></li>
             <li><a href="#cronograma">Cronograma de Actividades</a></li>
             <li><a href="revistas.html">Revistas Oficiales</a></li>
             <li><a href="literatura.html">Literatura Cristiana</a></li>
@@ -588,7 +877,7 @@
           <h4 data-editable="footer_col2_title">Recursos</h4>
           <ul class="footer-links">
             <li><a href="revistas.html">Descargar Ediciones</a></li>
-            <li><a href="#envivo">Canal de Transmisión</a></li>
+            <li><a href="radio/" target="_blank" rel="noopener noreferrer">Escuchar Radio Online</a></li>
             <li><a href="sedes.html">Horarios de Culto</a></li>
             <li><a href="login.html">Acceso Administrativo</a></li>
           </ul>
@@ -621,7 +910,6 @@
       <button id="btnChangeLogo" type="button" class="btn-vis-action">🏷️ Cambiar Logo</button>
       <button id="btnChangeHeroBg" type="button" class="btn-vis-action">🖼️ Cambiar Fondo Portada</button>
       <button id="btnOpenSocialModal" type="button" class="btn-vis-action">🌐 Redes Sociales</button>
-      <button id="btnOpenStreamModal" type="button" class="btn-vis-action">📡 Transmisiones</button>
       <button id="btnSaveVisualTexts" type="button" class="btn-vis-save" disabled>💾 Guardar Textos</button>
       <a href="admin.html" class="btn-vis-action btn-vis-panel">⚙️ Panel Admin</a>
     </div>
@@ -655,30 +943,94 @@
     </div>
   </div>
 
-  <!-- MODAL TRANSMISIONES EN VIVO (YOUTUBE & RADIO) -->
-  <div id="modalStreams" class="vis-modal" style="display: none;">
-    <div class="vis-modal-content">
-      <div class="vis-modal-header">
-        <h3>Configuración de Transmisiones en Vivo</h3>
-        <button id="btnCloseModal" type="button" class="vis-modal-close">&times;</button>
-      </div>
-      <div class="vis-modal-body">
-        <label for="inputYoutubeUrl">Enlace de Transmisión de YouTube (En Vivo o Video):</label>
-        <input type="text" id="inputYoutubeUrl" placeholder="https://www.youtube.com/watch?v=...">
-      </div>
-      <div class="vis-modal-footer">
-        <button id="btnSaveStreams" type="button" class="btn-vis-save">Guardar Señales</button>
-      </div>
-    </div>
-  </div>
+  <script>
+    /* Información pública AzuraCast para el aviso promocional.
+       El reproductor real permanece exclusivamente en /radio/. */
+    (() => {
+      const API_URL = 'https://radio.unencuentroconjesusperu.com/api/nowplaying/2';
+      const cover = document.getElementById('radioPromoArtwork');
+      const songEl = document.getElementById('radioPromoSong');
+      const artistEl = document.getElementById('radioPromoArtist');
+      const statusEl = document.getElementById('radioPromoStatus');
+      const fallbackCover = 'icon-512.png';
+      let updating = false;
+      let loadedOnce = false;
+
+      if (!cover || !songEl || !artistEl || !statusEl) return;
+      cover.addEventListener('error', () => {
+        if (cover.getAttribute('src') !== fallbackCover) {
+          cover.src = fallbackCover;
+        }
+      });
+
+      function usableImage(url) {
+        if (typeof url !== 'string' || !url.trim()) return fallbackCover;
+        try {
+          const parsed = new URL(url, window.location.href);
+          return ['https:', 'http:'].includes(parsed.protocol) ? parsed.href : fallbackCover;
+        } catch (_) {
+          return fallbackCover;
+        }
+      }
+
+      async function updateRadioPromo() {
+        if (updating || document.hidden) return;
+        updating = true;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        try {
+          const response = await fetch(API_URL, { cache: 'no-store', signal: controller.signal });
+          if (!response.ok) throw new Error('AzuraCast HTTP ' + response.status);
+          const data = await response.json();
+          const song = data?.now_playing?.song || {};
+          const live = data?.live || {};
+          const offline = data?.is_online === false;
+          const title = offline
+            ? 'Señal temporalmente fuera del aire'
+            : (live.is_live && live.streamer_name
+              ? 'En vivo: ' + live.streamer_name
+              : (song.title || song.text || 'Programación de Radio La Voz del Encuentro'));
+          const artist = offline
+            ? 'Intenta nuevamente en unos minutos'
+            : (live.is_live ? 'Transmisión especial' : (song.artist || 'Radio La Voz del Encuentro'));
+
+          if (songEl.textContent !== title) songEl.textContent = title;
+          if (artistEl.textContent !== artist) artistEl.textContent = artist;
+          statusEl.textContent = offline ? 'SEÑAL NO DISPONIBLE' : 'RADIO ONLINE · 24/7';
+          const newCover = usableImage(song.art);
+          if (cover.src !== new URL(newCover, window.location.href).href) {
+            cover.src = newCover;
+          }
+          cover.alt = 'Portada de ' + title;
+          loadedOnce = true;
+        } catch (err) {
+          console.warn('No se actualizaron los metadatos de radio:', err.message);
+          if (!loadedOnce) {
+            songEl.textContent = 'Escucha nuestra programación cristiana';
+            artistEl.textContent = 'Información momentáneamente no disponible';
+            statusEl.textContent = 'RADIO ONLINE · 24/7';
+          }
+        } finally {
+          clearTimeout(timeoutId);
+          updating = false;
+        }
+      }
+
+      updateRadioPromo();
+      setInterval(updateRadioPromo, 25000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) updateRadioPromo();
+      });
+    })();
+  </script>
 
   <script src="js/config.js?v=5"></script>
 <script src="js/app.js?v=5"></script>
  <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Se añade ?v=2 para que el navegador detecte cambio inmediato en el propio worker
-        navigator.serviceWorker.register('/sw.js?v=2')
+        // Versión 3 del registro del Service Worker para actualización de PWA
+        navigator.serviceWorker.register('/sw.js?v=3')
           .then(reg => {
             // Comprobar activamente si hay una nueva versión en el servidor
             reg.update();
