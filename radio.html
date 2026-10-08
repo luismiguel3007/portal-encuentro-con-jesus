@@ -492,8 +492,7 @@
     <div class="orb-2"></div>
   </div>
 
-  <!-- Audio nativo con búfer de adelanto activo -->
-  <audio id="radioAudio" preload="auto" playsinline></audio>
+  <audio id="radioAudio" preload="none"></audio>
 
   <main class="app-container">
 
@@ -604,7 +603,7 @@
 
   </main>
 
-  <script>
+<script>
     /* =====================================================
        CONFIGURACIÓN Y ENDPOINTS
        ===================================================== */
@@ -619,8 +618,6 @@
     let isPlaying      = false;
     let isConnecting   = false;
     let nowPlayingInterval = null;
-    let lastLoadedArt  = '';
-    let lastLoadedTitle = '';
 
     /* REFERENCIAS AL DOM */
     const audio            = document.getElementById('radioAudio');
@@ -671,21 +668,21 @@
     pillHD.addEventListener('click',     () => setQuality('hd'));
 
     /* =====================================================
-       MOTOR DE AUDIO DIRECTO (BÚFER CONTINUO NATIVO)
+       MOTOR DE AUDIO OPTIMIZADO (SIN CONGELAMIENTO DE SOCKETS)
        ===================================================== */
-    function getStreamUrl() {
-      return currentQuality === 'hd' ? RADIO.streamHD : RADIO.streamMobile;
+    function getStreamUrl(forceBuster = false) {
+      const base = currentQuality === 'hd' ? RADIO.streamHD : RADIO.streamMobile;
+      return forceBuster ? `${base}?t=${Date.now()}` : base;
     }
 
-    function playAudio() {
-      if (isConnecting) return;
+    function playAudio(forceBuster = false) {
+      if (isConnecting) return; // Evita peticiones simultáneas si el usuario pulsa repetidamente
       isConnecting = true;
       btnPlay.classList.add('loading');
 
-      const targetUrl = getStreamUrl();
-      if (!audio.src || audio.src === '' || audio.src === window.location.href) {
-        audio.src = targetUrl;
-      }
+      // Cierre preventivo de cualquier conexión residual previa
+      audio.pause();
+      audio.src = getStreamUrl(forceBuster);
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -706,8 +703,8 @@
       isPlaying = false;
 
       audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
+      // Asignar cadena vacía libera el socket TCP en Chrome de inmediato
+      audio.src = '';
 
       btnPlay.classList.remove('playing', 'loading');
       playerCard.classList.remove('is-playing');
@@ -724,32 +721,29 @@
       playerCard.classList.add('is-playing');
       albumWrap.classList.add('is-playing');
       btnPlay.setAttribute('aria-label', 'Pausar Transmisión');
-      updateMediaSession(nowTrackEl.textContent, nowArtistEl.textContent, lastLoadedArt);
-    });
-
-    audio.addEventListener('waiting', () => {
-      if (isPlaying) btnPlay.classList.add('loading');
+      updateMediaSession();
     });
 
     audio.addEventListener('error', () => {
-      console.warn('Interrupción en stream. Reconectando...');
+      console.warn('Error en el flujo de audio. Reintentando con nueva conexión...');
       if (isPlaying || isConnecting) {
         stopAudio();
-        setTimeout(playAudio, 1500);
+        setTimeout(() => playAudio(true), 1200);
       }
     });
 
     btnPlay.addEventListener('click', () => {
       if (isPlaying) {
         stopAudio();
-      } else {
-        playAudio();
+      } else if (!isConnecting) {
+        playAudio(false);
       }
     });
 
+    // Liberar socket al cerrar o recargar la pestaña para no dejar conexiones zombi
     window.addEventListener('beforeunload', () => {
       audio.pause();
-      audio.removeAttribute('src');
+      audio.src = '';
     });
 
     /* =====================================================
@@ -775,7 +769,7 @@
     }
 
     /* =====================================================
-       CONSULTA DE METADATOS AZURACAST (SIN DESCARGAS DUPLICADAS)
+       CONSULTA EN VIVO DE METADATOS AZURACAST
        ===================================================== */
     function formatTime(ts) {
       if (!ts) return '';
@@ -821,23 +815,17 @@
         if (nowTrackEl.textContent  !== trackTitle)  nowTrackEl.textContent  = trackTitle;
         if (nowArtistEl.textContent !== trackArtist) nowArtistEl.textContent = trackArtist;
 
-        // Descarga la imagen SOLO si cambió la canción (ahorra megas y evita vaciar el búfer)
-        if (artworkUrl !== lastLoadedArt) {
-          lastLoadedArt = artworkUrl;
-          if (artworkUrl && artworkUrl.trim() !== '') {
-            albumArtImg.src = artworkUrl;
-            albumArtImg.style.display = 'block';
-            albumDefaultIcon.style.display = 'none';
-          } else {
-            albumArtImg.style.display = 'none';
-            albumDefaultIcon.style.display = 'block';
-          }
-          if (isPlaying) {
-            updateMediaSession(trackTitle, trackArtist, artworkUrl);
-          }
-        } else if (trackTitle !== lastLoadedTitle && isPlaying) {
-          lastLoadedTitle = trackTitle;
-          updateMediaSession(trackTitle, trackArtist, artworkUrl);
+        if (artworkUrl && artworkUrl.trim() !== '') {
+          albumArtImg.src = artworkUrl;
+          albumArtImg.style.display = 'block';
+          albumDefaultIcon.style.display = 'none';
+        } else {
+          albumArtImg.style.display = 'none';
+          albumDefaultIcon.style.display = 'block';
+        }
+
+        if (isPlaying) {
+          updateMediaSession(trackTitle, trackArtist, artworkUrl || undefined);
         }
 
         // Historial (últimas 5 canciones)
@@ -873,7 +861,7 @@
     function startPolling() {
       stopPolling();
       fetchNowPlaying();
-      nowPlayingInterval = setInterval(fetchNowPlaying, 15000);
+      nowPlayingInterval = setInterval(fetchNowPlaying, 12000);
     }
 
     function stopPolling() {
