@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="es" class="notranslate">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RadioPlayer</title>
+    <meta name="google" content="notranslate">
+    <title>Radio La Voz del Encuentro</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
@@ -40,8 +41,8 @@
 <!-- LYRICS PANEL -->
 <aside id="lyrics-panel" class="flex flex-col glass">
     <div class="p-6 border-b border-white/5 flex justify-between items-center">
-        <h3 class="font-black text-2xl uppercase italic tracking-tight">Lyrics</h3>
-        <button onclick="closeAllPanels()" class="mono text-[10px] text-zinc-400 border border-white/10 px-5 py-2 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">CLOSE</button>
+        <h3 class="font-black text-2xl uppercase italic tracking-tight">Letra</h3>
+        <button onclick="closeAllPanels()" class="mono text-[10px] text-zinc-400 border border-white/10 px-5 py-2 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">CERRAR</button>
     </div>
     <div id="lyrics-body" class="flex-1 overflow-y-auto p-10 mono text-sm leading-relaxed lyrics-content text-zinc-300"></div>
 </aside>
@@ -49,8 +50,8 @@
 <!-- PLAY HISTORY PANEL -->
 <aside id="history-panel" class="flex flex-col glass">
     <div class="p-6 border-b border-white/5 flex justify-between items-center text-[var(--primary)]">
-        <h3 class="font-black text-2xl uppercase italic tracking-tight">Play History</h3>
-        <button onclick="closeAllPanels()" class="mono text-[10px] text-zinc-400 border border-white/10 px-5 py-2 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">CLOSE</button>
+        <h3 class="font-black text-2xl uppercase italic tracking-tight">Historial de Reproducción</h3>
+        <button onclick="closeAllPanels()" class="mono text-[10px] text-zinc-400 border border-white/10 px-5 py-2 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">CERRAR</button>
     </div>
     <div id="full-history-list" class="flex-1 overflow-y-auto p-6 space-y-6 bg-black/10"></div>
 </aside>
@@ -58,12 +59,11 @@
 <!-- MAIN CONTENT -->
 <main class="flex-1 overflow-y-auto p-8 md:p-12 lg:p-16">
     <div class="max-w-6xl mx-auto">
-        <!-- Station Identity (Mobile top, Desktop stays on right but using order or separate placement) -->
-        <!-- We'll place it here to be at the very top on mobile -->
+        <!-- Station Identity Mobile -->
         <div class="flex items-center gap-6 mb-10 group/station lg:hidden">
             <div class="flex flex-col leading-tight border-l border-[var(--primary)]/30 pl-5">
-                <span class="mono text-[8px] text-[var(--primary)] uppercase tracking-[0.3em] font-black opacity-60 mb-0.5">Tuned to Station</span>
-                <span id="main-station-name-mobile" class="mono text-[13px] text-white uppercase tracking-[0.25em] font-black italic">RAP GLOBAL</span>
+                <span class="mono text-[8px] text-[var(--primary)] uppercase tracking-[0.3em] font-black opacity-60 mb-0.5">Sintonizado en la Emisora</span>
+                <span id="main-station-name-mobile" class="mono text-[13px] text-white uppercase tracking-[0.25em] font-black italic">RADIO LA VOZ DEL ENCUENTRO</span>
             </div>
         </div>
 
@@ -77,14 +77,14 @@
                     <div class="absolute -bottom-4 -right-4 w-8 h-8 border-b-2 border-r-2 border-[var(--primary)] pointer-events-none"></div>
 
                     <div class="aspect-square bg-zinc-900 border border-white/10 relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.6)] transition-transform duration-700 group-hover:scale-[1.01]">
-                        <img id="main-artwork" class="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt="Album artwork">
+                        <img id="main-artwork" class="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt="Carátula de álbum">
 
                         <!-- Metadata Overlay -->
                         <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end transition-opacity duration-500">
                             <div class="bg-black/80 backdrop-blur-md px-4 py-2 mono text-[9px] text-zinc-300 uppercase tracking-widest border border-white/10 flex gap-4 divide-x divide-white/10">
-                                <div class="flex gap-2"><span class="text-[var(--primary)]/70">Bitrate</span><span id="art-bitrate">---</span></div>
-                                <div class="pl-4 flex gap-2"><span class="text-[var(--primary)]/70">Format</span><span id="art-format">---</span></div>
-                                <div class="pl-4 flex gap-2"><span class="text-[var(--primary)]/70">Year</span><span id="art-year">----</span></div>
+                                <div class="flex gap-2"><span class="text-[var(--primary)]/70">Bitrate</span><span id="art-bitrate">64K</span></div>
+                                <div class="pl-4 flex gap-2"><span class="text-[var(--primary)]/70">Formato</span><span id="art-format">MP3</span></div>
+                                <div class="pl-4 flex gap-2"><span class="text-[var(--primary)]/70">Año</span><span id="art-year">----</span></div>
                             </div>
                         </div>
                     </div>
@@ -96,8 +96,8 @@
                         <div class="flex items-center gap-5 text-left">
                             <div class="w-8 h-8 transition-transform group-active:scale-90"><svg id="play-icon" class="w-full h-full fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
                             <div class="flex flex-col leading-none">
-                                <span id="play-text" class="font-black uppercase italic tracking-tighter text-3xl md:text-4xl">PLAY</span>
-                                <span id="progress-text" class="mono text-[10px] uppercase tracking-[0.25em] mt-1.5 opacity-50 font-bold">Ready</span>
+                                <span id="play-text" class="font-black uppercase italic tracking-tighter text-3xl md:text-4xl">ESCUCHAR</span>
+                                <span id="progress-text" class="mono text-[10px] uppercase tracking-[0.25em] mt-1.5 opacity-50 font-bold">EN VIVO 24/7</span>
                             </div>
                         </div>
                         <div id="visualizer" class="flex items-end gap-1.5">
@@ -111,32 +111,32 @@
             <!-- RIGHT: INFO & LOG -->
             <div class="lg:col-span-7 w-full">
                 <div class="mb-10 relative">
-                    <div id="metadata-loader" class="absolute -top-8 left-0 mono text-[10px] text-[var(--primary)] tracking-[0.5em] hidden animate-pulse font-black uppercase">>> Refreshing...</div>
+                    <div id="metadata-loader" class="absolute -top-8 left-0 mono text-[10px] text-[var(--primary)] tracking-[0.5em] hidden animate-pulse font-black uppercase">>> ACTUALIZANDO...</div>
 
                     <div class="hidden lg:flex items-center gap-6 mb-8 group/station">
                         <div class="flex flex-col leading-tight border-l border-white/10 pl-5">
-                            <span class="mono text-[8px] text-[var(--primary)] uppercase tracking-[0.3em] font-black opacity-60 mb-0.5">Tuned to Station</span>
-                            <span id="main-station-name" class="mono text-[13px] text-white uppercase tracking-[0.25em] font-black italic">RAP GLOBAL</span>
+                            <span class="mono text-[8px] text-[var(--primary)] uppercase tracking-[0.3em] font-black opacity-60 mb-0.5">Sintonizado en la Emisora</span>
+                            <span id="main-station-name" class="mono text-[13px] text-white uppercase tracking-[0.25em] font-black italic">RADIO LA VOZ DEL ENCUENTRO</span>
                         </div>
                     </div>
 
                     <div id="track-name" class="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-[0.9] mb-6 italic line-clamp-3 text-white">
-                        Connecting...
+                        Conectando...
                     </div>
                     <p id="artist-name" class="text-xl md:text-2xl font-medium text-zinc-400 line-clamp-2 uppercase tracking-tight">
-                        Loading Stream Info
+                        Cargando información...
                     </p>
                 </div>
 
                 <div id="history-container" class="border-t border-white/5 pt-10">
                     <div class="flex justify-between items-center mb-8">
                         <div class="flex items-center gap-4">
-                            <h3 class="mono text-[11px] text-zinc-500 uppercase tracking-[0.4em] font-bold">Recent Tracks</h3>
+                            <h3 class="mono text-[11px] text-zinc-500 uppercase tracking-[0.4em] font-bold">Canciones Recientes</h3>
                             <span class="px-2.5 py-1 rounded-full bg-white/5 mono text-[8px] text-zinc-600 border border-white/5">v2.0.4</span>
                         </div>
                         <div class="flex gap-6">
-                            <button id="btn-lyrics-toggle" onclick="openLyrics()" class="hidden mono text-[10px] text-zinc-400 uppercase font-black hover:text-[var(--primary)] transition-colors tracking-widest">LYRICS</button>
-                            <button onclick="openHistory()" class="mono text-[10px] text-[var(--primary)] uppercase font-black hover:text-white transition-colors tracking-widest">HISTORY</button>
+                            <button id="btn-lyrics-toggle" onclick="openLyrics()" class="hidden mono text-[10px] text-zinc-400 uppercase font-black hover:text-[var(--primary)] transition-colors tracking-widest">LETRA</button>
+                            <button onclick="openHistory()" class="mono text-[10px] text-[var(--primary)] uppercase font-black hover:text-white transition-colors tracking-widest">HISTORIA</button>
                         </div>
                     </div>
                     <div id="history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4"></div>
@@ -146,6 +146,6 @@
     </div>
 </main>
 
-<script src="js/script.js?v5"></script>
+<script src="js/script.js?v6"></script>
 </body>
 </html>
