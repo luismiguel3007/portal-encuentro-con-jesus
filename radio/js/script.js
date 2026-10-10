@@ -36,10 +36,10 @@ let CONFIG = {
     COLOR_BRIGHTNESS_THRESHOLD: 125,
 
     IMG_PROXY: '',
-    CONNECT_TIMEOUT_MS: 20_000,
-    STALL_TIMEOUT_MS: 30_000, // Tolerancia ampliada para aprovechar la ráfaga de Icecast
+    CONNECT_TIMEOUT_MS: 10_000,  // Reducido a 10s para no congelar la UI móvil
+    STALL_TIMEOUT_MS: 12_000,    // Si se corta por 12s, recupera de inmediato
     RECONNECT_DELAYS_MS: [
-        1_500, 3_000, 6_000, 12_000, 20_000, 30_000
+        500, 1_500, 3_000, 6_000, 12_000, 20_000
     ]
 };
 
@@ -91,7 +91,7 @@ const DOM = {
 };
 
 const audio = new Audio();
-audio.preload = 'auto'; // Permite precargar la ráfaga de 256 KB en memoria
+audio.preload = 'none'; // Evita precargas pesadas en redes móviles
 audio.volume = CONFIG.DEFAULT_VOLUME;
 
 let progressIntervalId = null;
@@ -501,9 +501,12 @@ function armWatchdog(timeout, reason) {
 // ==================================================
 
 function releaseAudio() {
-    audio.pause();
-    audio.removeAttribute('src');
-    audio.load();
+    try {
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.src = '';
+        audio.load(); // Cierra el socket TCP de Icecast de forma inmediata en Android
+    } catch (e) {}
     state.streamLoaded = false;
 }
 
@@ -542,15 +545,22 @@ function connectToLive() {
 
     const version = ++playbackVersion;
     setPlayerState(PlayerState.CONNECTING);
-    releaseAudio();
 
     lastAudioTime = null;
     audioClockConfirmed = false;
     lastAudioAdvanceAt = Date.now();
 
-    // Inyección de timestamp para evitar cachés obsoletas y forzar la ráfaga de Icecast
-    audio.src = `${CONFIG.STREAM_URL}?_t=${Date.now()}`;
-    audio.preload = 'auto';
+    // Limpieza de buffer previo
+    try {
+        audio.pause();
+        audio.removeAttribute('src');
+    } catch (e) {}
+
+    // Parámetro _t anti-caché para forzar socket fresco
+    const streamUrl = `${CONFIG.STREAM_URL}?_t=${Date.now()}`;
+    audio.src = streamUrl;
+    audio.preload = 'none'; // Clave para móviles: arranca con el primer frame
+    audio.load();
     state.streamLoaded = true;
 
     armWatchdog(CONFIG.CONNECT_TIMEOUT_MS, 'La conexión tardó demasiado');
@@ -579,7 +589,7 @@ function connectToLive() {
 }
 
 function startPlayback() {
-    if (state.desiredPlaying) return;
+    if (state.desiredPlaying && state.player === PlayerState.PLAYING) return;
     state.desiredPlaying = true;
     state.retryCount = 0;
     connectedAt = 0;
@@ -599,7 +609,7 @@ function stopPlayback() {
 }
 
 function togglePlayback() {
-    if (state.desiredPlaying) {
+    if (state.desiredPlaying && (state.player === PlayerState.PLAYING || state.player === PlayerState.CONNECTING)) {
         stopPlayback();
     } else {
         startPlayback();
@@ -613,6 +623,7 @@ function togglePlayback() {
 audio.addEventListener('playing', () => {
     if (!state.desiredPlaying) return;
     clearWatchdog();
+    state.retryCount = 0;
     connectedAt = Date.now();
 
     lastAudioTime = null;
@@ -623,14 +634,18 @@ audio.addEventListener('playing', () => {
     updateMediaSession();
 });
 
-// En redes lentas, dar 30s de margen antes de desconectar para que la ráfaga de Icecast absorba el retraso
+audio.addEventListener('canplay', () => {
+    if (state.desiredPlaying && audio.paused) {
+        audio.play().catch(() => {});
+    }
+});
+
 audio.addEventListener('waiting', () => {
     if (state.desiredPlaying && reconnectTimer === null) {
         armWatchdog(CONFIG.STALL_TIMEOUT_MS, 'La señal tardó en entregar nuevos datos');
     }
 });
 
-// stalled significa que el navegador llenó su búfer y pausó la descarga; no debe matar la conexión
 audio.addEventListener('stalled', () => {
     // Intencionalmente vacío: no interrumpir la reproducción cuando el búfer esté lleno
 });
@@ -663,12 +678,15 @@ audio.addEventListener('ended', () => {
     }
 });
 
-// Si el navegador pausa la señal por pérdida momentánea de foco o ahorro de energía, intentar reanudar sin tirar el búfer
 audio.addEventListener('pause', () => {
     if (state.desiredPlaying && state.player === PlayerState.PLAYING && reconnectTimer === null) {
-        audio.play().catch(() => {
-            armWatchdog(5000, 'El navegador pausó la señal y no pudo reanudar');
-        });
+        setTimeout(() => {
+            if (state.desiredPlaying && audio.paused && reconnectTimer === null) {
+                audio.play().catch(() => {
+                    scheduleReconnect('Pausa externa no recuperada');
+                });
+            }
+        }, 800);
     }
 });
 
@@ -684,23 +702,27 @@ setInterval(() => {
         return;
     }
 
+    // Detección de flujo congelado en pantalla activa
     if (
         document.visibilityState === 'visible' &&
         audioClockConfirmed &&
-        Date.now() - Math.max(lastAudioAdvanceAt, lastForegroundAt) > 45_000
+        Date.now() - Math.max(lastAudioAdvanceAt, lastForegroundAt) > 15_000
     ) {
         scheduleReconnect('El audio se detuvo en pantalla activa');
     }
-}, 5_000);
+}, 4_000);
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
 
     lastForegroundAt = Date.now();
-    lastAudioAdvanceAt = Date.now();
 
-    if (state.desiredPlaying && state.player === PlayerState.PLAYING && audio.paused) {
-        audio.play().catch(() => {});
+    // Si el usuario regresa a la pestaña y la señal se colgó en segundo plano, reconecta al vivo
+    if (state.desiredPlaying) {
+        if (audio.paused || (audioClockConfirmed && Date.now() - lastAudioAdvanceAt > 10_000)) {
+            console.log('[Radio] Pestaña reactivada, resincronizando directo...');
+            connectToLive();
+        }
     }
 });
 
@@ -709,11 +731,6 @@ window.addEventListener('online', () => {
         connectToLive();
     }
 });
-
-// Desactivado para permitir reproducción en segundo plano y pantalla bloqueada
-// window.addEventListener('pagehide', () => {
-//     stopPlayback();
-// });
 
 // ==================================================
 // PANELES Y PERSONALIZACIÓN VISUAL
