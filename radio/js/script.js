@@ -36,10 +36,10 @@ let CONFIG = {
     COLOR_BRIGHTNESS_THRESHOLD: 125,
 
     IMG_PROXY: '',
-    CONNECT_TIMEOUT_MS: 10_000,  // Reducido a 10s para no congelar la UI móvil
-    STALL_TIMEOUT_MS: 12_000,    // Si se corta por 12s, recupera de inmediato
+    CONNECT_TIMEOUT_MS: 35_000,  // 35s: permite descargar la ráfaga de datos sin abortar en móvil
+    STALL_TIMEOUT_MS: 25_000,    // 25s: tolera microcortes de red antes de forzar reconexión
     RECONNECT_DELAYS_MS: [
-        500, 1_500, 3_000, 6_000, 12_000, 20_000
+        1_000, 2_000, 4_000, 8_000, 15_000
     ]
 };
 
@@ -91,7 +91,7 @@ const DOM = {
 };
 
 const audio = new Audio();
-audio.preload = 'none'; // Evita precargas pesadas en redes móviles
+audio.preload = 'auto'; // Mantiene la ráfaga en memoria para evitar microtirones
 audio.volume = CONFIG.DEFAULT_VOLUME;
 
 let progressIntervalId = null;
@@ -559,7 +559,7 @@ function connectToLive() {
     // Parámetro _t anti-caché para forzar socket fresco
     const streamUrl = `${CONFIG.STREAM_URL}?_t=${Date.now()}`;
     audio.src = streamUrl;
-    audio.preload = 'none'; // Clave para móviles: arranca con el primer frame
+    audio.preload = 'auto'; // Mantiene colchón en memoria RAM para mitigar tirones
     audio.load();
     state.streamLoaded = true;
 
@@ -686,7 +686,7 @@ audio.addEventListener('pause', () => {
                     scheduleReconnect('Pausa externa no recuperada');
                 });
             }
-        }, 800);
+        }, 1500);
     }
 });
 
@@ -702,27 +702,27 @@ setInterval(() => {
         return;
     }
 
-    // Detección de flujo congelado en pantalla activa
+    // Tolerancia ampliada a 35s en pantalla activa para soportar oscilaciones de señal móvil
     if (
         document.visibilityState === 'visible' &&
         audioClockConfirmed &&
-        Date.now() - Math.max(lastAudioAdvanceAt, lastForegroundAt) > 15_000
+        Date.now() - Math.max(lastAudioAdvanceAt, lastForegroundAt) > 35_000
     ) {
         scheduleReconnect('El audio se detuvo en pantalla activa');
     }
-}, 4_000);
+}, 5_000);
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
 
     lastForegroundAt = Date.now();
+    lastAudioAdvanceAt = Date.now(); // Previene falsos positivos al regresar a la pestaña
 
-    // Si el usuario regresa a la pestaña y la señal se colgó en segundo plano, reconecta al vivo
-    if (state.desiredPlaying) {
-        if (audio.paused || (audioClockConfirmed && Date.now() - lastAudioAdvanceAt > 10_000)) {
-            console.log('[Radio] Pestaña reactivada, resincronizando directo...');
+    // Si el usuario regresa a la pestaña y la señal fue pausada por el sistema, solo reanuda
+    if (state.desiredPlaying && audio.paused && !audio.ended) {
+        audio.play().catch(() => {
             connectToLive();
-        }
+        });
     }
 });
 
