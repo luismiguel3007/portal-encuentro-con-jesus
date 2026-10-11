@@ -572,8 +572,17 @@ function connectToLive() {
                 if (!state.desiredPlaying || version !== playbackVersion) return;
 
                 if (error?.name === 'NotAllowedError') {
-                    console.warn('[Radio] Requiere interacción del usuario para reproducir.');
-                    stopPlayback();
+                    console.warn('[Radio] El navegador requiere interacción física para reproducir.');
+                    setPlayerState(PlayerState.PAUSED);
+                    state.desiredPlaying = false;
+
+                    const resumeOnGesture = () => {
+                        window.removeEventListener('click', resumeOnGesture);
+                        window.removeEventListener('touchend', resumeOnGesture);
+                        startPlayback();
+                    };
+                    window.addEventListener('click', resumeOnGesture, { once: true });
+                    window.addEventListener('touchend', resumeOnGesture, { once: true });
                     return;
                 }
                 if (error?.name === 'AbortError') return;
@@ -609,7 +618,9 @@ function stopPlayback() {
 }
 
 function togglePlayback() {
-    if (state.desiredPlaying && (state.player === PlayerState.PLAYING || state.player === PlayerState.CONNECTING)) {
+    if (state.desiredPlaying && state.player === PlayerState.PLAYING) {
+        stopPlayback();
+    } else if (state.desiredPlaying && state.player === PlayerState.CONNECTING && !audio.paused) {
         stopPlayback();
     } else {
         startPlayback();
@@ -718,7 +729,7 @@ document.addEventListener('visibilitychange', () => {
     lastForegroundAt = Date.now();
     lastAudioAdvanceAt = Date.now(); // Previene falsos positivos al regresar a la pestaña
 
-    // Si el usuario regresa a la pestaña y la señal fue pausada por el sistema, solo reanuda
+    // Si el usuario regresa a la pestaña y la señal fue pausada por el sistema, reanuda limpiamente
     if (state.desiredPlaying && audio.paused && !audio.ended) {
         audio.play().catch(() => {
             connectToLive();
