@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /login.html
+Sitemap: https://unencuentroconjesusperu.com/sitemap.xml
